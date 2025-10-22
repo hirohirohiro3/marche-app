@@ -40,10 +40,10 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const menuFormSchema = z.object({
   name: z.string().min(1, "商品名は必須です"),
-  price: z.coerce.number().min(0, "価格は0以上である必要があります"),
+  price: z.string().min(1, "価格は必須です"),
   category: z.string().min(1, "カテゴリは必須です"),
   description: z.string().optional(),
-  sortOrder: z.coerce.number().optional(),
+  sortOrder: z.string().optional(),
 });
 type MenuFormValues = z.infer<typeof menuFormSchema>;
 
@@ -92,7 +92,11 @@ export default function MenuAdminPage() {
 
   const handleOpenForm = (menuItem: MenuItem | null) => {
     setEditingMenuItem(menuItem);
-    reset(menuItem || { name: "", price: 0, category: "", description: "", sortOrder: 0 });
+    if (menuItem) {
+      reset({ ...menuItem, price: String(menuItem.price), sortOrder: String(menuItem.sortOrder) });
+    } else {
+      reset({ name: "", price: "0", category: "", description: "", sortOrder: "0" });
+    }
     setImageFile(null);
     setIsFormOpen(true);
   };
@@ -111,7 +115,14 @@ export default function MenuAdminPage() {
         const snapshot = await uploadBytes(storageRef, imageFile);
         imageUrl = await getDownloadURL(snapshot.ref);
       }
-      const dataToSave = { ...values, imageUrl };
+
+      const dataToSave = {
+        ...values,
+        price: parseInt(values.price, 10) || 0,
+        sortOrder: parseInt(values.sortOrder || "0", 10) || 0,
+        imageUrl,
+      };
+
       if (editingMenuItem) {
         await updateDoc(doc(db, "menus", editingMenuItem.id), dataToSave);
       } else {
