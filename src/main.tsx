@@ -6,6 +6,7 @@ import './index.css';
 import RootLayout from './pages/RootLayout';
 import LoginPage from './pages/LoginPage';
 import MenuAdminPage from './pages/admin/menu';
+import DashboardPage from './pages/admin/DashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import MenuListPage from './pages/MenuListPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -28,6 +29,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <MenuAdminPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/dashboard',
+    element: (
+      <ProtectedRoute>
+        <DashboardPage />
       </ProtectedRoute>
     ),
   },
