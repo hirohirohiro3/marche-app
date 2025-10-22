@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Container, Typography, List, ListItem, ListItemText, Button, Paper, Divider, CircularProgress } from '@mui/material';
 import { useCartStore } from '../store/cartStore';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, serverTimestamp, doc, runTransaction } from "firebase/firestore";
+import { collection, serverTimestamp, doc, runTransaction } from "firebase/firestore";
 import { db } from '../firebase';
 import { uid } from 'uid'; // A library to generate unique IDs
 
