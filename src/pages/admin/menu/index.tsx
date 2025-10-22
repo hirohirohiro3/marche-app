@@ -47,16 +47,7 @@ const menuFormSchema = z.object({
 });
 type MenuFormValues = z.infer<typeof menuFormSchema>;
 
-export type MenuItem = {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-  imageUrl: string;
-  isSoldOut: boolean;
-  sortOrder: number;
-};
+import { MenuItem } from "../../../types";
 
 export default function MenuAdminPage() {
   const navigate = useNavigate();
