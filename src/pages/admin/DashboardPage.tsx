@@ -26,6 +26,7 @@ import {
   updateDoc,
   getDocs,
   runTransaction,
+  where,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Order, MenuItem } from '../../types';
@@ -70,9 +71,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ordersData = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as Order)
-      );
+      const ordersData = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() } as Order))
+        .filter((order) => order.status !== 'cancelled');
       setOrders(ordersData);
 
       const newOrderCount = ordersData.filter(o => o.status === 'new').length;
@@ -99,17 +100,34 @@ export default function DashboardPage() {
 
   const handleEndOfDay = async () => {
     setIsConfirmOpen(false);
-    const settingsRef = doc(db, 'system_settings', 'single_doc');
     try {
+      // Find all active orders
+      const activeOrdersQuery = query(
+        collection(db, 'orders'),
+        where('status', 'in', ['new', 'paid'])
+      );
+      const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
+
+      // Reset numbers and mark orders as completed in a single transaction/batch
+      const settingsRef = doc(db, 'system_settings', 'single_doc');
+
+      // Using a transaction to ensure atomicity
       await runTransaction(db, async (transaction) => {
+        // Mark all active orders as completed
+        activeOrdersSnapshot.forEach((orderDoc) => {
+          transaction.update(orderDoc.ref, { status: 'completed' });
+        });
+
+        // Reset the order numbers
         transaction.update(settingsRef, {
           nextQrOrderNumber: 101,
           nextManualOrderNumber: 1,
         });
       });
-      // Optionally, add a success notification
+
+      console.log('End of day process completed successfully.');
     } catch (error) {
-      console.error('Failed to reset order numbers:', error);
+      console.error('Failed to process end of day:', error);
       // Optionally, add an error notification
     }
   };
