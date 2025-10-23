@@ -24,14 +24,17 @@ test.describe('Operational Support Features', () => {
     await createManualOrder(page);
 
     const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))');
-    const orderCard = paidColumn.locator('.MuiCard-root').first();
-    await expect(orderCard).toBeVisible();
+    const orderCards = paidColumn.locator('.MuiCard-root');
+
+    // 1. Create an order and verify it exists
+    await createManualOrder(page);
+    await expect(orderCards).toHaveCount(1);
 
     // 2. Click the cancel button on the order card
-    await orderCard.locator('button:has-text("Cancel")').click();
+    await orderCards.first().locator('button:has-text("Cancel")').click();
 
-    // 3. Verify the order card is no longer visible
-    await expect(orderCard).not.toBeVisible();
+    // 3. Verify the order card is removed from the column
+    await expect(orderCards).toHaveCount(0);
   });
 
   test('should reset order numbers after End of Day', async ({ page }) => {
