@@ -1,5 +1,6 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin SDK
 const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
@@ -9,11 +10,33 @@ initializeApp({
 });
 
 const db = getFirestore();
+const auth = getAuth();
+
+const TEST_USER_EMAIL = 'test@example.com';
+const TEST_USER_PASSWORD = 'password';
 
 async function seed() {
   console.log('Seeding database...');
 
   try {
+    // 4. Seed Test User
+    console.log('Seeding test user...');
+    try {
+      const user = await auth.getUserByEmail(TEST_USER_EMAIL);
+      await auth.deleteUser(user.uid);
+      console.log(`Successfully deleted existing user: ${TEST_USER_EMAIL}`);
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        // User doesn't exist, which is fine.
+      } else {
+        throw error;
+      }
+    }
+    await auth.createUser({
+      email: TEST_USER_EMAIL,
+      password: TEST_USER_PASSWORD,
+    });
+    console.log(`Successfully created test user: ${TEST_USER_EMAIL}`);
     const menusCollection = db.collection('menus');
     const ordersCollection = db.collection('orders');
     const systemSettingsRef = db.doc('system_settings/single_doc');
