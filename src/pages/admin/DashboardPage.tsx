@@ -10,6 +10,7 @@ import {
   Button,
   Box,
 } from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import {
   collection,
   onSnapshot,
@@ -17,10 +18,12 @@ import {
   orderBy,
   doc,
   updateDoc,
+  getDocs,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Order } from '../../types';
+import { Order, MenuItem } from '../../types';
 import { keyframes } from '@emotion/react';
+import ManualOrderModal from '../../components/ManualOrderModal';
 
 const flash = keyframes`
   0% { background-color: inherit; }
@@ -30,7 +33,9 @@ const flash = keyframes`
 
 export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isNewOrder, setIsNewOrder] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevNewOrderCount = useRef(0);
 
@@ -39,6 +44,19 @@ export default function DashboardPage() {
     audioRef.current = new Audio(
       'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
     );
+  }, []);
+
+  // Fetch menu items
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      const menuCollection = collection(db, 'menus');
+      const menuSnapshot = await getDocs(query(menuCollection, orderBy('sortOrder')));
+      const menuList = menuSnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as MenuItem)
+      );
+      setMenuItems(menuList);
+    };
+    fetchMenuItems();
   }, []);
 
   useEffect(() => {
@@ -72,13 +90,28 @@ export default function DashboardPage() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Order Dashboard
-      </Typography>
-      <Grid container spacing={3}>
-        {/* New Orders Column */}
-        <Grid item xs={12} md={4}>
+    <>
+      <ManualOrderModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        menuItems={menuItems}
+      />
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+            Order Dashboard
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Manual Order
+          </Button>
+        </Box>
+        <Grid container spacing={3}>
+          {/* New Orders Column */}
+          <Grid item xs={12} md={4}>
           <Paper
             sx={{
               p: 2,
@@ -165,5 +198,6 @@ export default function DashboardPage() {
         </Grid>
       </Grid>
     </Container>
+    </>
   );
 }

@@ -39,7 +39,7 @@ export default function LoginPage() {
     setLoginError(null);
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
-      navigate("/admin/menu");
+      navigate("/admin/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       setLoginError("メールアドレスまたはパスワードが正しくありません。");
