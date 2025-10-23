@@ -8,3 +8,14 @@ export type MenuItem = {
   isSoldOut: boolean;
   sortOrder: number;
 };
+
+export type Order = {
+  id: string;
+  orderNumber: number;
+  items: { name: string; quantity: number }[];
+  totalPrice: number;
+  status: 'new' | 'paid' | 'completed' | 'cancelled';
+  orderType: 'qr' | 'manual';
+  createdAt: { seconds: number; nanoseconds: number };
+  uid: string;
+};
