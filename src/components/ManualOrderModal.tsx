@@ -9,7 +9,7 @@ import {
   IconButton,
   CircularProgress,
 } from '@mui/material';
-import CloseIcon from '@mui-icons-material/Close';
+import Close from '@mui/icons-material/Close';
 import {
   collection,
   serverTimestamp,
@@ -154,7 +154,7 @@ export default function ManualOrderModal({
         >
           <Typography variant="h6">Manual POS</Typography>
           <IconButton onClick={handleClose}>
-            <CloseIcon />
+            <Close />
           </IconButton>
         </Box>
 
