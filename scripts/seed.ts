@@ -1,13 +1,10 @@
 import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, CollectionReference } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin SDK
 const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-
-initializeApp({
-  credential: cert(serviceAccount),
-});
+initializeApp({ credential: cert(serviceAccount) });
 
 const db = getFirestore();
 const auth = getAuth();
@@ -15,86 +12,79 @@ const auth = getAuth();
 const TEST_USER_EMAIL = 'test@example.com';
 const TEST_USER_PASSWORD = 'password';
 
-async function seed() {
-  console.log('Seeding database...');
+// Helper function to delete all documents in a collection
+async function deleteCollection(collectionRef: CollectionReference, batchSize: number) {
+  const query = collectionRef.limit(batchSize);
+  let snapshot;
 
+  while ((snapshot = await query.get()).size > 0) {
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  }
+}
+
+async function seed() {
   try {
-    // 4. Seed Test User
-    console.log('Seeding test user...');
-    try {
-      const user = await auth.getUserByEmail(TEST_USER_EMAIL);
-      await auth.deleteUser(user.uid);
-      console.log(`Successfully deleted existing user: ${TEST_USER_EMAIL}`);
-    } catch (error) {
-      if (error.code === 'auth/user-not-found') {
-        // User doesn't exist, which is fine.
-      } else {
-        throw error;
-      }
-    }
-    await auth.createUser({
+    console.log('Starting database seeding...');
+
+    // 1. Completely clear existing data and wait for it to finish
+    console.log('Clearing existing data...');
+    const collectionsToClear = [db.collection('menus'), db.collection('orders')];
+    await Promise.all(collectionsToClear.map(ref => deleteCollection(ref, 50)));
+    console.log('Data cleared successfully.');
+
+    // 2. Prepare all seeding promises
+    console.log('Preparing new seed data...');
+
+    // User creation promise
+    const userCreationPromise = auth.createUser({
       email: TEST_USER_EMAIL,
       password: TEST_USER_PASSWORD,
+    }).catch(error => {
+      if (error.code === 'auth/email-already-exists') {
+        return auth.getUserByEmail(TEST_USER_EMAIL); // User already exists, which is fine
+      }
+      throw error;
     });
-    console.log(`Successfully created test user: ${TEST_USER_EMAIL}`);
-    const menusCollection = db.collection('menus');
-    const ordersCollection = db.collection('orders');
-    const systemSettingsRef = db.doc('system_settings/single_doc');
 
-    // 1. Clear existing data
-    console.log('Clearing existing data...');
-    const collectionsToClear = [menusCollection, ordersCollection];
-    for (const collectionRef of collectionsToClear) {
-      const snapshot = await collectionRef.get();
-      if (snapshot.empty) continue;
-      const batch = db.batch();
-      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-    }
-
-    // 2. Seed Menu Items
-    console.log('Seeding menu items...');
+    // Menu items creation promise
     const menuItems = [
       { id: 'espresso', name: 'Espresso', price: 500, category: 'Coffee', isSoldOut: false, sortOrder: 1 },
       { id: 'latte', name: 'Latte', price: 600, category: 'Coffee', isSoldOut: false, sortOrder: 2 },
       { id: 'cappuccino', name: 'Cappuccino', price: 650, category: 'Coffee', isSoldOut: true, sortOrder: 3 },
       { id: 'tea', name: 'Tea', price: 400, category: 'Tea', isSoldOut: false, sortOrder: 4 },
     ];
-    const menuBatch = db.batch();
-    menuItems.forEach((item) => {
-      const { id, ...data } = item;
-      menuBatch.set(menusCollection.doc(id), data);
-    });
-    await menuBatch.commit();
+    const menuPromises = menuItems.map(item => db.collection('menus').doc(item.id).set(item));
 
-    // 3. Reset System Settings
-    console.log('Resetting system settings...');
-    await systemSettingsRef.set({
+    // System settings reset promise
+    const systemSettingsPromise = db.doc('system_settings/single_doc').set({
       nextQrOrderNumber: 101,
       nextManualOrderNumber: 1,
     });
 
-    // 5. Seed Completed Orders for Analytics
-    console.log('Seeding completed orders...');
-    const completedOrdersBatch = db.batch();
+    // Completed orders creation promise
     const now = new Date();
-    const yesterday = new Date(now);
+    const yesterday = new Date();
     yesterday.setDate(now.getDate() - 1);
-
     const ordersToSeed = [
-      // Yesterday's orders
       { orderNumber: 1, orderType: 'manual', status: 'completed', totalPrice: 1100, items: [{name: 'Espresso', quantity: 1}, {name: 'Latte', quantity: 1}], createdAt: yesterday },
-      // Today's orders
       { orderNumber: 101, orderType: 'qr', status: 'completed', totalPrice: 1700, items: [{name: 'Latte', quantity: 2}, {name: 'Tea', quantity: 1}], createdAt: now },
       { orderNumber: 2, orderType: 'manual', status: 'completed', totalPrice: 500, items: [{name: 'Espresso', quantity: 1}], createdAt: now },
-      { orderNumber: 102, orderType: 'qr', status: 'paid', totalPrice: 650, items: [{name: 'Cappuccino', quantity: 1}], createdAt: now }, // Should not be in analytics
+      { orderNumber: 102, orderType: 'qr', status: 'paid', totalPrice: 650, items: [{name: 'Cappuccino', quantity: 1}], createdAt: now },
     ];
+    const orderPromises = ordersToSeed.map(order => db.collection('orders').add(order));
 
-    ordersToSeed.forEach(order => {
-      const newOrderRef = ordersCollection.doc();
-      completedOrdersBatch.set(newOrderRef, order);
-    });
-    await completedOrdersBatch.commit();
+    // 3. Execute all seeding promises in parallel and wait for all to complete
+    console.log('Waiting for all data to be seeded...');
+    await Promise.all([
+      userCreationPromise,
+      ...menuPromises,
+      systemSettingsPromise,
+      ...orderPromises
+    ]);
 
     console.log('Database seeded successfully!');
     process.exit(0);

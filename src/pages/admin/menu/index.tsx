@@ -18,6 +18,7 @@ import {
   TextField,
   Box,
   CircularProgress,
+  Switch,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
@@ -126,6 +127,11 @@ export default function MenuAdminPage() {
     }
   };
 
+  const handleToggleSoldOut = async (menuItem: MenuItem) => {
+    const menuRef = doc(db, "menus", menuItem.id);
+    await updateDoc(menuRef, { isSoldOut: !menuItem.isSoldOut });
+  };
+
   const handleOpenDeleteAlert = (menuItem: MenuItem) => {
     setDeletingMenuItem(menuItem);
     setIsAlertOpen(true);
@@ -185,7 +191,13 @@ export default function MenuAdminPage() {
                   <TableCell>{row.name}</TableCell>
                   <TableCell align="right">¥{row.price.toLocaleString()}</TableCell>
                   <TableCell>{row.category}</TableCell>
-                  <TableCell>{row.isSoldOut ? "はい" : "いいえ"}</TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={row.isSoldOut}
+                      onChange={() => handleToggleSoldOut(row)}
+                      color="primary"
+                    />
+                  </TableCell>
                   <TableCell align="center">
                     <IconButton onClick={() => handleOpenForm(row)}><Edit /></IconButton>
                     <IconButton onClick={() => handleOpenDeleteAlert(row)}><Delete /></IconButton>
