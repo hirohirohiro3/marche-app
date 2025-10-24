@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Box, Typography, IconButton } from '@mui/material';
-import { QRCode } from 'qrcode.react';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface QrCodeModalProps {
