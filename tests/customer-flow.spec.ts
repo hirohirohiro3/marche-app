@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Customer Order Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/menu');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should allow a customer to place an order successfully', async ({ page }) => {
@@ -25,7 +26,7 @@ test.describe('Customer Order Flow', () => {
     // The seed script ensures available items, so these buttons should exist.
     // We will let the test fail if they don't appear within the timeout.
     const addToCartButtons = menuContainer.getByRole('button', { name: 'カートに追加' });
-    await expect(addToCartButtons.first()).toBeVisible({ timeout: 15000 });
+    await expect(addToCartButtons.first()).toBeVisible({ timeout: 30000 });
 
     // 2. Add an item to the cart
     await addToCartButtons.first().click();

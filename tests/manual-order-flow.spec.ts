@@ -4,6 +4,7 @@ test.describe('Manual Order Flow', () => {
   test.beforeEach(async ({ page }) => {
     // 1. Log in
     await page.goto('/login');
+    await page.waitForLoadState('networkidle');
     await page.fill('input[name="email"]', 'test@example.com');
     await page.fill('input[name="password"]', 'password');
     // Using a more robust role selector instead of type="submit"
