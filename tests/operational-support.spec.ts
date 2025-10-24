@@ -20,21 +20,21 @@ test.describe('Operational Support Features', () => {
   });
 
   test('should cancel an order from the paid column', async ({ page }) => {
-    // 1. Create a manual order to ensure there is an order to cancel
-    await createManualOrder(page);
-
     const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))');
     const orderCards = paidColumn.locator('.MuiCard-root');
 
-    // 1. Create an order and verify it exists
-    await createManualOrder(page);
-    await expect(orderCards).toHaveCount(1);
+    // 1. Get initial order count
+    const initialCount = await orderCards.count();
 
-    // 2. Click the cancel button on the order card
+    // 2. Create a new order and verify the count increases by 1
+    await createManualOrder(page);
+    await expect(orderCards).toHaveCount(initialCount + 1);
+
+    // 3. Click the cancel button on the newest order (assuming it appears first)
     await orderCards.first().locator('button:has-text("Cancel")').click();
 
-    // 3. Verify the order card is removed from the column
-    await expect(orderCards).toHaveCount(0);
+    // 4. Verify the order count returns to the initial state
+    await expect(orderCards).toHaveCount(initialCount);
   });
 
   test('should reset order numbers after End of Day', async ({ page }) => {
