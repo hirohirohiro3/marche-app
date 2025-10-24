@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Analytics Page', () => {
-test.describe('Analytics Page', () => {
   // No beforeEach reset needed here, as the global `npm run seed` handles it.
 
   test.beforeEach(async ({ page }) => {
