@@ -15,8 +15,11 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
+import LaunchIcon from '@mui/icons-material/Launch';
 import {
   collection,
   onSnapshot,
@@ -32,6 +35,7 @@ import { db } from '../../firebase';
 import { Order, MenuItem } from '../../types';
 import { keyframes } from '@emotion/react';
 import ManualOrderModal from '../../components/ManualOrderModal';
+import QrCodeModal from '../../components/admin/QrCodeModal';
 
 const flash = keyframes`
   0% { background-color: inherit; }
@@ -45,6 +49,7 @@ export default function DashboardPage() {
   const [isNewOrder, setIsNewOrder] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevNewOrderCount = useRef(0);
 
@@ -140,6 +145,10 @@ export default function DashboardPage() {
         onClose={() => setIsModalOpen(false)}
         menuItems={menuItems}
       />
+      <QrCodeModal
+        open={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+      />
        <Dialog
         open={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
@@ -162,6 +171,25 @@ export default function DashboardPage() {
           <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
             Order Dashboard
           </Typography>
+          <Button
+            variant="contained"
+            component={RouterLink}
+            to="/menu"
+            target="_blank"
+            rel="noopener noreferrer"
+            startIcon={<LaunchIcon />}
+            sx={{ mr: 2 }}
+          >
+            View Customer Page
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<QrCode2Icon />}
+            onClick={() => setIsQrModalOpen(true)}
+            sx={{ mr: 2 }}
+          >
+            Show QR Code
+          </Button>
           <Button
             variant="contained"
             startIcon={<AddCircleOutlineIcon />}

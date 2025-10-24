@@ -44,16 +44,16 @@ async function seed() {
     // 1. Clear existing data
     console.log('Clearing existing data...');
     const collectionsToClear = [menusCollection, ordersCollection];
-    for (const collectionRef of collectionsToClear) {
+    await Promise.all(collectionsToClear.map(async (collectionRef) => {
       const snapshot = await collectionRef.get();
-      if (snapshot.empty) continue;
+      if (snapshot.empty) return;
       const batch = db.batch();
       snapshot.docs.forEach((doc) => batch.delete(doc.ref));
       await batch.commit();
-    }
+    }));
 
-    // 2. Seed Menu Items
-    console.log('Seeding menu items...');
+    // 2. Seed Menu Items and Reset System Settings
+    console.log('Seeding menu items and resetting system settings...');
     const menuItems = [
       { id: 'espresso', name: 'Espresso', price: 500, category: 'Coffee', isSoldOut: false, sortOrder: 1 },
       { id: 'latte', name: 'Latte', price: 600, category: 'Coffee', isSoldOut: false, sortOrder: 2 },
@@ -65,14 +65,14 @@ async function seed() {
       const { id, ...data } = item;
       menuBatch.set(menusCollection.doc(id), data);
     });
-    await menuBatch.commit();
 
-    // 3. Reset System Settings
-    console.log('Resetting system settings...');
-    await systemSettingsRef.set({
-      nextQrOrderNumber: 101,
-      nextManualOrderNumber: 1,
-    });
+    await Promise.all([
+      menuBatch.commit(),
+      systemSettingsRef.set({
+        nextQrOrderNumber: 101,
+        nextManualOrderNumber: 1,
+      })
+    ]);
 
     console.log('Database seeded successfully!');
     process.exit(0);
