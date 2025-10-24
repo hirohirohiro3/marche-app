@@ -3,7 +3,7 @@ import {
   Container, Typography, Box, Button, Grid, Paper,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress
 } from '@mui/material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Order } from '../../types';
