@@ -7,6 +7,7 @@ import RootLayout from './pages/RootLayout';
 import LoginPage from './pages/LoginPage';
 import MenuAdminPage from './pages/admin/menu';
 import DashboardPage from './pages/admin/DashboardPage';
+import AnalyticsPage from './pages/admin/AnalyticsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import MenuListPage from './pages/MenuListPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -37,6 +38,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <DashboardPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/analytics',
+    element: (
+      <ProtectedRoute>
+        <AnalyticsPage />
       </ProtectedRoute>
     ),
   },

@@ -48,6 +48,7 @@ const menuFormSchema = z.object({
 type MenuFormValues = z.infer<typeof menuFormSchema>;
 
 import { MenuItem } from "../../../types";
+import AdminNav from "../../../components/AdminNav";
 
 export default function MenuAdminPage() {
   const navigate = useNavigate();
@@ -147,6 +148,8 @@ export default function MenuAdminPage() {
   };
 
   return (
+    <>
+    <AdminNav />
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h4" component="h1">
@@ -233,5 +236,6 @@ export default function MenuAdminPage() {
         </DialogActions>
       </Dialog>
     </Container>
+    </>
   );
 }

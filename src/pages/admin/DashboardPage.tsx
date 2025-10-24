@@ -32,6 +32,7 @@ import { db } from '../../firebase';
 import { Order, MenuItem } from '../../types';
 import { keyframes } from '@emotion/react';
 import ManualOrderModal from '../../components/ManualOrderModal';
+import AdminNav from '../../components/AdminNav';
 
 const flash = keyframes`
   0% { background-color: inherit; }
@@ -135,6 +136,7 @@ export default function DashboardPage() {
 
   return (
     <>
+      <AdminNav />
       <ManualOrderModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}

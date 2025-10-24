@@ -74,6 +74,28 @@ async function seed() {
       nextManualOrderNumber: 1,
     });
 
+    // 5. Seed Completed Orders for Analytics
+    console.log('Seeding completed orders...');
+    const completedOrdersBatch = db.batch();
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    const ordersToSeed = [
+      // Yesterday's orders
+      { orderNumber: 1, orderType: 'manual', status: 'completed', totalPrice: 1100, items: [{name: 'Espresso', quantity: 1}, {name: 'Latte', quantity: 1}], createdAt: yesterday },
+      // Today's orders
+      { orderNumber: 101, orderType: 'qr', status: 'completed', totalPrice: 1700, items: [{name: 'Latte', quantity: 2}, {name: 'Tea', quantity: 1}], createdAt: now },
+      { orderNumber: 2, orderType: 'manual', status: 'completed', totalPrice: 500, items: [{name: 'Espresso', quantity: 1}], createdAt: now },
+      { orderNumber: 102, orderType: 'qr', status: 'paid', totalPrice: 650, items: [{name: 'Cappuccino', quantity: 1}], createdAt: now }, // Should not be in analytics
+    ];
+
+    ordersToSeed.forEach(order => {
+      const newOrderRef = ordersCollection.doc();
+      completedOrdersBatch.set(newOrderRef, order);
+    });
+    await completedOrdersBatch.commit();
+
     console.log('Database seeded successfully!');
     process.exit(0);
   } catch (error) {
