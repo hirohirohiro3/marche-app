@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 // Helper function to create a manual order
 async function createManualOrder(page: Page) {
@@ -11,35 +11,28 @@ async function createManualOrder(page: Page) {
 
 test.describe('Operational Support Features', () => {
   test.beforeEach(async ({ page }) => {
-    // Before each test, log in.
+    // Before each test, just log in.
+    // The database state is reset only once by `npm run seed` before all tests.
     await page.goto('/login');
     await page.fill('input[name="email"]', 'test@example.com');
     await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/admin/dashboard');
-
-    // Reset the state before each test to ensure independence
-    await page.click('button:has-text("End of Day")');
-    await page.locator('button:has-text("はい")').click();
-    // Wait for all paid cards to disappear, confirming the reset is complete
-    await expect(page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))').locator('.MuiCard-root')).toHaveCount(0);
   });
 
   test('should cancel an order from the paid column', async ({ page }) => {
     const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))');
     const orderCards = paidColumn.locator('.MuiCard-root');
 
-    // Pre-condition: Ensure there are no orders in the paid column
-    await expect(orderCards).toHaveCount(0);
-
-    // 1. Create a new order and wait for it to appear
-    await createManualOrder(page);
+    // Pre-condition: The seed script creates one order in the 'paid' state.
     await expect(orderCards).toHaveCount(1);
+    const initialOrderCard = orderCards.locator('p:has-text("#102")');
+    await expect(initialOrderCard).toBeVisible();
 
-    // 2. Click the cancel button on the order
+    // 1. Click the cancel button on the existing order
     await orderCards.first().locator('button:has-text("Cancel")').click();
 
-    // 3. Verify the order disappears and the count returns to 0
+    // 2. Verify the order disappears and the count returns to 0
     await expect(orderCards).toHaveCount(0);
   });
 
@@ -47,22 +40,21 @@ test.describe('Operational Support Features', () => {
     const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))');
     const orderCards = paidColumn.locator('.MuiCard-root');
 
-    // 1. Create a first manual order and wait for it to appear with order number #1
-    await createManualOrder(page);
-    await expect(paidColumn.locator('.MuiCard-root', { hasText: '#1' })).toBeVisible();
+    // Pre-condition: The seed script creates one order in 'paid' state.
+    await expect(orderCards).toHaveCount(1);
 
-    // 2. Click End of Day button and confirm. The beforeEach hook already does this,
-    // but we do it again to test the reset logic within this specific test.
+    // 1. Click End of Day button and confirm.
     await page.click('button:has-text("End of Day")');
     await page.locator('button:has-text("はい")').click();
 
-    // Wait for the card to move to the "Completed" column (or disappear from "Paid")
+    // 2. Wait for the 'paid' column to be empty.
     await expect(orderCards).toHaveCount(0);
 
-    // 3. Create a second manual order
+    // 3. Create a new manual order
     await createManualOrder(page);
 
-    // 4. Verify the new order number is also #1, confirming the reset
+    // 4. Verify the new order number is #1, confirming the counter was reset by "End of Day".
+    // The seed script sets nextManualOrderNumber to 1.
     await expect(paidColumn.locator('.MuiCard-root', { hasText: '#1' })).toBeVisible();
     await expect(orderCards).toHaveCount(1);
   });

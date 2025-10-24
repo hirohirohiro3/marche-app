@@ -12,10 +12,7 @@ async function setupAdminPage(browser: Browser): Promise<Page> {
   await adminPage.click('button[type="submit"]');
   await expect(adminPage).toHaveURL('/admin/dashboard');
 
-  // Reset state
-  await adminPage.click('button:has-text("End of Day")');
-  await adminPage.locator('button:has-text("はい")').click();
-  await expect(adminPage.locator('.MuiCard-root')).toHaveCount(0);
+  // No reset needed here. The test will run in the state set by `npm run seed`.
 
   return adminPage;
 }

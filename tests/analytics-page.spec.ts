@@ -32,7 +32,7 @@ test.describe('Analytics Page', () => {
     await page.click('button:has-text("All Time")');
 
     const totalSalesCard = page.locator('.MuiPaper-root:has-text("Total Sales")');
-    await expect(totalSalesCard.locator('h4')).toContainText('¥3,300'); // 2200 + 1100
+    await expect(totalSalesCard.locator('h4')).toContainText('¥3,300'); // 1100 (yesterday) + 1700 (today) + 500 (today)
 
     const totalOrdersCard = page.locator('.MuiPaper-root:has-text("Total Orders")');
     await expect(totalOrdersCard.locator('h4')).toContainText('3');
