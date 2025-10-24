@@ -9,8 +9,14 @@ import {
   CardActions,
   Button,
   Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import {
   collection,
   onSnapshot,
@@ -19,6 +25,8 @@ import {
   doc,
   updateDoc,
   getDocs,
+  runTransaction,
+  where,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Order, MenuItem } from '../../types';
@@ -36,6 +44,7 @@ export default function DashboardPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isNewOrder, setIsNewOrder] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevNewOrderCount = useRef(0);
 
@@ -62,9 +71,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ordersData = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as Order)
-      );
+      const ordersData = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() } as Order))
+        .filter((order) => order.status !== 'cancelled');
       setOrders(ordersData);
 
       const newOrderCount = ordersData.filter(o => o.status === 'new').length;
@@ -89,6 +98,41 @@ export default function DashboardPage() {
     await updateDoc(orderRef, { status: newStatus });
   };
 
+  const handleEndOfDay = async () => {
+    setIsConfirmOpen(false);
+    try {
+      // Find all active orders
+      const activeOrdersQuery = query(
+        collection(db, 'orders'),
+        where('status', 'in', ['new', 'paid'])
+      );
+      const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
+
+      // Reset numbers and mark orders as completed in a single transaction/batch
+      const settingsRef = doc(db, 'system_settings', 'single_doc');
+
+      // Using a transaction to ensure atomicity
+      await runTransaction(db, async (transaction) => {
+        // Mark all active orders as completed
+        activeOrdersSnapshot.forEach((orderDoc) => {
+          transaction.update(orderDoc.ref, { status: 'completed' });
+        });
+
+        // Reset the order numbers
+        transaction.update(settingsRef, {
+          nextQrOrderNumber: 101,
+          nextManualOrderNumber: 1,
+        });
+      });
+
+      console.log('End of day process completed successfully.');
+    } catch (error) {
+      console.error('Failed to process end of day:', error);
+      // Optionally, add an error notification
+    }
+  };
+
+
   return (
     <>
       <ManualOrderModal
@@ -96,8 +140,25 @@ export default function DashboardPage() {
         onClose={() => setIsModalOpen(false)}
         menuItems={menuItems}
       />
+       <Dialog
+        open={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+      >
+        <DialogTitle>営業を終了しますか？</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            全ての注文番号が初期値にリセットされます。この操作は元に戻せません。
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsConfirmOpen(false)}>いいえ</Button>
+          <Button onClick={handleEndOfDay} autoFocus>
+            はい
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
           <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
             Order Dashboard
           </Typography>
@@ -107,6 +168,14 @@ export default function DashboardPage() {
             onClick={() => setIsModalOpen(true)}
           >
             Manual Order
+          </Button>
+           <Button
+            variant="outlined"
+            color="error"
+            startIcon={<PowerSettingsNewIcon />}
+            onClick={() => setIsConfirmOpen(true)}
+          >
+            End of Day
           </Button>
         </Box>
         <Grid container spacing={3}>
@@ -141,6 +210,13 @@ export default function DashboardPage() {
                   >
                     Mark as Paid
                   </Button>
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => handleUpdateStatus(order.id, 'cancelled')}
+                  >
+                    Cancel
+                  </Button>
                 </CardActions>
               </Card>
             ))}
@@ -169,6 +245,13 @@ export default function DashboardPage() {
                     onClick={() => handleUpdateStatus(order.id, 'completed')}
                   >
                     Mark as Completed
+                  </Button>
+                   <Button
+                    size="small"
+                    color="error"
+                    onClick={() => handleUpdateStatus(order.id, 'cancelled')}
+                  >
+                    Cancel
                   </Button>
                 </CardActions>
               </Card>
