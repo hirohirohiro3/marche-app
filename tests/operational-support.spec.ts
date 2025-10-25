@@ -13,7 +13,6 @@ test.describe('Operational Support Features', () => {
   test.beforeEach(async ({ page }) => {
     // 1. Log in
     await page.goto('/login');
-    await page.waitForLoadState('networkidle');
     await page.fill('input[name="email"]', 'test@example.com');
     await page.fill('input[name="password"]', 'password');
     await page.getByRole('button', { name: 'Login' }).click();

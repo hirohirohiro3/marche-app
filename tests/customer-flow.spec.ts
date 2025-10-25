@@ -3,7 +3,6 @@ import { test, expect } from '@playwright/test';
 test.describe('Customer Order Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/menu');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should allow a customer to place an order successfully', async ({ page }) => {
@@ -22,13 +21,16 @@ test.describe('Customer Order Flow', () => {
 
     // --- Main Test Flow ---
 
-    // 1. Wait for menu items to load and find the "Add to Cart" buttons.
-    // The seed script ensures available items, so these buttons should exist.
-    // We will let the test fail if they don't appear within the timeout.
-    const addToCartButtons = menuContainer.getByRole('button', { name: 'カートに追加' });
-    await expect(addToCartButtons.first()).toBeVisible({ timeout: 30000 });
+    // 1. Wait for the loading spinner to disappear, indicating that data fetching is complete.
+    // The CircularProgress component has a role of "progressbar".
+    await expect(page.getByRole('progressbar')).not.toBeVisible({ timeout: 30000 });
 
-    // 2. Add an item to the cart
+    // 2. Now that loading is complete, find the "Add to Cart" buttons.
+    const addToCartButtons = menuContainer.getByRole('button', { name: 'カートに追加' });
+    // The buttons should be visible immediately after the spinner is gone.
+    await expect(addToCartButtons.first()).toBeVisible();
+
+    // 3. Add an item to the cart
     await addToCartButtons.first().click();
 
     // 3. Verify cart summary and proceed to checkout

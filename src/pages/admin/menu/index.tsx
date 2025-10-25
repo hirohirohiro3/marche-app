@@ -98,13 +98,18 @@ export default function MenuAdminPage() {
   };
 
   const handleFormSubmit = async (values: MenuFormValues) => {
+    const isEditing = !!editingMenuItem;
+    console.log(`Attempting to ${isEditing ? 'update' : 'create'} menu item:`, values.name);
+
     try {
       let imageUrl = editingMenuItem?.imageUrl || "";
       if (imageFile) {
+        console.log("Uploading new image...");
         const storage = getStorage();
         const storageRef = ref(storage, `menu-images/${Date.now()}_${imageFile.name}`);
         const snapshot = await uploadBytes(storageRef, imageFile);
         imageUrl = await getDownloadURL(snapshot.ref);
+        console.log("Image uploaded successfully:", imageUrl);
       }
 
       const dataToSave = {
@@ -114,14 +119,17 @@ export default function MenuAdminPage() {
         imageUrl,
       };
 
-      if (editingMenuItem) {
-        await updateDoc(doc(db, "menus", editingMenuItem.id), dataToSave);
+      if (isEditing) {
+        const docRef = doc(db, "menus", editingMenuItem.id);
+        await updateDoc(docRef, dataToSave);
+        console.log(`Successfully updated menu item: ${editingMenuItem.id}`);
       } else {
-        await addDoc(collection(db, "menus"), {...dataToSave, isSoldOut: false});
+        const docRef = await addDoc(collection(db, "menus"), {...dataToSave, isSoldOut: false});
+        console.log(`Successfully created new menu item with ID: ${docRef.id}`);
       }
       handleCloseForm();
     } catch (error) {
-      console.error("Failed to save menu item:", error);
+      console.error(`[Error] Failed to ${isEditing ? 'update' : 'create'} menu item "${values.name}".`, error);
     }
   };
 
@@ -137,8 +145,15 @@ export default function MenuAdminPage() {
 
   const handleDeleteConfirm = async () => {
     if (deletingMenuItem) {
-      await deleteDoc(doc(db, "menus", deletingMenuItem.id));
-      handleCloseDeleteAlert();
+      console.log(`Attempting to delete menu item: ${deletingMenuItem.id} (${deletingMenuItem.name})`);
+      try {
+        await deleteDoc(doc(db, "menus", deletingMenuItem.id));
+        console.log(`Successfully deleted menu item: ${deletingMenuItem.id}`);
+        handleCloseDeleteAlert();
+      } catch (error) {
+        console.error(`[Error] Failed to delete menu item ${deletingMenuItem.id}.`, error);
+        handleCloseDeleteAlert(); // Also close alert on failure
+      }
     }
   };
 

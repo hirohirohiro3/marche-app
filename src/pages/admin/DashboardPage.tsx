@@ -99,8 +99,15 @@ export default function DashboardPage() {
     orderId: string,
     newStatus: Order['status']
   ) => {
+    console.log(`Attempting to update order ${orderId} to status: ${newStatus}`);
     const orderRef = doc(db, 'orders', orderId);
-    await updateDoc(orderRef, { status: newStatus });
+    try {
+      await updateDoc(orderRef, { status: newStatus });
+      console.log(`Successfully updated order ${orderId} to ${newStatus}.`);
+    } catch (error) {
+      console.error(`[Error] Failed to update status for order ${orderId}.`, error);
+      // Here you could add a user-facing error notification
+    }
   };
 
   const handleEndOfDay = async () => {
