@@ -1,5 +1,5 @@
 
-import { AppBar, Toolbar, Typography, Button, Container, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
 import { Link, Outlet } from 'react-router-dom';
 
 export default function AdminLayout() {
