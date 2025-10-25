@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import {
   collection,
   onSnapshot,
@@ -32,6 +33,7 @@ import { db } from '../../firebase';
 import { Order, MenuItem } from '../../types';
 import { keyframes } from '@emotion/react';
 import ManualOrderModal from '../../components/ManualOrderModal';
+import QrCodeModal from '../../components/QrCodeModal';
 
 const flash = keyframes`
   0% { background-color: inherit; }
@@ -44,6 +46,7 @@ export default function DashboardPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isNewOrder, setIsNewOrder] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevNewOrderCount = useRef(0);
@@ -140,6 +143,10 @@ export default function DashboardPage() {
         onClose={() => setIsModalOpen(false)}
         menuItems={menuItems}
       />
+      <QrCodeModal
+        open={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
+      />
        <Dialog
         open={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
@@ -168,6 +175,14 @@ export default function DashboardPage() {
             onClick={() => setIsModalOpen(true)}
           >
             Manual Order
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<QrCodeIcon />}
+            onClick={() => setIsQrModalOpen(true)}
+            color="secondary"
+          >
+            QR Code
           </Button>
            <Button
             variant="outlined"
