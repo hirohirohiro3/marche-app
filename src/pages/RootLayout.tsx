@@ -1,8 +1,9 @@
 import { Outlet } from "react-router-dom";
 import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Container, Typography } from "@mui/material";
+import { CssBaseline, Container, Typography, Box } from "@mui/material";
 import theme from '../theme';
 import CartSummary from "../components/CartSummary";
+import Footer from '../components/Footer';
 
 export default function RootLayout() {
   // Check if the essential Firebase config is missing.
@@ -28,9 +29,12 @@ export default function RootLayout() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <main>
-        <Outlet />
-      </main>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Box component="main" sx={{ flexGrow: 1 }}>
+          <Outlet />
+        </Box>
+        <Footer />
+      </Box>
       <CartSummary />
     </ThemeProvider>
   );

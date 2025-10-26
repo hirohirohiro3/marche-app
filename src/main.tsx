@@ -13,6 +13,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import MenuListPage from './pages/MenuListPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSummaryPage from './pages/OrderSummaryPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 const router = createBrowserRouter([
   {
@@ -24,6 +26,8 @@ const router = createBrowserRouter([
       { path: 'login', element: <LoginPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'order/:orderId', element: <OrderSummaryPage /> },
+      { path: 'terms', element: <TermsPage /> },
+      { path: 'privacy', element: <PrivacyPage /> },
     ],
   },
   {
