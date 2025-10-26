@@ -19,6 +19,15 @@ export default function AdminLayout() {
           <Button color="inherit" component={Link} to="/admin/analytics">
             Analytics
           </Button>
+          <Button
+            color="inherit"
+            component={Link}
+            to="/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            顧客画面を確認
+          </Button>
         </Toolbar>
       </AppBar>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
