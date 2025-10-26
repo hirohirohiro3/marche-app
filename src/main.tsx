@@ -21,7 +21,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <RootLayout />,
     children: [
-      { index: true, element: <Navigate to="/menu" replace /> },
+      { index: true, element: <Navigate to="/login" replace /> },
       { path: 'menu', element: <MenuListPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
