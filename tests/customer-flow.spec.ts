@@ -32,8 +32,10 @@ test('Customer Order Flow', async ({ page }) => {
   // 3. At least one item exists, so proceed with the test.
   await addToCartButtons.first().click();
 
-  // Force a reload to ensure the cart state (persisted in localStorage) is reflected
-  // reliably in the UI, overcoming potential race conditions with the Zustand store in CI.
+  // Wait for a short moment to allow the async localStorage update to complete,
+  // then force a reload. This is a robust strategy to ensure the UI reflects
+  // the persisted state in a flaky CI environment.
+  await page.waitForTimeout(500);
   await page.reload();
 
   // 4. Verify cart summary and proceed to checkout
