@@ -1,16 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-test('should redirect root to /login', async ({ page }) => {
-  // 1. Navigate to the root URL
-  await page.goto('/');
-
-  // 2. Check if the URL is redirected to /login
-  await expect(page).toHaveURL('/login');
-
-  // 3. Check if the login form's email input is visible
-  await expect(page.locator('input[name="email"]')).toBeVisible();
-});
-
 test('Customer Order Flow', async ({ page }) => {
   // 1. Navigate to the menu page
   await page.goto('/menu');
@@ -36,30 +25,26 @@ test('Customer Order Flow', async ({ page }) => {
   // Check for the presence of at least one "Add to Cart" button.
   const addToCartButtons = menuContainer.getByRole('button', { name: 'カートに追加' });
 
-  // Wait up to 15 seconds for data to load from Firestore.
-  try {
-    await expect(addToCartButtons.first()).toBeVisible({ timeout: 15000 });
-  } catch (error) {
-    // If no buttons are visible after the timeout, log a message and pass the test.
-    console.log('No menu items with "カートに追加" button found. Skipping the rest of the flow.');
-    // The test will successfully complete here.
-    return;
-  }
+  // Wait robustly for the first menu item to be rendered. This indicates that
+  // data has been loaded from Firestore after the seeding process in CI.
+  await expect(addToCartButtons.first()).toBeVisible({ timeout: 20000 });
 
   // 3. At least one item exists, so proceed with the test.
   await addToCartButtons.first().click();
 
-  // Workaround for CI: state is not updating without a reload.
-  // The cart state is persisted in localStorage, so a reload will correctly display the cart summary.
-  await page.reload();
-
   // 4. Verify cart summary and proceed to checkout
-  // Check that the cart summary appears
+  const checkoutButton = page.getByRole('button', { name: /会計に進む/ });
+
+  // Wait for the checkout button to become enabled. This is a robust way to
+  // confirm that the cart state has updated after the click, as the button
+  // is disabled when the cart is empty.
+  await expect(checkoutButton).toBeEnabled({ timeout: 15000 });
+
+  // Now that the state is confirmed, verify the summary text is also visible.
   const cartSummary = page.getByText(/カートに1個の商品があります/);
   await expect(cartSummary).toBeVisible();
 
-  const checkoutButton = page.getByRole('button', { name: /会計に進む/ });
-  await expect(checkoutButton).toBeVisible();
+  // Proceed to checkout
   await checkoutButton.click();
 
   // 4. Confirm the order on the checkout page

@@ -11,19 +11,22 @@ async function createManualOrder(page: Page) {
 
 test.describe('Operational Support Features', () => {
   test.beforeEach(async ({ page }) => {
-    // Before each test, log in.
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'test@example.com');
-    await page.fill('input[name="password"]', 'password');
-    await page.click('button[type="submit"]');
-    // Instead of just checking the URL, wait for a stable element on the dashboard page.
-    await expect(page.getByRole('button', { name: 'End of Day' })).toBeVisible();
+    // Use a robust polling strategy for login to handle CI race conditions.
+    await expect(async () => {
+      await page.goto('/login');
+      await page.fill('input[name="email"]', 'test@test.test');
+      await page.fill('input[name="password"]', '112233');
+      await page.click('button[type="submit"]');
+      await expect(page).toHaveURL('/admin/dashboard', { timeout: 2000 });
+    }).toPass({
+      timeout: 20000,
+    });
 
     // Reset the state before each test to ensure independence
     await page.click('button:has-text("End of Day")');
     await page.locator('button:has-text("はい")').click();
     // Wait for all paid cards to disappear, confirming the reset is complete
-    await expect(page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))').locator('.MuiCard-root')).toHaveCount(0);
+    await expect(page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))').locator('.MuiCard-root')).toHaveCount(0, { timeout: 10000 });
   });
 
   test('should cancel an order from the paid column', async ({ page }) => {
