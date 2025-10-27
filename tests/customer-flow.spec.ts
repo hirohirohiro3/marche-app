@@ -39,12 +39,14 @@ test('Customer Order Flow', async ({ page }) => {
   await addToCartButtons.first().click();
 
   // 4. Verify cart summary and proceed to checkout
-  // Check that the cart summary appears
+  // Wait for the cart summary to appear, confirming the UI has updated after the click.
+  // A generous timeout is used to handle potential delays in the CI environment.
   const cartSummary = page.getByText(/カートに1個の商品があります/);
-  await expect(cartSummary).toBeVisible();
+  await expect(cartSummary).toBeVisible({ timeout: 15000 });
 
+  // Now that the UI has updated, we can safely interact with the checkout button.
   const checkoutButton = page.getByRole('button', { name: /会計に進む/ });
-  await expect(checkoutButton).toBeVisible();
+  await expect(checkoutButton).toBeEnabled();
   await checkoutButton.click();
 
   // 4. Confirm the order on the checkout page

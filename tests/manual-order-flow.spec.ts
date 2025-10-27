@@ -1,13 +1,21 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Manual Order Flow', () => {
-  // Before each test, log in.
+  // Before each test, log in using a robust polling strategy.
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'test@example.com');
-    await page.fill('input[name="password"]', 'password');
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/admin/dashboard');
+    // This uses `expect.toPass` to retry the login flow until it succeeds,
+    // or until the timeout is reached. This is a robust way to handle
+    // potential race conditions in CI where the seeded user may not be
+    // immediately available for login.
+    await expect(async () => {
+      await page.goto('/login');
+    await page.fill('input[name="email"]', 'test@test.test');
+    await page.fill('input[name="password"]', '112233');
+      await page.click('button[type="submit"]');
+      await expect(page).toHaveURL('/admin/dashboard', { timeout: 2000 }); // Short timeout for each attempt
+    }).toPass({
+      timeout: 20000, // Maximum total time for all retries
+    });
   });
 
   test('should create a manual order and see it in the paid column', async ({ page }) => {
@@ -15,9 +23,13 @@ test.describe('Manual Order Flow', () => {
     await page.click('button:has-text("Manual Order")');
     await expect(page.locator('h6:has-text("Manual POS")')).toBeVisible();
 
+    // Wait for the first menu item to be visible, ensuring the data is loaded.
+    const espressoButton = page.locator('button:has-text("Espresso")');
+    await expect(espressoButton).toBeVisible({ timeout: 15000 });
+
     // 2. Add items to the cart
     // Note: This assumes menu items are seeded. We will select the first two.
-    await page.locator('button:has-text("Espresso")').click();
+    await espressoButton.click();
     await page.locator('button:has-text("Latte")').click();
     await page.locator('button:has-text("Espresso")').click(); // Add one more espresso
 

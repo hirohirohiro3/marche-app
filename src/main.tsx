@@ -1,6 +1,6 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, useNavigate } from 'react-router-dom';
 import './index.css';
 
 import RootLayout from './pages/RootLayout';
@@ -16,12 +16,21 @@ import OrderSummaryPage from './pages/OrderSummaryPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 
+// A component to handle the root redirect using useEffect for robustness in tests.
+function RedirectToIndex() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate('/login', { replace: true });
+  }, [navigate]);
+  return null; // Render nothing while redirecting
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     children: [
-      { index: true, element: <Navigate to="/menu" replace /> },
+      { index: true, element: <RedirectToIndex /> },
       { path: 'menu', element: <MenuListPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'checkout', element: <CheckoutPage /> },

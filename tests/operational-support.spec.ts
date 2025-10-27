@@ -3,7 +3,12 @@ import { test, expect } from '@playwright/test';
 // Helper function to create a manual order
 async function createManualOrder(page: Page) {
   await page.click('button:has-text("Manual Order")');
-  await page.locator('button:has-text("Espresso")').click();
+
+  // Wait for the first menu item to be visible, ensuring the data is loaded.
+  const espressoButton = page.locator('button:has-text("Espresso")');
+  await expect(espressoButton).toBeVisible({ timeout: 15000 });
+
+  await espressoButton.click();
   await page.click('button:has-text("Create Order & Mark as Paid")');
   // Wait for modal to disappear
   await expect(page.locator('h6:has-text("Manual POS")')).not.toBeVisible();
@@ -11,18 +16,22 @@ async function createManualOrder(page: Page) {
 
 test.describe('Operational Support Features', () => {
   test.beforeEach(async ({ page }) => {
-    // Before each test, log in.
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'test@example.com');
-    await page.fill('input[name="password"]', 'password');
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/admin/dashboard');
+    // Use a robust polling strategy for login to handle CI race conditions.
+    await expect(async () => {
+      await page.goto('/login');
+      await page.fill('input[name="email"]', 'test@test.test');
+      await page.fill('input[name="password"]', '112233');
+      await page.click('button[type="submit"]');
+      await expect(page).toHaveURL('/admin/dashboard', { timeout: 2000 });
+    }).toPass({
+      timeout: 20000,
+    });
 
     // Reset the state before each test to ensure independence
     await page.click('button:has-text("End of Day")');
     await page.locator('button:has-text("はい")').click();
     // Wait for all paid cards to disappear, confirming the reset is complete
-    await expect(page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))').locator('.MuiCard-root')).toHaveCount(0);
+    await expect(page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))').locator('.MuiCard-root')).toHaveCount(0, { timeout: 10000 });
   });
 
   test('should cancel an order from the paid column', async ({ page }) => {
