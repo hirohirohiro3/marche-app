@@ -3,7 +3,12 @@ import { test, expect } from '@playwright/test';
 // Helper function to create a manual order
 async function createManualOrder(page: Page) {
   await page.click('button:has-text("Manual Order")');
-  await page.locator('button:has-text("Espresso")').click();
+
+  // Wait for the first menu item to be visible, ensuring the data is loaded.
+  const espressoButton = page.locator('button:has-text("Espresso")');
+  await expect(espressoButton).toBeVisible({ timeout: 15000 });
+
+  await espressoButton.click();
   await page.click('button:has-text("Create Order & Mark as Paid")');
   // Wait for modal to disappear
   await expect(page.locator('h6:has-text("Manual POS")')).not.toBeVisible();

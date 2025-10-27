@@ -23,9 +23,13 @@ test.describe('Manual Order Flow', () => {
     await page.click('button:has-text("Manual Order")');
     await expect(page.locator('h6:has-text("Manual POS")')).toBeVisible();
 
+    // Wait for the first menu item to be visible, ensuring the data is loaded.
+    const espressoButton = page.locator('button:has-text("Espresso")');
+    await expect(espressoButton).toBeVisible({ timeout: 15000 });
+
     // 2. Add items to the cart
     // Note: This assumes menu items are seeded. We will select the first two.
-    await page.locator('button:has-text("Espresso")').click();
+    await espressoButton.click();
     await page.locator('button:has-text("Latte")').click();
     await page.locator('button:has-text("Espresso")').click(); // Add one more espresso
 
