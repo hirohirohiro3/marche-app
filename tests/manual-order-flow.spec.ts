@@ -7,7 +7,8 @@ test.describe('Manual Order Flow', () => {
     await page.fill('input[name="email"]', 'test@example.com');
     await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/admin/dashboard');
+    // Instead of just checking the URL, wait for a stable element on the dashboard page.
+    await expect(page.getByRole('button', { name: 'End of Day' })).toBeVisible();
   });
 
   test('should create a manual order and see it in the paid column', async ({ page }) => {

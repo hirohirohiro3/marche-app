@@ -16,7 +16,8 @@ test.describe('Operational Support Features', () => {
     await page.fill('input[name="email"]', 'test@example.com');
     await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/admin/dashboard');
+    // Instead of just checking the URL, wait for a stable element on the dashboard page.
+    await expect(page.getByRole('button', { name: 'End of Day' })).toBeVisible();
 
     // Reset the state before each test to ensure independence
     await page.click('button:has-text("End of Day")');

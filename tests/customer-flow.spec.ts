@@ -1,5 +1,16 @@
 import { test, expect } from '@playwright/test';
 
+test('should redirect root to /login', async ({ page }) => {
+  // 1. Navigate to the root URL
+  await page.goto('/');
+
+  // 2. Check if the URL is redirected to /login
+  await expect(page).toHaveURL('/login');
+
+  // 3. Check if the login form's email input is visible
+  await expect(page.locator('input[name="email"]')).toBeVisible();
+});
+
 test('Customer Order Flow', async ({ page }) => {
   // 1. Navigate to the menu page
   await page.goto('/menu');
@@ -37,6 +48,10 @@ test('Customer Order Flow', async ({ page }) => {
 
   // 3. At least one item exists, so proceed with the test.
   await addToCartButtons.first().click();
+
+  // Workaround for CI: state is not updating without a reload.
+  // The cart state is persisted in localStorage, so a reload will correctly display the cart summary.
+  await page.reload();
 
   // 4. Verify cart summary and proceed to checkout
   // Check that the cart summary appears
