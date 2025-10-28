@@ -167,14 +167,14 @@ export default function DashboardPage() {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
           <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
-            Order Dashboard
+            注文ダッシュボード
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddCircleOutlineIcon />}
             onClick={() => setIsModalOpen(true)}
           >
-            Manual Order
+            手動注文
           </Button>
           <Button
             variant="contained"
@@ -182,7 +182,7 @@ export default function DashboardPage() {
             onClick={() => setIsQrModalOpen(true)}
             color="secondary"
           >
-            QR Code
+            QRコード表示
           </Button>
            <Button
             variant="outlined"
@@ -190,7 +190,7 @@ export default function DashboardPage() {
             startIcon={<PowerSettingsNewIcon />}
             onClick={() => setIsConfirmOpen(true)}
           >
-            End of Day
+            営業終了
           </Button>
         </Box>
         <Grid container spacing={3}>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
               animation: isNewOrder ? `${flash} 2s ease-out` : 'none',
             }}
           >
-            <Typography variant="h6">New</Typography>
+            <Typography variant="h6">新規</Typography>
             {filterOrdersByStatus('new').map((order) => (
               <Card key={order.id} sx={{ mt: 2 }}>
                 <CardContent>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                   ))}
                   <Box sx={{ mt: 1 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Total: ¥{order.totalPrice}
+                      合計: ¥{order.totalPrice}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -223,14 +223,14 @@ export default function DashboardPage() {
                     size="small"
                     onClick={() => handleUpdateStatus(order.id, 'paid')}
                   >
-                    Mark as Paid
+                    支払い済みにする
                   </Button>
                   <Button
                     size="small"
                     color="error"
                     onClick={() => handleUpdateStatus(order.id, 'cancelled')}
                   >
-                    Cancel
+                    キャンセル
                   </Button>
                 </CardActions>
               </Card>
@@ -240,7 +240,7 @@ export default function DashboardPage() {
         {/* Paid Orders Column */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6">Paid</Typography>
+            <Typography variant="h6">支払い済み</Typography>
             {filterOrdersByStatus('paid').map((order) => (
               <Card key={order.id} sx={{ mt: 2 }}>
                 <CardContent>
@@ -251,7 +251,7 @@ export default function DashboardPage() {
                     </Typography>
                   ))}
                    <Typography variant="body2" color="text.secondary">
-                    Total: ¥{order.totalPrice}
+                    合計: ¥{order.totalPrice}
                   </Typography>
                 </CardContent>
                 <CardActions>
@@ -259,14 +259,14 @@ export default function DashboardPage() {
                     size="small"
                     onClick={() => handleUpdateStatus(order.id, 'completed')}
                   >
-                    Mark as Completed
+                    完了にする
                   </Button>
                    <Button
                     size="small"
                     color="error"
                     onClick={() => handleUpdateStatus(order.id, 'cancelled')}
                   >
-                    Cancel
+                    キャンセル
                   </Button>
                 </CardActions>
               </Card>
@@ -276,7 +276,7 @@ export default function DashboardPage() {
         {/* Completed Orders Column */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6">Completed</Typography>
+            <Typography variant="h6">完了済み</Typography>
             {filterOrdersByStatus('completed').map((order) => (
               <Card key={order.id} sx={{ mt: 2 }}>
                 <CardContent>
@@ -287,7 +287,7 @@ export default function DashboardPage() {
                     </Typography>
                   ))}
                    <Typography variant="body2" color="text.secondary">
-                    Total: ¥{order.totalPrice}
+                    合計: ¥{order.totalPrice}
                   </Typography>
                 </CardContent>
               </Card>

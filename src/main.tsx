@@ -1,6 +1,6 @@
 import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, useNavigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, useNavigate, Navigate } from 'react-router-dom';
 import './index.css';
 
 import RootLayout from './pages/RootLayout';
