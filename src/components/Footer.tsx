@@ -27,6 +27,11 @@ export default function Footer() {
             プライバシーポリシー
           </Link>
         </Typography>
+        <Typography variant="body2" color="text.secondary">
+          <Link color="inherit" component={RouterLink} to="/contact">
+            お問い合わせ
+          </Link>
+        </Typography>
       </Container>
     </Box>
   );
