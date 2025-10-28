@@ -8,16 +8,16 @@ export default function AdminLayout() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Marche Admin
+            マルシェ管理画面
           </Typography>
           <Button color="inherit" component={Link} to="/admin/dashboard">
-            Dashboard
+            ダッシュボード
           </Button>
           <Button color="inherit" component={Link} to="/admin/menu">
-            Menu
+            メニュー管理
           </Button>
           <Button color="inherit" component={Link} to="/admin/analytics">
-            Analytics
+            売上分析
           </Button>
           <Button
             color="inherit"
