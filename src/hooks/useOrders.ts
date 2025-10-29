@@ -1,0 +1,95 @@
+import { useEffect, useState, useRef } from 'react';
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  updateDoc,
+  getDocs,
+  runTransaction,
+  where,
+} from 'firebase/firestore';
+import { db } from '../firebase';
+import { Order } from '../types';
+
+export const useOrders = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isNewOrder, setIsNewOrder] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const prevNewOrderCount = useRef(0);
+
+  useEffect(() => {
+    // Note: A specific sound file is not required. A generic browser sound is sufficient.
+    audioRef.current = new Audio(
+      'data:audio/wav;base64,UklGRigAAABXQVZFZm1tIBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
+    );
+  }, []);
+
+  useEffect(() => {
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const ordersData = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() } as Order))
+        .filter((order) => order.status !== 'cancelled');
+      setOrders(ordersData);
+
+      const newOrderCount = ordersData.filter((o) => o.status === 'new').length;
+      if (newOrderCount > prevNewOrderCount.current) {
+        setIsNewOrder(true);
+        audioRef.current?.play();
+        setTimeout(() => setIsNewOrder(false), 2000); // Animation duration
+      }
+      prevNewOrderCount.current = newOrderCount;
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const filterOrdersByStatus = (status: Order['status']) =>
+    orders.filter((order) => order.status === status);
+
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus: Order['status']
+  ) => {
+    const orderRef = doc(db, 'orders', orderId);
+    try {
+      await updateDoc(orderRef, { status: newStatus });
+      console.log(`Order ${orderId} status updated to ${newStatus}`);
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+    }
+  };
+
+  const handleEndOfDay = async () => {
+    try {
+      const activeOrdersQuery = query(
+        collection(db, 'orders'),
+        where('status', 'in', ['new', 'paid'])
+      );
+      const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
+      const settingsRef = doc(db, 'system_settings', 'single_doc');
+
+      await runTransaction(db, async (transaction) => {
+        activeOrdersSnapshot.forEach((orderDoc) => {
+          transaction.update(orderDoc.ref, { status: 'completed' });
+        });
+        transaction.update(settingsRef, {
+          nextQrOrderNumber: 101,
+          nextManualOrderNumber: 1,
+        });
+      });
+      console.log('End of day process completed successfully.');
+    } catch (error) {
+      console.error('Failed to process end of day:', error);
+    }
+  };
+
+  return {
+    orders,
+    isNewOrder,
+    filterOrdersByStatus,
+    updateOrderStatus,
+    handleEndOfDay,
+  };
+};

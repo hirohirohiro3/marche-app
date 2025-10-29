@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Button,
   Container,
@@ -15,81 +15,28 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   Box,
   CircularProgress,
   Switch,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { auth, db } from "../../../firebase";
+import { auth } from "../../../firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import {
-  collection,
-  onSnapshot,
-  query,
-  orderBy,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-const menuFormSchema = z.object({
-  name: z.string().min(1, "商品名は必須です"),
-  price: z.string().min(1, "価格は必須です"),
-  category: z.string().min(1, "カテゴリは必須です"),
-  description: z.string().optional(),
-  sortOrder: z.string().optional(),
-});
-type MenuFormValues = z.infer<typeof menuFormSchema>;
-
+import { useMenu, MenuFormValues } from "../../../hooks/useMenu";
 import { MenuItem } from "../../../types";
+import MenuFormDialog from "../../../components/MenuFormDialog";
 
 export default function MenuAdminPage() {
   const navigate = useNavigate();
-  const [menus, setMenus] = useState<MenuItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { menus, loading, saveMenuItem, deleteMenuItem, toggleSoldOut } = useMenu();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [deletingMenuItem, setDeletingMenuItem] = useState<MenuItem | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<MenuFormValues>({
-    resolver: zodResolver(menuFormSchema),
-  });
-
-  useEffect(() => {
-    const q = query(collection(db, "menus"), orderBy("sortOrder", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const menusData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as MenuItem[];
-      setMenus(menusData);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleOpenForm = (menuItem: MenuItem | null) => {
     setEditingMenuItem(menuItem);
-    if (menuItem) {
-      reset({ ...menuItem, price: String(menuItem.price), sortOrder: String(menuItem.sortOrder) });
-    } else {
-      reset({ name: "", price: "0", category: "", description: "", sortOrder: "0" });
-    }
-    setImageFile(null);
     setIsFormOpen(true);
   };
 
@@ -98,32 +45,9 @@ export default function MenuAdminPage() {
     setEditingMenuItem(null);
   };
 
-  const handleFormSubmit = async (values: MenuFormValues) => {
-    try {
-      let imageUrl = editingMenuItem?.imageUrl || "";
-      if (imageFile) {
-        const storage = getStorage();
-        const storageRef = ref(storage, `menu-images/${Date.now()}_${imageFile.name}`);
-        const snapshot = await uploadBytes(storageRef, imageFile);
-        imageUrl = await getDownloadURL(snapshot.ref);
-      }
-
-      const dataToSave = {
-        ...values,
-        price: parseInt(values.price, 10) || 0,
-        sortOrder: parseInt(values.sortOrder || "0", 10) || 0,
-        imageUrl,
-      };
-
-      if (editingMenuItem) {
-        await updateDoc(doc(db, "menus", editingMenuItem.id), dataToSave);
-      } else {
-        await addDoc(collection(db, "menus"), {...dataToSave, isSoldOut: false});
-      }
-      handleCloseForm();
-    } catch (error) {
-      console.error("Failed to save menu item:", error);
-    }
+  const handleFormSubmit = async (values: MenuFormValues, imageFile: File | null) => {
+    await saveMenuItem(values, imageFile, editingMenuItem);
+    handleCloseForm();
   };
 
   const handleOpenDeleteAlert = (menuItem: MenuItem) => {
@@ -138,16 +62,9 @@ export default function MenuAdminPage() {
 
   const handleDeleteConfirm = async () => {
     if (deletingMenuItem) {
-      await deleteDoc(doc(db, "menus", deletingMenuItem.id));
+      await deleteMenuItem(deletingMenuItem.id);
       handleCloseDeleteAlert();
     }
-  };
-
-  const handleToggleSoldOut = async (item: MenuItem) => {
-    const menuRef = doc(db, "menus", item.id);
-    await updateDoc(menuRef, {
-      isSoldOut: !item.isSoldOut,
-    });
   };
 
   const handleLogout = () => {
@@ -193,7 +110,7 @@ export default function MenuAdminPage() {
                   <TableCell>
                     <Switch
                       checked={row.isSoldOut}
-                      onChange={() => handleToggleSoldOut(row)}
+                      onChange={() => toggleSoldOut(row)}
                     />
                   </TableCell>
                   <TableCell align="center">
@@ -207,30 +124,12 @@ export default function MenuAdminPage() {
         </TableContainer>
       )}
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={isFormOpen} onClose={handleCloseForm}>
-        <DialogTitle>{editingMenuItem ? "メニューを編集" : "メニューを追加"}</DialogTitle>
-        <DialogContent>
-          <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
-            <TextField {...register("name")} label="商品名" fullWidth margin="dense" error={!!errors.name} helperText={errors.name?.message} />
-            <TextField {...register("price")} label="価格" type="number" fullWidth margin="dense" error={!!errors.price} helperText={errors.price?.message} />
-            <TextField {...register("category")} label="カテゴリ" fullWidth margin="dense" error={!!errors.category} helperText={errors.category?.message} />
-            <TextField {...register("description")} label="商品説明" multiline rows={3} fullWidth margin="dense" />
-            <TextField {...register("sortOrder")} label="表示順" type="number" fullWidth margin="dense" />
-            <Button variant="contained" component="label" sx={{mt: 2}}>
-              画像を選択
-              <input type="file" hidden accept="image/*" onChange={(e) => setImageFile(e.target.files ? e.target.files[0] : null)} />
-            </Button>
-            {imageFile && <Typography sx={{ml: 1, display: 'inline'}}>{imageFile.name}</Typography>}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseForm}>キャンセル</Button>
-          <Button onClick={handleSubmit(handleFormSubmit)} variant="contained" disabled={isSubmitting}>
-            {isSubmitting ? "保存中..." : "保存"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <MenuFormDialog
+        open={isFormOpen}
+        onClose={handleCloseForm}
+        onSubmit={handleFormSubmit}
+        editingMenuItem={editingMenuItem}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isAlertOpen} onClose={handleCloseDeleteAlert}>

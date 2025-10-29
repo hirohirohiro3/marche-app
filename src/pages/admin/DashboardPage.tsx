@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Container,
   Grid,
@@ -20,20 +20,17 @@ import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import {
   collection,
-  onSnapshot,
   query,
   orderBy,
-  doc,
-  updateDoc,
   getDocs,
-  runTransaction,
-  where,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Order, MenuItem } from '../../types';
+import { MenuItem } from '../../types';
 import { keyframes } from '@emotion/react';
 import ManualOrderModal from '../../components/ManualOrderModal';
 import QrCodeModal from '../../components/QrCodeModal';
+import { useOrders } from '../../hooks/useOrders';
+import OrderColumn from '../../components/OrderColumn';
 
 const flash = keyframes`
   0% { background-color: inherit; }
@@ -42,21 +39,16 @@ const flash = keyframes`
 `;
 
 export default function DashboardPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const {
+    isNewOrder,
+    filterOrdersByStatus,
+    updateOrderStatus,
+    handleEndOfDay: processEndOfDay,
+  } = useOrders();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [isNewOrder, setIsNewOrder] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const prevNewOrderCount = useRef(0);
-
-  useEffect(() => {
-    // Note: A specific sound file is not required. A generic browser sound is sufficient.
-    audioRef.current = new Audio(
-      'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
-    );
-  }, []);
 
   // Fetch menu items
   useEffect(() => {
@@ -71,68 +63,9 @@ export default function DashboardPage() {
     fetchMenuItems();
   }, []);
 
-  useEffect(() => {
-    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ordersData = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() } as Order))
-        .filter((order) => order.status !== 'cancelled');
-      setOrders(ordersData);
-
-      const newOrderCount = ordersData.filter(o => o.status === 'new').length;
-      if (newOrderCount > prevNewOrderCount.current) {
-        setIsNewOrder(true);
-        audioRef.current?.play();
-        setTimeout(() => setIsNewOrder(false), 2000); // Animation duration
-      }
-      prevNewOrderCount.current = newOrderCount;
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const filterOrdersByStatus = (status: Order['status']) =>
-    orders.filter((order) => order.status === status);
-
-  const handleUpdateStatus = async (
-    orderId: string,
-    newStatus: Order['status']
-  ) => {
-    const orderRef = doc(db, 'orders', orderId);
-    await updateDoc(orderRef, { status: newStatus });
-  };
-
-  const handleEndOfDay = async () => {
+  const handleConfirmEndOfDay = async () => {
+    await processEndOfDay();
     setIsConfirmOpen(false);
-    try {
-      // Find all active orders
-      const activeOrdersQuery = query(
-        collection(db, 'orders'),
-        where('status', 'in', ['new', 'paid'])
-      );
-      const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
-
-      // Reset numbers and mark orders as completed in a single transaction/batch
-      const settingsRef = doc(db, 'system_settings', 'single_doc');
-
-      // Using a transaction to ensure atomicity
-      await runTransaction(db, async (transaction) => {
-        // Mark all active orders as completed
-        activeOrdersSnapshot.forEach((orderDoc) => {
-          transaction.update(orderDoc.ref, { status: 'completed' });
-        });
-
-        // Reset the order numbers
-        transaction.update(settingsRef, {
-          nextQrOrderNumber: 101,
-          nextManualOrderNumber: 1,
-        });
-      });
-
-      console.log('End of day process completed successfully.');
-    } catch (error) {
-      console.error('Failed to process end of day:', error);
-      // Optionally, add an error notification
-    }
   };
 
 
@@ -159,7 +92,7 @@ export default function DashboardPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsConfirmOpen(false)}>いいえ</Button>
-          <Button onClick={handleEndOfDay} autoFocus>
+          <Button onClick={handleConfirmEndOfDay} autoFocus>
             はい
           </Button>
         </DialogActions>
@@ -194,107 +127,29 @@ export default function DashboardPage() {
           </Button>
         </Box>
         <Grid container spacing={3}>
-          {/* New Orders Column */}
           <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 2,
-              animation: isNewOrder ? `${flash} 2s ease-out` : 'none',
-            }}
-          >
-            <Typography variant="h6">新規</Typography>
-            {filterOrdersByStatus('new').map((order) => (
-              <Card key={order.id} sx={{ mt: 2 }}>
-                <CardContent>
-                  <Typography variant="h5">#{order.orderNumber}</Typography>
-                  {order.items.map((item, index) => (
-                    <Typography key={index}>
-                      {item.name} x {item.quantity}
-                    </Typography>
-                  ))}
-                  <Box sx={{ mt: 1 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      合計: ¥{order.totalPrice}
-                    </Typography>
-                  </Box>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    onClick={() => handleUpdateStatus(order.id, 'paid')}
-                  >
-                    支払い済みにする
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={() => handleUpdateStatus(order.id, 'cancelled')}
-                  >
-                    キャンセル
-                  </Button>
-                </CardActions>
-              </Card>
-            ))}
-          </Paper>
+            <OrderColumn
+              title="新規"
+              orders={filterOrdersByStatus('new')}
+              onUpdateStatus={updateOrderStatus}
+              animation={isNewOrder ? `${flash} 2s ease-out` : 'none'}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <OrderColumn
+              title="支払い済み"
+              orders={filterOrdersByStatus('paid')}
+              onUpdateStatus={updateOrderStatus}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <OrderColumn
+              title="完了済み"
+              orders={filterOrdersByStatus('completed')}
+              onUpdateStatus={updateOrderStatus}
+            />
+          </Grid>
         </Grid>
-        {/* Paid Orders Column */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6">支払い済み</Typography>
-            {filterOrdersByStatus('paid').map((order) => (
-              <Card key={order.id} sx={{ mt: 2 }}>
-                <CardContent>
-                  <Typography variant="h5">#{order.orderNumber}</Typography>
-                  {order.items.map((item, index) => (
-                    <Typography key={index}>
-                      {item.name} x {item.quantity}
-                    </Typography>
-                  ))}
-                   <Typography variant="body2" color="text.secondary">
-                    合計: ¥{order.totalPrice}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    onClick={() => handleUpdateStatus(order.id, 'completed')}
-                  >
-                    完了にする
-                  </Button>
-                   <Button
-                    size="small"
-                    color="error"
-                    onClick={() => handleUpdateStatus(order.id, 'cancelled')}
-                  >
-                    キャンセル
-                  </Button>
-                </CardActions>
-              </Card>
-            ))}
-          </Paper>
-        </Grid>
-        {/* Completed Orders Column */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6">完了済み</Typography>
-            {filterOrdersByStatus('completed').map((order) => (
-              <Card key={order.id} sx={{ mt: 2 }}>
-                <CardContent>
-                  <Typography variant="h5">#{order.orderNumber}</Typography>
-                  {order.items.map((item, index) => (
-                    <Typography key={index}>
-                      {item.name} x {item.quantity}
-                    </Typography>
-                  ))}
-                   <Typography variant="body2" color="text.secondary">
-                    合計: ¥{order.totalPrice}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))}
-          </Paper>
-        </Grid>
-      </Grid>
     </Container>
     </>
   );
