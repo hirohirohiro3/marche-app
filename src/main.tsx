@@ -15,7 +15,6 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderSummaryPage from './pages/OrderSummaryPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
-import ContactPage from './pages/ContactPage';
 
 // A component to handle the root redirect using useEffect for robustness in tests.
 function RedirectToIndex() {
@@ -38,7 +37,6 @@ const router = createBrowserRouter([
       { path: 'order/:orderId', element: <OrderSummaryPage /> },
       { path: 'terms', element: <TermsPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
-      { path: 'contact', element: <ContactPage /> },
     ],
   },
   {
