@@ -100,7 +100,7 @@ export default function PrivacyPage() {
             <List sx={{ listStyleType: 'decimal', pl: 4, pt: 1 }}>
               {section.points.map((point, pIndex) => (
                 <ListItem key={pIndex} sx={{ display: 'list-item', p: 0, pt: 0.5 }}>
-                  <ListItemText primary={point.primary} secondary={point.secondary || undefined} />
+                  <ListItemText primary={point.primary} secondary={'secondary' in point ? point.secondary : undefined} />
                 </ListItem>
               ))}
             </List>
