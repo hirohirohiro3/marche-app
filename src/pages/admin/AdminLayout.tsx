@@ -22,7 +22,7 @@ export default function AdminLayout() {
           <Button
             color="inherit"
             component={Link}
-            to="/"
+            to="/menu"
             target="_blank"
             rel="noopener noreferrer"
           >
