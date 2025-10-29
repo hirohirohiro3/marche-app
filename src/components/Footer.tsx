@@ -28,7 +28,7 @@ export default function Footer() {
           </Link>
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          <Link color="inherit" component={RouterLink} to="/contact">
+          <Link color="inherit" href="https://docs.google.com/forms/d/e/1FAIpQLSdnG4UzAHJamOHofSIvkcd7nmOJAHadO2aEupUOiDW6YwdELQ/viewform?usp=sharing&ouid=104613107059535548763" target="_blank" rel="noopener noreferrer">
             お問い合わせ
           </Link>
         </Typography>
