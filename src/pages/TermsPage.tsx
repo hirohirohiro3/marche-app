@@ -43,15 +43,15 @@ const sections = [
   {
     title: '第5条 (本サービスの提供の停止等)',
     points: [
-      <>
-        当方は、以下のいずれかの事由があると判断した場合、利用者に事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。
-        <List dense sx={{ pl: 2 }}>
-          <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="本サービスにかかるシステムの保守点検または更新を行う場合" /></ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="地震、落雷、火災、停電または天災などの不可抗力により、本サービスの提供が困難となった場合" /></ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="コンピュータまたは通信回線等が事故により停止した場合" /></ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="その他、当方が本サービスの提供が困難と判断した場合" /></ListItem>
-        </List>
-      </>,
+      {
+        primary: '当方は、以下のいずれかの事由があると判断した場合、利用者に事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。',
+        subPoints: [
+          '本サービスにかかるシステムの保守点検または更新を行う場合',
+          '地震、落雷、火災、停電または天災などの不可抗力により、本サービスの提供が困難となった場合',
+          'コンピュータまたは通信回線等が事故により停止した場合',
+          'その他、当方が本サービスの提供が困難と判断した場合',
+        ],
+      },
       '当方は、本サービスの提供の停止または中断により、利用者または第三者が被ったいかなる不利益または損害についても、理由を問わず一切の責任を負わないものとします。',
     ],
   },
@@ -101,7 +101,7 @@ const sections = [
 export default function TermsPage() {
   return (
     <Container sx={{ py: 4, color: 'text.primary' }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h3" component="h1" gutterBottom>
         マルシェオーダー 利用規約
       </Typography>
 
@@ -113,9 +113,24 @@ export default function TermsPage() {
           {section.description && <Typography sx={{ mt: 2, mb: 1 }}>{section.description}</Typography>}
           <List sx={{ listStyleType: 'decimal', pl: 4 }}>
             {section.points.map((point, pIndex) => (
-              <ListItem key={pIndex} sx={{ display: 'list-item', p: 0 }}>
-                <ListItemText primary={point} />
-              </ListItem>
+              typeof point === 'string' ? (
+                <ListItem key={pIndex} sx={{ display: 'list-item', p: 0, pt: 0.5 }}>
+                  <ListItemText primary={point} />
+                </ListItem>
+              ) : (
+                <ListItem key={pIndex} sx={{ display: 'list-item', p: 0, pt: 0.5, flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <ListItemText primary={point.primary} sx={{ mb: 1 }} />
+                  {point.subPoints && (
+                    <List sx={{ listStyleType: 'decimal', pl: 4, width: '100%' }}>
+                      {point.subPoints.map((subPoint, sIndex) => (
+                        <ListItem key={sIndex} sx={{ display: 'list-item', p: 0, pt: 0.5 }}>
+                          <ListItemText primary={subPoint} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                </ListItem>
+              )
             ))}
           </List>
         </Box>
