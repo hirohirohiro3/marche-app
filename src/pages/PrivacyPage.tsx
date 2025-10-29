@@ -9,52 +9,40 @@ const sections = [
   },
   {
     title: '収集する利用者情報及び収集方法',
-    content: [
-      '本サービスにおいて当方が収集する利用者情報は、以下のとおりです。',
-      <List key="list-1" dense sx={{ pl: 2, listStyleType: 'decimal' }}>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}>
-          <ListItemText
-            primary="端末情報及びアクセスログ情報"
-            secondary="利用者が本サービスを利用する際、使用している端末固有の情報（例：ユーザーエージェント、IPアドレス）やアクセスログ（アクセス日時、利用機能等）を自動的に取得する場合があります。"
-          />
-        </ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}>
-          <ListItemText
-            primary="顧客識別ID (uid)"
-            secondary="利用者が本サービスを通じて注文を行った場合、注文状況を追跡・表示するために、利用者のブラウザのLocalStorageに顧客識別ID (uid) を保存します。このIDは個人を直接特定するものではありませんが、利用者のデバイスに紐づく情報となります。"
-          />
-        </ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}>
-          <ListItemText
-            primary="お問い合わせフォームを通じて提供される情報"
-            secondary="利用者が本サービス内のお問い合わせフォームを通じて連絡を行う場合、任意で提供される氏名、返信用メールアドレス、お問い合わせ内容に含まれる情報等を収集します。"
-          />
-        </ListItem>
-      </List>
+    description: '本サービスにおいて当方が収集する利用者情報は、以下のとおりです。',
+    points: [
+      {
+        primary: '端末情報及びアクセスログ情報',
+        secondary: '利用者が本サービスを利用する際、使用している端末固有の情報（例：ユーザーエージェント、IPアドレス）やアクセスログ（アクセス日時、利用機能等）を自動的に取得する場合があります。',
+      },
+      {
+        primary: '顧客識別ID (uid)',
+        secondary: '利用者が本サービスを通じて注文を行った場合、注文状況を追跡・表示するために、利用者のブラウザのLocalStorageに顧客識別ID (uid) を保存します。このIDは個人を直接特定するものではありませんが、利用者のデバイスに紐づく情報となります。',
+      },
+      {
+        primary: 'お問い合わせフォームを通じて提供される情報',
+        secondary: '利用者が本サービス内のお問い合わせフォームを通じて連絡を行う場合、任意で提供される氏名、返信用メールアドレス、お問い合わせ内容に含まれる情報等を収集します。',
+      },
     ],
   },
   {
     title: '利用目的',
-    content: [
-      '当方は、収集した利用者情報を以下の目的で利用します。',
-      <List key="list-2" dense sx={{ pl: 2, listStyleType: 'decimal' }}>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="本サービスの提供、維持、改善のため（例：注文処理、注文状況の表示）" /></ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="本サービスの利用状況の分析のため" /></ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="本サービスに関するお問い合わせ等への対応のため（お問い合わせフォームからの連絡への返信を含みます）" /></ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="本規約等に違反する行為に対する対応のため" /></ListItem>
-      </List>
+    description: '当方は、収集した利用者情報を以下の目的で利用します。',
+    points: [
+      { primary: '本サービスの提供、維持、改善のため（例：注文処理、注文状況の表示）' },
+      { primary: '本サービスの利用状況の分析のため' },
+      { primary: '本サービスに関するお問い合わせ等への対応のため（お問い合わせフォームからの連絡への返信を含みます）' },
+      { primary: '本規約等に違反する行為に対する対応のため' },
     ],
   },
   {
     title: '個人情報の第三者提供',
-    content: [
-      '当方は、利用者情報のうち、個人情報保護法上の「個人情報」に該当するものについて、あらかじめ利用者の同意を得ることなく、第三者に提供しません。ただし、次に掲げる場合はこの限りではありません。',
-      <List key="list-3" dense sx={{ pl: 2, listStyleType: 'decimal' }}>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="法令に基づく場合" /></ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき" /></ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合であって、本人の同意を得ることが困難であるとき" /></ListItem>
-        <ListItem sx={{ display: 'list-item', py: 0.5 }}><ListItemText primary="国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合であって、本人の同意を得ることにより当該事務の遂行に支障を及ぼすおそれがあるとき" /></ListItem>
-      </List>
+    description: '当方は、利用者情報のうち、個人情報保護法上の「個人情報」に該当するものについて、あらかじめ利用者の同意を得ることなく、第三者に提供しません。ただし、次に掲げる場合はこの限りではありません。',
+    points: [
+      { primary: '法令に基づく場合' },
+      { primary: '人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき' },
+      { primary: '公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合であって、本人の同意を得ることが困難であるとき' },
+      { primary: '国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合であって、本人の同意を得ることにより当該事務の遂行に支障を及ぼすおそれがあるとき' },
     ],
   },
   {
@@ -92,7 +80,7 @@ const sections = [
 export default function PrivacyPage() {
   return (
     <Container sx={{ py: 4, color: 'text.primary' }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h3" component="h1" gutterBottom>
         マルシェオーダー プライバシーポリシー
       </Typography>
 
@@ -101,11 +89,22 @@ export default function PrivacyPage() {
           <Typography variant="h5" component="h2" gutterBottom>
             {section.title}
           </Typography>
-          {section.content.map((item, cIndex) => (
-            typeof item === 'string' ?
-            <Typography key={cIndex} sx={{ mt: 2 }}>{item}</Typography> :
-            <Box key={cIndex} sx={{ mt: 1 }}>{item}</Box>
+
+          {section.description && <Typography sx={{ mt: 2 }}>{section.description}</Typography>}
+
+          {section.content && section.content.map((item, cIndex) => (
+            <Typography key={cIndex} sx={{ mt: 2 }}>{item}</Typography>
           ))}
+
+          {section.points && (
+            <List sx={{ listStyleType: 'decimal', pl: 4, pt: 1 }}>
+              {section.points.map((point, pIndex) => (
+                <ListItem key={pIndex} sx={{ display: 'list-item', p: 0, pt: 0.5 }}>
+                  <ListItemText primary={point.primary} secondary={'secondary' in point ? point.secondary : undefined} />
+                </ListItem>
+              ))}
+            </List>
+          )}
         </Box>
       ))}
 
