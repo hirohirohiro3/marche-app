@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import {
   collection,
   onSnapshot,
@@ -28,6 +28,7 @@ export const useOrders = () => {
 
   useEffect(() => {
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ordersData = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() } as Order))
@@ -41,14 +42,20 @@ export const useOrders = () => {
         setTimeout(() => setIsNewOrder(false), 2000); // Animation duration
       }
       prevNewOrderCount.current = newOrderCount;
+    },
+    (error) => {
+      console.error("[useOrders] Error listening to orders collection:", error);
     });
-    return () => unsubscribe();
+
+    return unsubscribe;
   }, []);
 
-  const filterOrdersByStatus = (status: Order['status']) =>
-    orders.filter((order) => order.status === status);
+  const filterOrdersByStatus = useCallback(
+    (status: Order['status']) => orders.filter((order) => order.status === status),
+    [orders]
+  );
 
-  const updateOrderStatus = async (
+  const updateOrderStatus = useCallback(async (
     orderId: string,
     newStatus: Order['status']
   ) => {
@@ -59,9 +66,9 @@ export const useOrders = () => {
     } catch (error) {
       console.error('Failed to update order status:', error);
     }
-  };
+  }, []);
 
-  const handleEndOfDay = async () => {
+  const handleEndOfDay = useCallback(async () => {
     try {
       const activeOrdersQuery = query(
         collection(db, 'orders'),

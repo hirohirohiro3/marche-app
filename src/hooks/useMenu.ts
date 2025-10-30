@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   collection,
   onSnapshot,
@@ -42,14 +42,14 @@ export const useMenu = () => {
     return () => unsubscribe();
   }, []);
 
-  const uploadImage = async (imageFile: File): Promise<string> => {
+  const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
     const storage = getStorage();
     const storageRef = ref(storage, `menu-images/${Date.now()}_${imageFile.name}`);
     const snapshot = await uploadBytes(storageRef, imageFile);
     return getDownloadURL(snapshot.ref);
-  };
+  }, []);
 
-  const saveMenuItem = async (
+  const saveMenuItem = useCallback(async (
     values: MenuFormValues,
     imageFile: File | null,
     editingMenuItem: MenuItem | null
@@ -76,18 +76,18 @@ export const useMenu = () => {
       console.error('Failed to save menu item:', error);
       throw error;
     }
-  };
+  }, [uploadImage]);
 
-  const deleteMenuItem = async (menuItemId: string) => {
+  const deleteMenuItem = useCallback(async (menuItemId: string) => {
     try {
       await deleteDoc(doc(db, 'menus', menuItemId));
     } catch (error) {
       console.error('Failed to delete menu item:', error);
       throw error;
     }
-  };
+  }, []);
 
-  const toggleSoldOut = async (item: MenuItem) => {
+  const toggleSoldOut = useCallback(async (item: MenuItem) => {
     const menuRef = doc(db, 'menus', item.id);
     try {
       await updateDoc(menuRef, {
@@ -97,7 +97,7 @@ export const useMenu = () => {
       console.error('Failed to toggle sold out status:', error);
       throw error;
     }
-  };
+  }, []);
 
   return {
     menus,

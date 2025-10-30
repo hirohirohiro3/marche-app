@@ -37,8 +37,12 @@ test('Customer Order Flow', async ({ page }) => {
   // 3. At least one item exists, so proceed with the test.
   await addToCartButtons.first().click();
 
+  // This short timeout helps mitigate a potential race condition where the UI
+  // might not update immediately after the click action.
+  await page.waitForTimeout(500);
+
   // 4. Verify cart summary and proceed to checkout
-  // The cart summary should appear immediately after the click.
+  // The cart summary should appear after the short wait.
   const cartSummary = page.getByText(/カートに1個の商品があります/);
   await expect(cartSummary).toBeVisible();
 
