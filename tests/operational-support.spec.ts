@@ -1,85 +1,89 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
-// Helper function to create a manual order
+// Helper function to create a simple manual order with the first available menu item
 async function createManualOrder(page: Page) {
-  await page.click('button:has-text("手動注文")');
+  await page.getByTestId('manual-order-button').click();
 
   const modal = page.getByTestId('manual-order-modal');
   await expect(modal).toBeVisible();
 
-  // Wait for the first menu item to be visible, ensuring the data is loaded.
-  const espressoButton = modal.locator('button:has-text("Espresso")');
-  await expect(espressoButton).toBeVisible({ timeout: 15000 });
+  // Wait for the first menu item to be visible and click it
+  const firstMenuItem = modal.locator('[data-testid^="menu-item-"]').first();
+  await expect(firstMenuItem).toBeVisible();
+  await firstMenuItem.click();
 
-  await espressoButton.click();
-  await modal.locator('button:has-text("支払い完了 ＆ 注文作成")').click();
+  await page.getByTestId('create-order-button').click();
 
-  // Wait for modal to disappear
+  // Wait for modal to disappear, ensuring the transaction is complete
   await expect(modal).not.toBeVisible();
 }
 
 test.describe('Operational Support Features', () => {
   test.beforeEach(async ({ page }) => {
-    // Use a robust polling strategy for login to handle CI race conditions.
+    // 1. Log in using a robust polling strategy
     await expect(async () => {
       await page.goto('/login');
-      await page.fill('input[name="email"]', 'test@test.test');
-      await page.fill('input[name="password"]', '112233');
-      await page.click('button[type="submit"]');
+      await page.getByTestId('email-input').fill('test@test.test');
+      await page.getByTestId('password-input').fill('112233');
+      await page.getByTestId('login-button').click();
       await expect(page).toHaveURL('/admin/dashboard', { timeout: 2000 });
     }).toPass({
       timeout: 20000,
     });
 
-    // Ensure the main dashboard container is visible before proceeding.
-    await expect(page.getByTestId('dashboard-container')).toBeVisible({ timeout: 15000 });
+    // 2. Ensure the main dashboard container is visible
+    await expect(page.getByTestId('dashboard-container')).toBeVisible();
 
-    // Reset the state before each test to ensure independence
-    await page.click('button:has-text("営業終了")');
-    await page.locator('button:has-text("はい")').click();
-    // Wait for all paid cards to disappear, confirming the reset is complete
-    await expect(page.locator('div.MuiPaper-root:has(h6:has-text("支払い済み"))').locator('.MuiCard-root')).toHaveCount(0, { timeout: 10000 });
+    // 3. Reset the state before each test to ensure independence
+    await page.getByTestId('end-of-day-button').click();
+    await page.getByTestId('end-of-day-confirm-button').click();
+
+    // 4. Wait for all columns to be empty, confirming the reset
+    await expect(page.locator('[data-testid^="order-card-"]')).toHaveCount(0);
   });
 
   test('should cancel an order from the paid column', async ({ page }) => {
-    const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("支払い済み"))');
-    const orderCards = paidColumn.locator('.MuiCard-root');
+    const paidColumn = page.getByTestId('paid-orders-column');
+    const orderCards = paidColumn.locator('[data-testid^="order-card-"]');
 
-    // Pre-condition: Ensure there are no orders in the paid column
+    // Pre-condition: Ensure there are no orders
     await expect(orderCards).toHaveCount(0);
 
     // 1. Create a new order and wait for it to appear
     await createManualOrder(page);
     await expect(orderCards).toHaveCount(1);
 
-    // 2. Click the cancel button on the order
-    await orderCards.first().locator('button:has-text("キャンセル")').click();
+    // 2. Click the cancel button on the first (and only) order card
+    const firstCard = orderCards.first();
+    const cancelButtton = firstCard.locator('[data-testid^="cancel-button-"]');
+    await cancelButtton.click();
+
 
     // 3. Verify the order disappears and the count returns to 0
     await expect(orderCards).toHaveCount(0);
   });
 
   test('should reset order numbers after End of Day', async ({ page }) => {
-    const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("支払い済み"))');
-    const orderCards = paidColumn.locator('.MuiCard-root');
+    const paidColumn = page.getByTestId('paid-orders-column');
+    const orderCards = paidColumn.locator('[data-testid^="order-card-"]');
 
-    // 1. Create a first manual order and wait for it to appear with order number #1
+    // 1. Create a first manual order and wait for it to appear
     await createManualOrder(page);
-    await expect(paidColumn.locator('.MuiCard-root', { hasText: '#1' })).toBeVisible();
+    await expect(orderCards).toHaveCount(1);
+    const firstOrderCard = orderCards.first();
+    await expect(firstOrderCard).toContainText('#1'); // The first order should be #1
 
-    // 2. Click End of Day button and confirm. The beforeEach hook already does this,
-    // but we do it again to test the reset logic within this specific test.
-    await page.click('button:has-text("営業終了")');
-    await page.locator('button:has-text("はい")').click();
-
-    // Wait for the card to move to the "Completed" column (or disappear from "Paid")
-    await expect(orderCards).toHaveCount(0);
+    // 2. Click End of Day button and confirm.
+    await page.getByTestId('end-of-day-button').click();
+    await page.getByTestId('end-of-day-confirm-button').click();
+    await expect(orderCards).toHaveCount(0); // Wait for the paid column to clear
 
     // 3. Create a second manual order
     await createManualOrder(page);
 
-    // 4. Verify the new order number is also #1, confirming the reset
-    await expect(paidColumn.locator('.MuiCard-root', { hasText: '#1' })).toBeVisible();
+    // 4. Verify the new order appears and its number is also #1, confirming the reset
     await expect(orderCards).toHaveCount(1);
+    const secondOrderCard = orderCards.first();
+    await expect(secondOrderCard).toContainText('#1');
   });
 });

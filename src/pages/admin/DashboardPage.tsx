@@ -87,8 +87,8 @@ export default function DashboardPage() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsConfirmOpen(false)}>いいえ</Button>
-          <Button onClick={handleConfirmEndOfDay} autoFocus>
+          <Button onClick={() => setIsConfirmOpen(false)} data-testid="end-of-day-cancel-button">いいえ</Button>
+          <Button onClick={handleConfirmEndOfDay} autoFocus data-testid="end-of-day-confirm-button">
             はい
           </Button>
         </DialogActions>
@@ -102,6 +102,7 @@ export default function DashboardPage() {
             variant="contained"
             startIcon={<AddCircleOutlineIcon />}
             onClick={() => setIsModalOpen(true)}
+            data-testid="manual-order-button"
           >
             手動注文
           </Button>
@@ -110,6 +111,7 @@ export default function DashboardPage() {
             startIcon={<QrCodeIcon />}
             onClick={() => setIsQrModalOpen(true)}
             color="secondary"
+            data-testid="qr-code-button"
           >
             QRコード表示
           </Button>
@@ -118,12 +120,13 @@ export default function DashboardPage() {
             color="error"
             startIcon={<PowerSettingsNewIcon />}
             onClick={() => setIsConfirmOpen(true)}
+            data-testid="end-of-day-button"
           >
             営業終了
           </Button>
         </Box>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} data-testid="new-orders-column">
             <OrderColumn
               title="新規"
               orders={filterOrdersByStatus('new')}
@@ -131,14 +134,14 @@ export default function DashboardPage() {
               animation={isNewOrder ? `${flash} 2s ease-out` : 'none'}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} data-testid="paid-orders-column">
             <OrderColumn
               title="支払い済み"
               orders={filterOrdersByStatus('paid')}
               onUpdateStatus={updateOrderStatus}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} data-testid="completed-orders-column">
             <OrderColumn
               title="完了済み"
               orders={filterOrdersByStatus('completed')}

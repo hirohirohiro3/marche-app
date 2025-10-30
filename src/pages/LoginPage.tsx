@@ -83,6 +83,7 @@ export default function LoginPage() {
                 {...register("email")}
                 error={!!errors.email}
                 helperText={errors.email?.message}
+                inputProps={{ "data-testid": "email-input" }}
               />
               <TextField
                 margin="normal"
@@ -95,9 +96,14 @@ export default function LoginPage() {
                 {...register("password")}
                 error={!!errors.password}
                 helperText={errors.password?.message}
+                inputProps={{ "data-testid": "password-input" }}
               />
               {loginError && (
-                <Alert severity="error" sx={{ mt: 2 }}>
+                <Alert
+                  severity="error"
+                  sx={{ mt: 2 }}
+                  data-testid="login-error-alert"
+                >
                   {loginError}
                 </Alert>
               )}
@@ -107,6 +113,7 @@ export default function LoginPage() {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 disabled={isSubmitting}
+                data-testid="login-button"
               >
                 {isSubmitting ? "ログイン中..." : "ログイン"}
               </Button>

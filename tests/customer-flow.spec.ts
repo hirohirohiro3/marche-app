@@ -9,73 +9,49 @@ test('Customer Order Flow', async ({ page }) => {
   const missingConfigError = page.getByText('Firebase configuration is missing.');
 
   // 3. Wait for either the main content OR the error message to become visible.
-  // This makes the test robust for both properly configured and CI environments.
-  await expect(menuContainer.or(missingConfigError)).toBeVisible({ timeout: 20000 });
+  await expect(menuContainer.or(missingConfigError)).toBeVisible();
 
-  // 4. After waiting, check if the error message is the one that appeared.
+  // 4. If the error is visible (expected in CI), end the test successfully.
   if (await missingConfigError.isVisible()) {
     console.log('Firebase config missing, skipping UI test. This is expected in CI.');
-    return; // End the test successfully
+    return;
   }
 
-  // 5. If the error message is not visible, it means the main container is.
-  // We can now safely proceed with the rest of the test.
+  // 5. Wait for the loading spinner to disappear, ensuring menu data is loaded.
+  await expect(page.getByRole('progressbar')).not.toBeVisible();
 
-  // First, wait for the loading spinner to disappear. This is a robust way
-  // to ensure that the data has finished loading from Firestore.
-  const progressBar = page.getByRole('progressbar');
-  await expect(progressBar).toBeVisible();
-  await expect(progressBar).not.toBeVisible({ timeout: 15000 });
+  // 6. Find the first available "add to cart" button.
+  const addToCartButtons = page.locator('[data-testid^="add-to-cart-button-"]');
+  const firstButton = addToCartButtons.first();
 
-  // Now that loading is complete, check if there are any menu items.
-  const addToCartButtons = menuContainer.getByRole('button', { name: 'カートに追加' });
+  // If no items are available, end the test successfully.
   if (await addToCartButtons.count() === 0) {
     console.log('No menu items found. Skipping the rest of the flow.');
-    return; // End the test successfully
+    return;
   }
+  await expect(firstButton).toBeVisible();
+  await firstButton.click();
 
-  // 3. At least one item exists, so proceed with the test.
-  await addToCartButtons.first().click();
+  // 7. Verify cart summary and proceed to checkout.
+  const cartSummary = page.getByTestId('cart-summary');
+  await expect(cartSummary).toBeVisible();
+  await expect(cartSummary).toContainText('1点の商品');
 
-  // 4. Verify cart summary and proceed to checkout
-  // Use a polling assertion (`toPass`) to robustly wait for the cart UI to update.
-  // This is more reliable than a fixed timeout in a slow CI environment.
-  await expect(async () => {
-    const cartSummary = page.getByTestId('cart-summary');
-    await expect(cartSummary).toBeVisible();
-    await expect(cartSummary).toContainText(/1点の商品/); // More specific check
-  }).toPass({
-    timeout: 10000, // Give it up to 10 seconds to appear
-  });
+  await page.getByTestId('checkout-button').click();
 
-  // Now that the UI has updated, we can safely interact with the checkout button.
-  const checkoutButton = page.getByRole('button', { name: /注文へ進む/ });
-  await expect(checkoutButton).toBeEnabled();
-  await checkoutButton.click();
-
-  // 4. Confirm the order on the checkout page
+  // 8. Confirm the order on the checkout page.
   await expect(page).toHaveURL('/checkout');
+  await expect(page.getByTestId('checkout-container')).toBeVisible();
 
-  // Wait for the checkout page to be fully loaded before interacting with it.
-  await expect(page.getByTestId('checkout-container')).toBeVisible({ timeout: 10000 });
+  await page.getByTestId('confirm-order-button').click();
 
-  const confirmOrderButton = page.getByRole('button', { name: '注文を確定する' });
-  await expect(confirmOrderButton).toBeVisible();
-  await confirmOrderButton.click();
-
-  // 5. Verify the order summary page and take a screenshot
-  // Firestore transaction can be slow in CI, so we give it a generous timeout.
-  await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
+  // 9. Verify the order summary page.
+  // The URL check will now wait for the navigation to complete.
+  await expect(page).toHaveURL(/\/order\/.+/);
 
   // Wait for the loading spinner to disappear on the order summary page.
-  const summaryProgressBar = page.getByRole('progressbar');
-  // It might appear and disappear quickly, so we just wait for it to be gone.
-  await expect(summaryProgressBar).not.toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('progressbar')).not.toBeVisible();
 
-  // Now, check for the "注文番号" text, indicating success
-  const orderNumberText = page.getByText(/注文番号/); // More robust selector
-  await expect(orderNumberText.first()).toBeVisible();
-
-  // Take a screenshot
-  await page.screenshot({ path: 'jules-scratch/verification/customer_flow_success.png' });
+  // Check for the "注文番号" text, indicating success.
+  await expect(page.getByText(/注文番号/)).toBeVisible();
 });

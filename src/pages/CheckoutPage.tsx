@@ -60,7 +60,7 @@ export default function CheckoutPage() {
         ご注文内容の確認
       </Typography>
       <Paper elevation={3}>
-        <List>
+        <List data-testid="order-items-list">
           {items.map(cartItem => (
             <ListItem key={cartItem.item.id}>
               <ListItemText
@@ -72,7 +72,7 @@ export default function CheckoutPage() {
           <Divider />
           <ListItem>
             <ListItemText>
-              <Typography variant="h6">
+              <Typography variant="h6" data-testid="total-price">
                 合計: ¥{totalPrice().toLocaleString()}
               </Typography>
             </ListItemText>
@@ -86,6 +86,7 @@ export default function CheckoutPage() {
         sx={{ mt: 4 }}
         onClick={handleConfirmOrder}
         disabled={isSubmitting}
+        data-testid="confirm-order-button"
       >
         {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "注文を確定する"}
       </Button>

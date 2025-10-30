@@ -24,13 +24,18 @@ const getActions = (
     case 'new':
       return (
         <>
-          <Button size="small" onClick={() => onUpdateStatus(order.id, 'paid')}>
+          <Button
+            size="small"
+            onClick={() => onUpdateStatus(order.id, 'paid')}
+            data-testid={`mark-as-paid-button-${order.id}`}
+          >
             支払い済みにする
           </Button>
           <Button
             size="small"
             color="error"
             onClick={() => onUpdateStatus(order.id, 'cancelled')}
+            data-testid={`cancel-button-${order.id}`}
           >
             キャンセル
           </Button>
@@ -42,6 +47,7 @@ const getActions = (
           <Button
             size="small"
             onClick={() => onUpdateStatus(order.id, 'completed')}
+            data-testid={`mark-as-completed-button-${order.id}`}
           >
             完了にする
           </Button>
@@ -49,6 +55,7 @@ const getActions = (
             size="small"
             color="error"
             onClick={() => onUpdateStatus(order.id, 'cancelled')}
+            data-testid={`cancel-button-${order.id}`}
           >
             キャンセル
           </Button>
@@ -69,7 +76,7 @@ export default function OrderColumn({ title, orders, onUpdateStatus, animation }
     >
       <Typography variant="h6">{title}</Typography>
       {orders.map((order) => (
-        <Card key={order.id} sx={{ mt: 2 }}>
+        <Card key={order.id} sx={{ mt: 2 }} data-testid={`order-card-${order.id}`}>
           <CardContent>
             <Typography variant="h5">#{order.orderNumber}</Typography>
             {order.items.map((item, index) => (

@@ -38,6 +38,7 @@ export default function CartSummary() {
         size="large"
         startIcon={<ShoppingCart />}
         onClick={() => navigate('/checkout')} // Navigate to checkout page
+        data-testid="checkout-button"
       >
         注文へ進む
       </Button>
