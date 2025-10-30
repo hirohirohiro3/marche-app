@@ -55,7 +55,11 @@ test('Customer Order Flow', async ({ page }) => {
 
   // 4. Confirm the order on the checkout page
   await expect(page).toHaveURL('/checkout');
-  const confirmOrderButton = page.getByRole('button', { name: 'この内容で注文する' });
+
+  // Wait for the checkout page to be fully loaded before interacting with it.
+  await expect(page.getByTestId('checkout-container')).toBeVisible({ timeout: 10000 });
+
+  const confirmOrderButton = page.getByRole('button', { name: '注文を確定する' });
   await expect(confirmOrderButton).toBeVisible();
   await confirmOrderButton.click();
 

@@ -143,7 +143,7 @@ export default function ManualOrderModal({
 
   return (
     <Modal open={open} onClose={handleClose}>
-      <Box sx={style}>
+      <Box sx={style} data-testid="manual-order-modal">
         <Box
           sx={{
             display: 'flex',

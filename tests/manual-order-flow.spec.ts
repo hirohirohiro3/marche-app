@@ -24,29 +24,33 @@ test.describe('Manual Order Flow', () => {
 
     // 1. Open the manual order modal
     await page.click('button:has-text("手動注文")');
-    await expect(page.locator('h6:has-text("手動POS")')).toBeVisible();
+
+    // Wait for the modal to be fully visible before interacting with its contents.
+    const modal = page.getByTestId('manual-order-modal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('h6:has-text("手動POS")')).toBeVisible();
 
     // Wait for the first menu item to be visible, ensuring the data is loaded.
-    const espressoButton = page.locator('button:has-text("Espresso")');
+    const espressoButton = modal.locator('button:has-text("Espresso")');
     await expect(espressoButton).toBeVisible({ timeout: 15000 });
 
     // 2. Add items to the cart
     // Note: This assumes menu items are seeded. We will select the first two.
     await espressoButton.click();
-    await page.locator('button:has-text("Latte")').click();
-    await page.locator('button:has-text("Espresso")').click(); // Add one more espresso
+    await modal.locator('button:has-text("Latte")').click();
+    await modal.locator('button:has-text("Espresso")').click(); // Add one more espresso
 
     // 3. Verify the total price
     // This depends on the seeded prices. Assuming Espresso=500, Latte=600. Total = 500*2 + 600 = 1600
-    await expect(page.locator('h5:has-text("Total: ¥1600")')).toBeVisible();
+    await expect(modal.locator('h5:has-text("Total: ¥1600")')).toBeVisible();
 
     // 4. Create the order
-    await page.click('button:has-text("Create Order & Mark as Paid")');
+    await modal.locator('button:has-text("支払い完了 ＆ 注文作成")').click();
 
     // 5. Verify the order appears in the "Paid" column
     // The order number depends on the state of the database.
     // We will look for a card in the "Paid" column containing the items.
-    const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))');
+    const paidColumn = page.locator('div.MuiPaper-root:has(h6:has-text("支払い済み"))');
     await expect(paidColumn).toBeVisible();
 
     const newOrderCard = paidColumn.locator('.MuiCard-root', { hasText: 'Espresso x 2' });

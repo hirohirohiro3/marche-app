@@ -55,7 +55,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
+    <Container data-testid="checkout-container" maxWidth="sm" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         ご注文内容の確認
       </Typography>
