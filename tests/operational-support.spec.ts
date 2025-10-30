@@ -27,8 +27,11 @@ test.describe('Operational Support Features', () => {
       timeout: 20000,
     });
 
+    // Ensure the main dashboard container is visible before proceeding.
+    await expect(page.getByTestId('dashboard-container')).toBeVisible({ timeout: 15000 });
+
     // Reset the state before each test to ensure independence
-    await page.click('button:has-text("End of Day")');
+    await page.click('button:has-text("営業終了")');
     await page.locator('button:has-text("はい")').click();
     // Wait for all paid cards to disappear, confirming the reset is complete
     await expect(page.locator('div.MuiPaper-root:has(h6:has-text("Paid"))').locator('.MuiCard-root')).toHaveCount(0, { timeout: 10000 });

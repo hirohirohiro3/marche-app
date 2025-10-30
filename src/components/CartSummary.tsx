@@ -16,6 +16,7 @@ export default function CartSummary() {
 
   return (
     <Paper
+      data-testid="cart-summary"
       elevation={3}
       sx={{
         position: 'fixed',

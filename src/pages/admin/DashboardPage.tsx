@@ -93,7 +93,7 @@ export default function DashboardPage() {
           </Button>
         </DialogActions>
       </Dialog>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Container data-testid="dashboard-container" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
           <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
             注文ダッシュボード

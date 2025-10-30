@@ -19,9 +19,12 @@ test.describe('Manual Order Flow', () => {
   });
 
   test('should create a manual order and see it in the paid column', async ({ page }) => {
+    // Ensure the main dashboard container is visible before proceeding.
+    await expect(page.getByTestId('dashboard-container')).toBeVisible({ timeout: 15000 });
+
     // 1. Open the manual order modal
-    await page.click('button:has-text("Manual Order")');
-    await expect(page.locator('h6:has-text("Manual POS")')).toBeVisible();
+    await page.click('button:has-text("手動注文")');
+    await expect(page.locator('h6:has-text("手動POS")')).toBeVisible();
 
     // Wait for the first menu item to be visible, ensuring the data is loaded.
     const espressoButton = page.locator('button:has-text("Espresso")');

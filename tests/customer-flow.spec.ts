@@ -37,17 +37,19 @@ test('Customer Order Flow', async ({ page }) => {
   // 3. At least one item exists, so proceed with the test.
   await addToCartButtons.first().click();
 
-  // This short timeout helps mitigate a potential race condition where the UI
-  // might not update immediately after the click action.
-  await page.waitForTimeout(500);
-
   // 4. Verify cart summary and proceed to checkout
-  // The cart summary should appear after the short wait.
-  const cartSummary = page.getByText(/カートに1個の商品があります/);
-  await expect(cartSummary).toBeVisible();
+  // Use a polling assertion (`toPass`) to robustly wait for the cart UI to update.
+  // This is more reliable than a fixed timeout in a slow CI environment.
+  await expect(async () => {
+    const cartSummary = page.getByTestId('cart-summary');
+    await expect(cartSummary).toBeVisible();
+    await expect(cartSummary).toContainText(/1点の商品/); // More specific check
+  }).toPass({
+    timeout: 10000, // Give it up to 10 seconds to appear
+  });
 
   // Now that the UI has updated, we can safely interact with the checkout button.
-  const checkoutButton = page.getByRole('button', { name: /会計に進む/ });
+  const checkoutButton = page.getByRole('button', { name: /注文へ進む/ });
   await expect(checkoutButton).toBeEnabled();
   await checkoutButton.click();
 
