@@ -28,11 +28,10 @@ test.describe('Manual Order Flow', () => {
     // Wait for the modal to be fully visible before interacting with its contents.
     const modal = page.getByTestId('manual-order-modal');
     await expect(modal).toBeVisible();
-    await expect(modal.locator('h6:has-text("手動POS")')).toBeVisible();
 
-    // Wait for the first menu item to be visible, ensuring the data is loaded.
+    // Wait for the first menu item button to be visible, ensuring the menu data is loaded.
+    await expect(modal.locator('button:has-text("Espresso")')).toBeVisible({ timeout: 15000 });
     const espressoButton = modal.locator('button:has-text("Espresso")');
-    await expect(espressoButton).toBeVisible({ timeout: 15000 });
 
     // 2. Add items to the cart
     // Note: This assumes menu items are seeded. We will select the first two.

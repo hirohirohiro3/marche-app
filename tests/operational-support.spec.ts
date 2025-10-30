@@ -4,14 +4,18 @@ import { test, expect } from '@playwright/test';
 async function createManualOrder(page: Page) {
   await page.click('button:has-text("手動注文")');
 
+  const modal = page.getByTestId('manual-order-modal');
+  await expect(modal).toBeVisible();
+
   // Wait for the first menu item to be visible, ensuring the data is loaded.
-  const espressoButton = page.locator('button:has-text("Espresso")');
+  const espressoButton = modal.locator('button:has-text("Espresso")');
   await expect(espressoButton).toBeVisible({ timeout: 15000 });
 
   await espressoButton.click();
-  await page.click('button:has-text("支払い完了 ＆ 注文作成")');
+  await modal.locator('button:has-text("支払い完了 ＆ 注文作成")').click();
+
   // Wait for modal to disappear
-  await expect(page.locator('h6:has-text("手動POS")')).not.toBeVisible();
+  await expect(modal).not.toBeVisible();
 }
 
 test.describe('Operational Support Features', () => {
