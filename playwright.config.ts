@@ -32,6 +32,9 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
+  /* Timeout for each test in milliseconds. */
+  timeout: process.env.CI ? 45 * 1000 : 30 * 1000, // 45s for CI, 30s for local
+
   /* Configure projects for major browsers */
   projects: [
     {
