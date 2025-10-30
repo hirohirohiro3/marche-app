@@ -90,7 +90,7 @@ export const useOrders = () => {
     } catch (error) {
       console.error('Failed to process end of day:', error);
     }
-  };
+  }, []);
 
   return {
     orders,
