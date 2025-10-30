@@ -46,8 +46,8 @@ test('Customer Order Flow', async ({ page }) => {
   await page.getByTestId('confirm-order-button').click();
 
   // 9. Verify the order summary page.
-  // The URL check will now wait for the navigation to complete.
-  await expect(page).toHaveURL(/\/order\/.+/);
+  // Firestore transaction can be slow in CI, so we give it a generous timeout.
+  await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
 
   // Wait for the loading spinner to disappear on the order summary page.
   await expect(page.getByRole('progressbar')).not.toBeVisible();
