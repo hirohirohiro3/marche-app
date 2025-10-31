@@ -40,8 +40,8 @@ const dummyOptionGroups: OptionGroup[] = [
 
 export default function OptionsAdminPage() {
   // const { optionGroups, loading } = useOptionGroups(); // To be implemented
-  const [optionGroups, setOptionGroups] = useState(dummyOptionGroups);
-  const [loading, setLoading] = useState(false);
+  const [optionGroups] = useState(dummyOptionGroups);
+  const [loading] = useState(false);
 
   return (
     <Container maxWidth="lg">

@@ -196,7 +196,6 @@ export default function MenuListPage() {
         optionGroups={dummyOptionGroups.filter(
           (og) => selectedMenuItem?.optionGroupIds?.includes(og.id)
         )}
-        onAddToCart={() => handleAddToCartWithOptions()}
       />
     </Box>
   );

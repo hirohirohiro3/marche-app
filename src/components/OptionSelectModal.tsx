@@ -19,7 +19,7 @@ interface OptionSelectModalProps {
   onClose: () => void;
   menuItem: MenuItem | null;
   optionGroups: OptionGroup[];
-  onAddToCart: (item: MenuItem, selectedOptions: Record<string, OptionChoice | OptionChoice[]>) => void;
+  // onAddToCart: (item: MenuItem, selectedOptions: Record<string, OptionChoice | OptionChoice[]>) => void;
 }
 
 const style = {
@@ -43,7 +43,6 @@ export default function OptionSelectModal({
   onClose,
   menuItem,
   optionGroups,
-  onAddToCart,
 }: OptionSelectModalProps) {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
 
