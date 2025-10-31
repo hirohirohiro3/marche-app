@@ -5,7 +5,6 @@ import { Elements } from '@stripe/react-stripe-js';
 import {
   Container,
   Typography,
-  Box,
   CircularProgress,
   Alert,
 } from '@mui/material';

@@ -17,7 +17,7 @@ type PaymentMethod = 'cash_only' | 'cash_and_online' | 'online_only';
 
 export default function PaymentSettingsPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash_only');
-  const [stripeConnected, setStripeConnected] = useState(false); // Dummy state
+  const [stripeConnected] = useState(false); // Dummy state
 
   const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPaymentMethod(event.target.value as PaymentMethod);

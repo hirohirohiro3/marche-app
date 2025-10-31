@@ -3,7 +3,6 @@ import { useStripe } from '@stripe/react-stripe-js';
 import {
   Container,
   Typography,
-  Box,
   CircularProgress,
   Alert,
   Paper,

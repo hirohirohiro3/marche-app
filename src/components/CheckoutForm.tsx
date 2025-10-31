@@ -4,7 +4,7 @@ import {
   useElements,
   PaymentElement,
 } from '@stripe/react-stripe-js';
-import { Button, Box, CircularProgress, Alert } from '@mui/material';
+import { Button, CircularProgress, Alert } from '@mui/material';
 
 export default function CheckoutForm() {
   const stripe = useStripe();
