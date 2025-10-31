@@ -39,7 +39,7 @@ async function seed() {
     console.log(`Successfully created test user: ${TEST_USER_EMAIL}`);
     const menusCollection = db.collection('menus');
     const ordersCollection = db.collection('orders');
-    const systemSettingsRef = db.doc('system_settings/single_doc');
+    const systemSettingsRef = db.doc('system_settings/orderNumbers');
 
     // 1. Clear existing data
     console.log('Clearing existing data...');

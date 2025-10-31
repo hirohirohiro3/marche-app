@@ -5,14 +5,17 @@ import { useNavigate } from 'react-router-dom';
 import { collection, serverTimestamp, doc, runTransaction } from "firebase/firestore";
 import { db } from '../firebase';
 import { uid } from 'uid'; // A library to generate unique IDs
+import { Alert } from '@mui/material';
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCartStore();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleConfirmOrder = async () => {
     setIsSubmitting(true);
+    setError(null);
     try {
       const settingsRef = doc(db, "system_settings", "orderNumbers");
 
@@ -48,7 +51,7 @@ export default function CheckoutPage() {
 
     } catch (error) {
       console.error("Order confirmation failed:", error);
-      // TODO: Show an error message
+      setError("注文の作成に失敗しました。時間をおいて再度お試しください。");
     } finally {
       setIsSubmitting(false);
     }
@@ -79,6 +82,11 @@ export default function CheckoutPage() {
           </ListItem>
         </List>
       </Paper>
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
       <Button
         variant="contained"
         size="large"
