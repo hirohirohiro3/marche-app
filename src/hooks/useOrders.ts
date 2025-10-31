@@ -13,7 +13,7 @@ import {
 import { db } from '../firebase';
 import { Order } from '../types';
 
-export const useOrders = () => {
+export const useOrders = (storeId: string | undefined) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isNewOrder, setIsNewOrder] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -27,7 +27,16 @@ export const useOrders = () => {
   }, []);
 
   useEffect(() => {
-    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    if (!storeId) {
+      setOrders([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, 'orders'),
+      where('storeId', '==', storeId),
+      orderBy('createdAt', 'desc')
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ordersData = snapshot.docs
@@ -48,7 +57,7 @@ export const useOrders = () => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [storeId]);
 
   const filterOrdersByStatus = useCallback(
     (status: Order['status']) => orders.filter((order) => order.status === status),
@@ -69,9 +78,11 @@ export const useOrders = () => {
   }, []);
 
   const handleEndOfDay = useCallback(async () => {
+    if (!storeId) return;
     try {
       const activeOrdersQuery = query(
         collection(db, 'orders'),
+        where('storeId', '==', storeId),
         where('status', 'in', ['new', 'paid'])
       );
       const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
@@ -90,7 +101,7 @@ export const useOrders = () => {
     } catch (error) {
       console.error('Failed to process end of day:', error);
     }
-  }, []);
+  }, [storeId]);
 
   return {
     orders,

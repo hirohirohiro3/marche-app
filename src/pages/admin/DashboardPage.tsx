@@ -19,6 +19,7 @@ import {
   query,
   orderBy,
   getDocs,
+  where,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { MenuItem } from '../../types';
@@ -26,6 +27,7 @@ import { keyframes } from '@emotion/react';
 import ManualOrderModal from '../../components/ManualOrderModal';
 import QrCodeModal from '../../components/QrCodeModal';
 import { useOrders } from '../../hooks/useOrders';
+import { useAuth } from '../../hooks/useAuth';
 import OrderColumn from '../../components/OrderColumn';
 
 const flash = keyframes`
@@ -35,12 +37,13 @@ const flash = keyframes`
 `;
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const {
     isNewOrder,
     filterOrdersByStatus,
     updateOrderStatus,
     handleEndOfDay: processEndOfDay,
-  } = useOrders();
+  } = useOrders(user?.uid);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
@@ -48,16 +51,23 @@ export default function DashboardPage() {
 
   // Fetch menu items
   useEffect(() => {
+    if (!user) return; // Wait for user to be authenticated
+
     const fetchMenuItems = async () => {
       const menuCollection = collection(db, 'menus');
-      const menuSnapshot = await getDocs(query(menuCollection, orderBy('sortOrder')));
+      const q = query(
+        menuCollection,
+        where('storeId', '==', user.uid),
+        orderBy('sortOrder')
+      );
+      const menuSnapshot = await getDocs(q);
       const menuList = menuSnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as MenuItem)
       );
       setMenuItems(menuList);
     };
     fetchMenuItems();
-  }, []);
+  }, [user]);
 
   const handleConfirmEndOfDay = async () => {
     await processEndOfDay();
