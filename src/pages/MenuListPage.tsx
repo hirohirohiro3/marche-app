@@ -3,24 +3,52 @@ import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions,
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
-import { MenuItem } from '../types';
+import { MenuItem, OptionGroup } from '../types';
 import { useCartStore } from '../store/cartStore';
+import OptionSelectModal from '../components/OptionSelectModal';
+
+// Dummy data - will be replaced with data fetching later
+const dummyOptionGroups: OptionGroup[] = [
+  {
+    id: '1',
+    storeId: 'dummy-store-id',
+    name: 'サイズ',
+    selectionType: 'single',
+    choices: [
+      { id: 's', name: 'S', priceModifier: 0 },
+      { id: 'm', name: 'M', priceModifier: 50 },
+      { id: 'l', name: 'L', priceModifier: 100 },
+    ],
+  },
+  {
+    id: '2',
+    storeId: 'dummy-store-id',
+    name: 'トッピング',
+    selectionType: 'multiple',
+    choices: [
+      { id: 'cheese', name: 'チーズ', priceModifier: 100 },
+      { id: 'bacon', name: 'ベーコン', priceModifier: 150 },
+    ],
+  },
+];
 
 // Component to control item quantity in cart
-const ItemQuantityControl = ({ item }: { item: MenuItem }) => {
+const ItemQuantityControl = ({ item, onOpenOptions }: { item: MenuItem; onOpenOptions: (item: MenuItem) => void; }) => {
   const { items, addItem, updateQuantity } = useCartStore();
   const cartItem = items.find(ci => ci.item.id === item.id);
   const quantity = cartItem ? cartItem.quantity : 0;
+
+  const hasOptions = item.optionGroupIds && item.optionGroupIds.length > 0;
 
   if (quantity === 0) {
     return (
       <Button
         variant="contained"
-        onClick={() => addItem(item)}
+        onClick={() => hasOptions ? onOpenOptions(item) : addItem(item)}
         fullWidth
         data-testid={`add-to-cart-button-${item.id}`}
       >
-        カートに追加
+        {hasOptions ? 'オプションを選択' : 'カートに追加'}
       </Button>
     );
   }
@@ -51,17 +79,37 @@ export default function MenuListPage() {
   const [menusByCategory, setMenusByCategory] = useState<Record<string, MenuItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
+
+  const handleOpenOptions = (item: MenuItem) => {
+    setSelectedMenuItem(item);
+    setIsOptionModalOpen(true);
+  };
+
+  const handleCloseOptions = () => {
+    setIsOptionModalOpen(false);
+    setSelectedMenuItem(null);
+  };
 
   useEffect(() => {
+    // Add a dummy optionGroupId to the first item for testing
     const q = query(
       collection(db, "menus"),
       where("isSoldOut", "==", false),
+      where("manageStock", "==", false),
       orderBy("sortOrder", "asc")
     );
 
     const unsubscribe = onSnapshot(q,
       (querySnapshot) => {
-        const menusData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
+        let menusData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
+
+        // --- Start of temporary code for testing ---
+        if (menusData.length > 0) {
+          menusData[0].optionGroupIds = ['1', '2'];
+        }
+        // --- End of temporary code for testing ---
 
         const grouped = menusData.reduce((acc, menu) => {
           const { category } = menu;
@@ -126,7 +174,7 @@ export default function MenuListPage() {
                       </Typography>
                     </CardContent>
                     <CardActions>
-                      <ItemQuantityControl item={menu} />
+                      <ItemQuantityControl item={menu} onOpenOptions={handleOpenOptions} />
                     </CardActions>
                   </Card>
                 </Grid>
@@ -135,6 +183,14 @@ export default function MenuListPage() {
           </div>
         ))}
       </Container>
+      <OptionSelectModal
+        open={isOptionModalOpen}
+        onClose={handleCloseOptions}
+        menuItem={selectedMenuItem}
+        optionGroups={dummyOptionGroups.filter(
+          (og) => selectedMenuItem?.optionGroupIds?.includes(og.id)
+        )}
+      />
     </Box>
   );
 }

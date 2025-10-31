@@ -8,17 +8,25 @@ import {
   Button,
   Box,
   Typography,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { menuFormSchema, MenuFormValues } from '../hooks/useMenu';
-import { MenuItem } from '../types';
+import { MenuItem, OptionGroup } from '../types';
+import {
+  FormGroup,
+  Checkbox,
+} from '@mui/material';
+
 
 interface MenuFormDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (values: MenuFormValues, imageFile: File | null) => void;
   editingMenuItem: MenuItem | null;
+  optionGroups: OptionGroup[];
 }
 
 export default function MenuFormDialog({
@@ -26,16 +34,24 @@ export default function MenuFormDialog({
   onClose,
   onSubmit,
   editingMenuItem,
+  optionGroups,
 }: MenuFormDialogProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const {
     register,
     handleSubmit,
     reset,
+    control,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
+    defaultValues: {
+      manageStock: false,
+    },
   });
+
+  const watchManageStock = watch('manageStock');
 
   useEffect(() => {
     if (open) {
@@ -44,6 +60,7 @@ export default function MenuFormDialog({
           ...editingMenuItem,
           price: String(editingMenuItem.price),
           sortOrder: String(editingMenuItem.sortOrder),
+          stock: String(editingMenuItem.stock ?? ''),
         });
       } else {
         reset({
@@ -52,6 +69,8 @@ export default function MenuFormDialog({
           category: '',
           description: '',
           sortOrder: '0',
+          manageStock: false,
+          stock: '0',
         });
       }
       setImageFile(null);
@@ -106,6 +125,34 @@ export default function MenuFormDialog({
             fullWidth
             margin="dense"
           />
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1">オプション設定</Typography>
+            <Controller
+              name="optionGroupIds"
+              control={control}
+              render={({ field }) => (
+                <FormGroup>
+                  {optionGroups.map((group) => (
+                    <FormControlLabel
+                      key={group.id}
+                      control={
+                        <Checkbox
+                          checked={field.value?.includes(group.id)}
+                          onChange={(e) => {
+                            const newValues = e.target.checked
+                              ? [...(field.value || []), group.id]
+                              : (field.value || []).filter((id) => id !== group.id);
+                            field.onChange(newValues);
+                          }}
+                        />
+                      }
+                      label={group.name}
+                    />
+                  ))}
+                </FormGroup>
+              )}
+            />
+          </Box>
           <TextField
             {...register('sortOrder')}
             label="表示順"
@@ -113,6 +160,28 @@ export default function MenuFormDialog({
             fullWidth
             margin="dense"
           />
+          <Controller
+            name="manageStock"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                control={<Switch {...field} checked={field.value} />}
+                label="在庫を管理する"
+                sx={{ mt: 1 }}
+              />
+            )}
+          />
+          {watchManageStock && (
+            <TextField
+              {...register('stock')}
+              label="在庫数"
+              type="number"
+              fullWidth
+              margin="dense"
+              error={!!errors.stock}
+              helperText={errors.stock?.message}
+            />
+          )}
           <Button variant="contained" component="label" sx={{ mt: 2 }}>
             画像を選択
             <input

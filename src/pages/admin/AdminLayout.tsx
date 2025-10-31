@@ -19,6 +19,12 @@ export default function AdminLayout() {
           <Button color="inherit" component={Link} to="/admin/analytics">
             売上分析
           </Button>
+          <Button color="inherit" component={Link} to="/admin/options">
+            オプション管理
+          </Button>
+          <Button color="inherit" component={Link} to="/admin/settings/payment">
+            決済設定
+          </Button>
           <Button
             color="inherit"
             component={Link}

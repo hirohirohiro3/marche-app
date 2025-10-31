@@ -38,8 +38,11 @@ test.describe('Operational Support Features', () => {
     await page.getByTestId('end-of-day-button').click();
     await page.getByTestId('end-of-day-confirm-button').click();
 
-    // 4. Wait for all columns to be empty, confirming the reset
-    await expect(page.locator('[data-testid^="order-card-"]')).toHaveCount(0);
+    // 4. Wait for the active columns to be empty, confirming the reset
+    const newOrdersCount = await page.getByTestId('new-orders-column').locator('[data-testid^="order-card-"]').count();
+    const paidOrdersCount = await page.getByTestId('paid-orders-column').locator('[data-testid^="order-card-"]').count();
+    expect(newOrdersCount).toBe(0);
+    expect(paidOrdersCount).toBe(0);
   });
 
   test('should cancel an order from the paid column', async ({ page }) => {
@@ -76,7 +79,9 @@ test.describe('Operational Support Features', () => {
     // 2. Click End of Day button and confirm.
     await page.getByTestId('end-of-day-button').click();
     await page.getByTestId('end-of-day-confirm-button').click();
-    await expect(orderCards).toHaveCount(0); // Wait for the paid column to clear
+
+    // Wait for the paid column to clear, ensuring the order moved to "completed"
+    await expect(paidColumn.locator('[data-testid^="order-card-"]')).toHaveCount(0);
 
     // 3. Create a second manual order
     await createManualOrder(page);

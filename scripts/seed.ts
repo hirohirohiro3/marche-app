@@ -12,8 +12,8 @@ initializeApp({
 const db = getFirestore();
 const auth = getAuth();
 
-const TEST_USER_EMAIL = 'test@example.com';
-const TEST_USER_PASSWORD = 'password';
+const TEST_USER_EMAIL = 'test@test.test';
+const TEST_USER_PASSWORD = '112233';
 
 async function seed() {
   console.log('Seeding database...');
@@ -32,11 +32,13 @@ async function seed() {
         throw error;
       }
     }
-    await auth.createUser({
+    const userRecord = await auth.createUser({
       email: TEST_USER_EMAIL,
       password: TEST_USER_PASSWORD,
     });
-    console.log(`Successfully created test user: ${TEST_USER_EMAIL}`);
+    console.log(`Successfully created test user: ${TEST_USER_EMAIL} with UID: ${userRecord.uid}`);
+    const storeId = userRecord.uid; // Use the new user's UID as the storeId
+
     const menusCollection = db.collection('menus');
     const ordersCollection = db.collection('orders');
     const systemSettingsRef = db.doc('system_settings/orderNumbers');
@@ -63,7 +65,7 @@ async function seed() {
     const menuBatch = db.batch();
     menuItems.forEach((item) => {
       const { id, ...data } = item;
-      menuBatch.set(menusCollection.doc(id), data);
+      menuBatch.set(menusCollection.doc(id), { ...data, storeId });
     });
     await menuBatch.commit();
 

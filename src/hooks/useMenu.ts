@@ -15,13 +15,30 @@ import { MenuItem } from '../types';
 import * as z from 'zod';
 
 // Zod schema and type definition co-located with the hook
-export const menuFormSchema = z.object({
-  name: z.string().min(1, '商品名は必須です'),
-  price: z.string().min(1, '価格は必須です'),
-  category: z.string().min(1, 'カテゴリは必須です'),
-  description: z.string().optional(),
-  sortOrder: z.string().optional(),
-});
+// Zod schema and type definition co-located with the hook
+export const menuFormSchema = z
+  .object({
+    name: z.string().min(1, '商品名は必須です'),
+    price: z.string().min(1, '価格は必須です'),
+    category: z.string().min(1, 'カテゴリは必須です'),
+    description: z.string().optional(),
+    sortOrder: z.string().optional(),
+    manageStock: z.boolean().default(false),
+    stock: z.string().optional(),
+    optionGroupIds: z.array(z.string()).default([]),
+  })
+  .refine(
+    (data) => {
+      if (data.manageStock) {
+        return data.stock !== undefined && data.stock.trim() !== '';
+      }
+      return true;
+    },
+    {
+      message: '在庫管理を有効にする場合は在庫数の入力が必須です',
+      path: ['stock'], // エラーメッセージを表示するフィールド
+    }
+  );
 export type MenuFormValues = z.infer<typeof menuFormSchema>;
 
 export const useMenu = () => {
@@ -64,6 +81,7 @@ export const useMenu = () => {
         ...values,
         price: parseInt(values.price, 10) || 0,
         sortOrder: parseInt(values.sortOrder || '0', 10) || 0,
+        stock: parseInt(values.stock || '0', 10) || 0,
         imageUrl,
       };
 
