@@ -12,8 +12,8 @@ initializeApp({
 const db = getFirestore();
 const auth = getAuth();
 
-const TEST_USER_EMAIL = 'test@example.com';
-const TEST_USER_PASSWORD = 'password';
+const TEST_USER_EMAIL = 'test@test.test';
+const TEST_USER_PASSWORD = '112233';
 
 async function seed() {
   console.log('Seeding database...');
