@@ -92,12 +92,6 @@ export default function MenuListPage() {
     setSelectedMenuItem(null);
   };
 
-  const handleAddToCartWithOptions = () => {
-    // This will be properly implemented in the next step
-    console.log('Add to cart with options');
-    handleCloseOptions();
-  };
-
   useEffect(() => {
     // Add a dummy optionGroupId to the first item for testing
     const q = query(

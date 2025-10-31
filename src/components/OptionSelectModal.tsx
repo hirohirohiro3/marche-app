@@ -12,7 +12,7 @@ import {
   Checkbox,
 } from '@mui/material';
 import Close from '@mui/icons-material/Close';
-import { MenuItem, OptionGroup, OptionChoice } from '../types';
+import { MenuItem, OptionGroup } from '../types';
 
 interface OptionSelectModalProps {
   open: boolean;
