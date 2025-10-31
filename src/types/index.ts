@@ -7,6 +7,8 @@ export type MenuItem = {
   imageUrl: string;
   isSoldOut: boolean;
   sortOrder: number;
+  manageStock?: boolean;
+  stock?: number;
 };
 
 export type Order = {
