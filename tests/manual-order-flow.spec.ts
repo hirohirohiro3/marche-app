@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe.skip('Manual Order Flow', () => {
+test.describe('Manual Order Flow', () => {
   // Before each test, log in using a robust polling strategy with data-testid selectors.
   test.beforeEach(async ({ page }) => {
     await expect(async () => {
