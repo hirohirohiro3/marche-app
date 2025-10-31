@@ -8,8 +8,10 @@ import {
   Button,
   Box,
   Typography,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { menuFormSchema, MenuFormValues } from '../hooks/useMenu';
 import { MenuItem } from '../types';
@@ -32,10 +34,17 @@ export default function MenuFormDialog({
     register,
     handleSubmit,
     reset,
+    control,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
+    defaultValues: {
+      manageStock: false,
+    },
   });
+
+  const watchManageStock = watch('manageStock');
 
   useEffect(() => {
     if (open) {
@@ -44,6 +53,7 @@ export default function MenuFormDialog({
           ...editingMenuItem,
           price: String(editingMenuItem.price),
           sortOrder: String(editingMenuItem.sortOrder),
+          stock: String(editingMenuItem.stock ?? ''),
         });
       } else {
         reset({
@@ -52,6 +62,8 @@ export default function MenuFormDialog({
           category: '',
           description: '',
           sortOrder: '0',
+          manageStock: false,
+          stock: '0',
         });
       }
       setImageFile(null);
@@ -113,6 +125,28 @@ export default function MenuFormDialog({
             fullWidth
             margin="dense"
           />
+          <Controller
+            name="manageStock"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                control={<Switch {...field} checked={field.value} />}
+                label="在庫を管理する"
+                sx={{ mt: 1 }}
+              />
+            )}
+          />
+          {watchManageStock && (
+            <TextField
+              {...register('stock')}
+              label="在庫数"
+              type="number"
+              fullWidth
+              margin="dense"
+              error={!!errors.stock}
+              helperText={errors.stock?.message}
+            />
+          )}
           <Button variant="contained" component="label" sx={{ mt: 2 }}>
             画像を選択
             <input

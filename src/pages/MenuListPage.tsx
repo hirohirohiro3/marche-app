@@ -56,6 +56,7 @@ export default function MenuListPage() {
     const q = query(
       collection(db, "menus"),
       where("isSoldOut", "==", false),
+      where("manageStock", "==", false),
       orderBy("sortOrder", "asc")
     );
 

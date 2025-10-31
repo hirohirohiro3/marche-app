@@ -105,19 +105,41 @@ export default function ManualOrderModal({
 
     try {
       await runTransaction(db, async (transaction) => {
+        // 1. Get and update the order number
         const settingsRef = doc(db, 'system_settings', 'single_doc');
         const settingsDoc = await transaction.get(settingsRef);
-
         if (!settingsDoc.exists()) {
-          throw 'System settings not found!';
+          throw new Error('System settings not found!');
         }
-
         const newOrderNumber = settingsDoc.data().nextManualOrderNumber;
         transaction.update(settingsRef, { nextManualOrderNumber: newOrderNumber + 1 });
 
+        // 2. Process stock updates for inventory-managed items
+        for (const cartItem of cart) {
+          const menuItem = menuItems.find((mi) => mi.id === cartItem.id);
+          if (menuItem && menuItem.manageStock) {
+            const menuRef = doc(db, 'menus', menuItem.id);
+            const menuDoc = await transaction.get(menuRef);
+            if (!menuDoc.exists()) {
+              throw new Error(`Menu item ${menuItem.name} not found!`);
+            }
+            const currentStock = menuDoc.data().stock;
+            if (currentStock < cartItem.quantity) {
+              throw new Error(`Insufficient stock for ${menuItem.name}.`);
+            }
+            const newStock = currentStock - cartItem.quantity;
+
+            const updateData: { stock: number; isSoldOut?: boolean } = { stock: newStock };
+            if (newStock <= 0) {
+              updateData.isSoldOut = true;
+            }
+            transaction.update(menuRef, updateData);
+          }
+        }
+
+        // 3. Create the new order document
         const newOrderRef = doc(collection(db, 'orders'));
         const orderItems = cart.map(({ id, ...rest }) => rest);
-
         transaction.set(newOrderRef, {
           orderNumber: newOrderNumber,
           items: orderItems,
@@ -126,7 +148,6 @@ export default function ManualOrderModal({
           orderType: 'manual',
           createdAt: serverTimestamp(),
           storeId: user.uid,
-          // uid is not required for manual orders
         });
       });
       handleClose();
