@@ -17,6 +17,7 @@ import {
   doc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../hooks/useAuth';
 import { MenuItem } from '../types';
 
 type CartItem = {
@@ -53,6 +54,7 @@ export default function ManualOrderModal({
   onClose,
   menuItems,
 }: ManualOrderModalProps) {
+  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -98,7 +100,7 @@ export default function ManualOrderModal({
   }
 
   const handleCreateOrder = async () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || !user) return;
     setIsLoading(true);
 
     try {
@@ -123,6 +125,7 @@ export default function ManualOrderModal({
           status: 'paid',
           orderType: 'manual',
           createdAt: serverTimestamp(),
+          storeId: user.uid,
           // uid is not required for manual orders
         });
       });
