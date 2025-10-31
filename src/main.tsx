@@ -10,6 +10,7 @@ import MenuAdminPage from './pages/admin/menu';
 import DashboardPage from './pages/admin/DashboardPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import OptionsAdminPage from './pages/admin/options';
+import PaymentSettingsPage from './pages/admin/settings/PaymentSettingsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import MenuListPage from './pages/MenuListPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -17,6 +18,8 @@ import OrderSummaryPage from './pages/OrderSummaryPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import SignupPage from './pages/SignupPage';
+import PaymentPage from './pages/PaymentPage';
+import PaymentCompletePage from './pages/PaymentCompletePage';
 
 // A component to handle the root redirect using useEffect for robustness in tests.
 function RedirectToIndex() {
@@ -38,6 +41,8 @@ const router = createBrowserRouter([
       { path: 'signup', element: <SignupPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'order/:orderId', element: <OrderSummaryPage /> },
+      { path: 'payment/:orderId', element: <PaymentPage /> },
+      { path: 'payment-complete', element: <PaymentCompletePage /> },
       { path: 'terms', element: <TermsPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
     ],
@@ -55,6 +60,7 @@ const router = createBrowserRouter([
       { path: 'menu', element: <MenuAdminPage /> },
       { path: 'options', element: <OptionsAdminPage /> },
       { path: 'analytics', element: <AnalyticsPage /> },
+      { path: 'settings/payment', element: <PaymentSettingsPage /> },
     ],
   },
 ]);
