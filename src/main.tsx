@@ -9,6 +9,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import MenuAdminPage from './pages/admin/menu';
 import DashboardPage from './pages/admin/DashboardPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
+import OptionsAdminPage from './pages/admin/options';
 import ProtectedRoute from './components/ProtectedRoute';
 import MenuListPage from './pages/MenuListPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/admin/dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'menu', element: <MenuAdminPage /> },
+      { path: 'options', element: <OptionsAdminPage /> },
       { path: 'analytics', element: <AnalyticsPage /> },
     ],
   },

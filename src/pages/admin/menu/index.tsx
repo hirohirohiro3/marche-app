@@ -24,8 +24,33 @@ import { auth } from "../../../firebase";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useMenu, MenuFormValues } from "../../../hooks/useMenu";
-import { MenuItem } from "../../../types";
+import { MenuItem, OptionGroup } from "../../../types";
 import MenuFormDialog from "../../../components/MenuFormDialog";
+
+// Dummy data for initial layout - to be replaced with a hook
+const dummyOptionGroups: OptionGroup[] = [
+  {
+    id: '1',
+    storeId: 'dummy-store-id',
+    name: 'サイズ',
+    selectionType: 'single',
+    choices: [
+      { id: 's', name: 'S', priceModifier: 0 },
+      { id: 'm', name: 'M', priceModifier: 50 },
+      { id: 'l', name: 'L', priceModifier: 100 },
+    ],
+  },
+  {
+    id: '2',
+    storeId: 'dummy-store-id',
+    name: 'トッピング',
+    selectionType: 'multiple',
+    choices: [
+      { id: 'cheese', name: 'チーズ', priceModifier: 100 },
+      { id: 'bacon', name: 'ベーコン', priceModifier: 150 },
+    ],
+  },
+];
 
 export default function MenuAdminPage() {
   const navigate = useNavigate();
@@ -129,6 +154,7 @@ export default function MenuAdminPage() {
         onClose={handleCloseForm}
         onSubmit={handleFormSubmit}
         editingMenuItem={editingMenuItem}
+        optionGroups={dummyOptionGroups}
       />
 
       {/* Delete Confirmation Dialog */}

@@ -25,6 +25,7 @@ export const menuFormSchema = z
     sortOrder: z.string().optional(),
     manageStock: z.boolean().default(false),
     stock: z.string().optional(),
+    optionGroupIds: z.array(z.string()).default([]),
   })
   .refine(
     (data) => {
