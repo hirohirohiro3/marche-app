@@ -153,7 +153,7 @@ export default function ManualOrderModal({
           }}
         >
           <Typography variant="h6">Manual POS</Typography>
-          <IconButton onClick={handleClose}>
+          <IconButton onClick={handleClose} data-testid="close-modal-button">
             <Close />
           </IconButton>
         </Box>
@@ -174,6 +174,7 @@ export default function ManualOrderModal({
                     variant="contained"
                     onClick={() => handleAddToCart(item)}
                     sx={{ width: '100%', height: '100px', textTransform: 'none' }}
+                    data-testid={`menu-item-${item.id}`}
                   >
                     {item.name}
                   </Button>
@@ -193,7 +194,7 @@ export default function ManualOrderModal({
               maxHeight: 'calc(90vh - 150px)',
             }}
           >
-            <Paper sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
+            <Paper sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }} data-testid="cart-section">
               <Typography variant="h6" gutterBottom>
                 Current Order
               </Typography>
@@ -209,6 +210,7 @@ export default function ManualOrderModal({
                       alignItems: 'center',
                       mb: 1,
                     }}
+                    data-testid={`cart-item-${item.id}`}
                   >
                     <Typography>
                       {item.name} x {item.quantity}
@@ -218,6 +220,7 @@ export default function ManualOrderModal({
                       variant="outlined"
                       color="error"
                       onClick={() => handleRemoveFromCart(item.id)}
+                      data-testid={`remove-from-cart-${item.id}`}
                     >
                       Remove
                     </Button>
@@ -226,7 +229,7 @@ export default function ManualOrderModal({
               )}
             </Paper>
             <Box sx={{ mt: 'auto', pt: 2 }}>
-              <Typography variant="h5" align="right" gutterBottom>
+              <Typography variant="h5" align="right" gutterBottom data-testid="total-price">
                 Total: ¥{totalPrice}
               </Typography>
               <Button
@@ -235,6 +238,7 @@ export default function ManualOrderModal({
                 fullWidth
                 onClick={handleCreateOrder}
                 disabled={cart.length === 0 || isLoading}
+                data-testid="create-order-button"
               >
                 {isLoading ? (
                   <CircularProgress size={24} color="inherit" />

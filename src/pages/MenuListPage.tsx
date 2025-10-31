@@ -14,7 +14,12 @@ const ItemQuantityControl = ({ item }: { item: MenuItem }) => {
 
   if (quantity === 0) {
     return (
-      <Button variant="contained" onClick={() => addItem(item)} fullWidth>
+      <Button
+        variant="contained"
+        onClick={() => addItem(item)}
+        fullWidth
+        data-testid={`add-to-cart-button-${item.id}`}
+      >
         カートに追加
       </Button>
     );
@@ -22,11 +27,19 @@ const ItemQuantityControl = ({ item }: { item: MenuItem }) => {
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-      <IconButton onClick={() => updateQuantity(item.id, quantity - 1)} color="primary">
+      <IconButton
+        onClick={() => updateQuantity(item.id, quantity - 1)}
+        color="primary"
+        data-testid={`remove-one-button-${item.id}`}
+      >
         <RemoveCircleOutline />
       </IconButton>
-      <Typography variant="h6">{quantity}</Typography>
-      <IconButton onClick={() => updateQuantity(item.id, quantity + 1)} color="primary">
+      <Typography variant="h6" data-testid={`quantity-display-${item.id}`}>{quantity}</Typography>
+      <IconButton
+        onClick={() => updateQuantity(item.id, quantity + 1)}
+        color="primary"
+        data-testid={`add-one-button-${item.id}`}
+      >
         <AddCircleOutline />
       </IconButton>
     </Box>
