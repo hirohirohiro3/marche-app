@@ -39,10 +39,10 @@ test.describe('Operational Support Features', () => {
     await page.getByTestId('end-of-day-confirm-button').click();
 
     // 4. Wait for the active columns to be empty, confirming the reset
-    const newOrdersCount = await page.getByTestId('new-orders-column').locator('[data-testid^="order-card-"]').count();
-    const paidOrdersCount = await page.getByTestId('paid-orders-column').locator('[data-testid^="order-card-"]').count();
-    expect(newOrdersCount).toBe(0);
-    expect(paidOrdersCount).toBe(0);
+    const newOrdersLocator = page.getByTestId('new-orders-column').locator('[data-testid^="order-card-"]');
+    await expect(newOrdersLocator).toHaveCount(0);
+    const paidOrdersLocator = page.getByTestId('paid-orders-column').locator('[data-testid^="order-card-"]');
+    await expect(paidOrdersLocator).toHaveCount(0);
   });
 
   test('should cancel an order from the paid column', async ({ page }) => {
