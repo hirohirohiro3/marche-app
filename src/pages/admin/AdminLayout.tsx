@@ -25,6 +25,9 @@ export default function AdminLayout() {
           <Button color="inherit" component={Link} to="/admin/settings/payment">
             決済設定
           </Button>
+          <Button color="inherit" component={Link} to="/admin/settings/qrcode">
+            QRコード設定
+          </Button>
           <Button
             color="inherit"
             component={Link}

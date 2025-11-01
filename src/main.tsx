@@ -11,6 +11,7 @@ import DashboardPage from './pages/admin/DashboardPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
 import OptionsAdminPage from './pages/admin/options';
 import PaymentSettingsPage from './pages/admin/settings/PaymentSettingsPage';
+import QrCodeSettingsPage from './pages/admin/settings/QrCodeSettingsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import MenuListPage from './pages/MenuListPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -61,6 +62,7 @@ const router = createBrowserRouter([
       { path: 'options', element: <OptionsAdminPage /> },
       { path: 'analytics', element: <AnalyticsPage /> },
       { path: 'settings/payment', element: <PaymentSettingsPage /> },
+      { path: 'settings/qrcode', element: <QrCodeSettingsPage /> },
     ],
   },
 ]);
