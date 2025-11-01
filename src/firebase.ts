@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -15,6 +16,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize App Check
+if (import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.DEV;
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+    isTokenAutoRefreshEnabled: true
+  });
+}
+
 // const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);

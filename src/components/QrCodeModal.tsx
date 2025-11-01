@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -8,15 +9,27 @@ import {
   Box,
   Link,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useAuth } from '../hooks/useAuth';
 
 interface QrCodeModalProps {
   open: boolean;
   onClose: () => void;
 }
 
+interface QrCodeSettings {
+  color: string;
+  logoUrl?: string;
+}
+
 export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
+  const { user } = useAuth();
+  const [settings, setSettings] = useState<QrCodeSettings | null>(null);
+  const [loading, setLoading] = useState(true);
   const customerMenuUrl = `${window.location.origin}/menu`;
 
   const handleDownload = () => {
@@ -58,17 +71,57 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
     img.src = dataUrl;
   };
 
+  useEffect(() => {
+    const fetchQrCodeSettings = async () => {
+      if (open && user) {
+        setLoading(true);
+        try {
+          const storeRef = doc(db, 'stores', user.uid);
+          const storeDoc = await getDoc(storeRef);
+          if (storeDoc.exists() && storeDoc.data().qrCodeSettings) {
+            setSettings(storeDoc.data().qrCodeSettings);
+          } else {
+            // Set default settings if none are found
+            setSettings({ color: '#000000' });
+          }
+        } catch (error) {
+          console.error("Failed to fetch QR code settings:", error);
+          setSettings({ color: '#000000' }); // Fallback to default on error
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchQrCodeSettings();
+  }, [open, user]);
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>お客様用メニューQRコード</DialogTitle>
       <DialogContent sx={{ textAlign: 'center' }}>
-        <Box sx={{ my: 2 }}>
-          <QRCode
-            id="qr-code-svg" // Add id for easy DOM selection
-            value={customerMenuUrl}
-            size={256}
-            style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-          />
+        <Box sx={{ my: 2, minHeight: 256 }}>
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            <QRCode
+              id="qr-code-svg"
+              value={customerMenuUrl}
+              size={256}
+              fgColor={settings?.color || '#000000'}
+              imageSettings={
+                settings?.logoUrl
+                  ? {
+                      src: settings.logoUrl,
+                      height: 48,
+                      width: 48,
+                      excavate: true,
+                    }
+                  : undefined
+              }
+              style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+            />
+          )}
         </Box>
         <Typography variant="caption" display="block" gutterBottom>
           上記のQRコードを読み取ってメニューにアクセスしてください。
