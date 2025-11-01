@@ -47,7 +47,7 @@ export default function QrCodeSettingsPage() {
     watch,
     setValue,
     reset, // Use reset to set form values
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<QrSettingsForm>({
     resolver: zodResolver(qrSettingsSchema),
     defaultValues: {
@@ -165,7 +165,7 @@ export default function QrCodeSettingsPage() {
                   )}
                 />
                 {preview && <Avatar src={preview} sx={{ width: 100, height: 100, mt: 2 }} />}
-                <FormHelperText>{errors.logoFile?.message}</FormHelperText>
+                <FormHelperText>{errors.logoFile?.message as string}</FormHelperText>
               </FormControl>
             </Grid>
 
