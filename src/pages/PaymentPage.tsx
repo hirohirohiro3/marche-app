@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import {
@@ -22,26 +23,30 @@ export default function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // This is where we would fetch the `clientSecret` from our backend (Firebase Function)
-    // For now, we'll simulate it.
     const fetchPaymentIntent = async () => {
+      if (!orderId) {
+        setError('注文IDが見つかりません。');
+        setLoading(false);
+        return;
+      }
+
       try {
-        // In a real app, you'd make a request to a server endpoint.
-        // const response = await fetch('/api/create-payment-intent', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ orderId }),
-        // });
-        // const { clientSecret } = await response.json();
+        const functions = getFunctions();
+        const createPaymentIntent = httpsCallable(functions, 'createPaymentIntent');
 
-        // --- Dummy Data for UI Layout ---
-        const dummyClientSecret = 'pi_..._secret_...'; // This is a fake client secret
-        setClientSecret(dummyClientSecret);
-        // --- End of Dummy Data ---
+        console.log(`Calling createPaymentIntent for orderId: ${orderId}`);
+        const result = await createPaymentIntent({ orderId });
 
-      } catch (e) {
+        const { clientSecret } = result.data as { clientSecret: string };
+
+        if (!clientSecret) {
+          throw new Error('Client secret not returned from function.');
+        }
+
+        setClientSecret(clientSecret);
+      } catch (e: any) {
         setError('決済の準備に失敗しました。');
-        console.error(e);
+        console.error('Error calling createPaymentIntent:', e);
       } finally {
         setLoading(false);
       }
