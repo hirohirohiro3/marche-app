@@ -14,8 +14,8 @@ import {
   Alert,
 } from '@mui/material';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
-import { useAuth } from '../../hooks/useAuth';
+import { db } from '../../../firebase';
+import { useAuth } from '../../../hooks/useAuth';
 
 // Define the type for payment settings
 export type PaymentMethod = 'cash_only' | 'cash_and_online' | 'online_only';
