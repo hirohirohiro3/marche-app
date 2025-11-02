@@ -15,7 +15,6 @@ test.describe('Payment Flow E2E Test', () => {
     await expect(page).toHaveURL('/admin/dashboard', { timeout: 15000 });
 
     // 2. Set payment method to "in-app payment only"
-    await page.getByRole('link', { name: '設定' }).click();
     await page.getByRole('link', { name: '決済設定' }).click();
     await expect(page).toHaveURL('/admin/settings/payment');
     await page.getByLabel('アプリ内決済のみ').check();
