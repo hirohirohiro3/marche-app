@@ -43,11 +43,12 @@ test.describe('Payment Flow E2E Test', () => {
     await addMenuItemButton.click();
     await page.getByLabel('商品名').fill(PRODUCT_NAME);
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
+    await page.getByLabel('カテゴリ').fill('E2Eテスト'); // Add category
     await page.getByRole('button', { name: '保存' }).click();
 
-    // After saving, wait for the form dialog (which has a role of 'dialog') to disappear.
-    // This is a reliable indicator that the save operation has completed and the UI is ready.
-    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 15000 });
+    // After saving, wait for the 'Add Menu' form dialog to disappear.
+    // We identify the specific dialog by its title to avoid ambiguity.
+    await expect(page.getByRole('dialog', { name: 'メニューを追加' })).not.toBeVisible({ timeout: 15000 });
 
     // Now that the dialog is closed, verify that the new item is visible in the table.
     await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 5000 });
