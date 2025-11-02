@@ -103,7 +103,12 @@ export default function MenuAdminPage() {
           メニュー管理
         </Typography>
         <div>
-          <Button variant="contained" onClick={() => handleOpenForm(null)} sx={{ mr: 2}}>
+          <Button
+            variant="contained"
+            onClick={() => handleOpenForm(null)}
+            sx={{ mr: 2 }}
+            data-testid="add-menu-item-button"
+          >
             新規追加
           </Button>
           <Button variant="outlined" onClick={handleLogout}>
