@@ -36,10 +36,11 @@ test.describe('Payment Flow E2E Test', () => {
     await page.getByRole('link', { name: 'メニュー管理' }).click();
     await expect(page).toHaveURL('/admin/menu');
 
-    // Wait for the loading spinner to disappear, ensuring the menu data is fully loaded.
-    await expect(page.getByRole('progressbar')).not.toBeVisible({ timeout: 10000 });
+    // Wait for the "Add Menu Item" button to be visible, ensuring the page is fully loaded and interactive.
+    const addMenuItemButton = page.getByTestId('add-menu-item-button');
+    await expect(addMenuItemButton).toBeVisible({ timeout: 10000 });
 
-    await page.getByRole('button', { name: 'メニューを追加' }).click();
+    await addMenuItemButton.click();
     await page.getByLabel('商品名').fill(PRODUCT_NAME);
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
     await page.getByRole('button', { name: '保存' }).click();
