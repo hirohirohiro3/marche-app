@@ -35,6 +35,10 @@ test.describe('Payment Flow E2E Test', () => {
     // 3. Create a test menu item
     await page.getByRole('link', { name: 'メニュー管理' }).click();
     await expect(page).toHaveURL('/admin/menu');
+
+    // Wait for the page title to be visible, ensuring the page is fully loaded
+    await expect(page.getByRole('heading', { name: 'メニュー管理' })).toBeVisible();
+
     await page.getByRole('button', { name: 'メニューを追加' }).click();
     await page.getByLabel('商品名').fill(PRODUCT_NAME);
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
