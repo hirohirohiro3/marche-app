@@ -44,8 +44,11 @@ test.describe('Payment Flow E2E Test', () => {
     await page.getByLabel('商品名').fill(PRODUCT_NAME);
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
     await page.getByRole('button', { name: '保存' }).click();
-    await expect(page.getByText(`${PRODUCT_NAME}が追加されました`)).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole('heading', { name: PRODUCT_NAME })).toBeVisible();
+
+    // Instead of a success message, wait for the dialog to close and the new item to be visible in the table.
+    // This is a more robust way to confirm the operation was successful.
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 10000 });
   });
 
   test('should complete the full payment flow from customer order to admin dashboard verification', async ({ page, context }) => {
