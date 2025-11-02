@@ -17,9 +17,20 @@ test.describe('Payment Flow E2E Test', () => {
     // 2. Set payment method to "in-app payment only"
     await page.getByRole('link', { name: '決済設定' }).click();
     await expect(page).toHaveURL('/admin/settings/payment');
+
+    // Wait for the initial settings to load by checking if the default radio is checked
+    await expect(page.getByLabel('レジでの支払いのみ')).toBeChecked();
+
+    // Change the setting
     await page.getByLabel('アプリ内決済のみ').check();
-    await page.getByRole('button', { name: '保存' }).click();
-    await expect(page.getByText('決済設定を更新しました')).toBeVisible();
+
+    // Wait for the save button to become enabled, then click it
+    const saveButton = page.getByRole('button', { name: '保存' });
+    await expect(saveButton).toBeEnabled({ timeout: 5000 });
+    await saveButton.click();
+
+    // Wait for the success message to appear
+    await expect(page.getByText('決済設定を更新しました')).toBeVisible({ timeout: 10000 });
 
     // 3. Create a test menu item
     await page.getByRole('link', { name: 'メニュー管理' }).click();
