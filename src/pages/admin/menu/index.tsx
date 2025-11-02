@@ -118,7 +118,9 @@ export default function MenuAdminPage() {
       </Box>
 
       {loading ? (
-        <CircularProgress />
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+          <CircularProgress data-testid="loading-indicator" />
+        </Box>
       ) : (
         <TableContainer component={Paper}>
           <Table>

@@ -45,9 +45,13 @@ test.describe('Payment Flow E2E Test', () => {
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
     await page.getByRole('button', { name: '保存' }).click();
 
-    // Instead of a success message, wait for the dialog to close and the new item to be visible in the table.
-    // This is a more robust way to confirm the operation was successful.
-    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 15000 });
+    // Wait for the loading indicator to appear and then disappear.
+    // This ensures that we wait for the data to be saved and the UI to be updated.
+    await expect(page.getByTestId('loading-indicator')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('loading-indicator')).not.toBeVisible({ timeout: 15000 });
+
+    // Now, verify that the new item is visible in the table.
+    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 5000 });
   });
 
   test('should complete the full payment flow from customer order to admin dashboard verification', async ({ page, context }) => {
