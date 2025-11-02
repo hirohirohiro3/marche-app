@@ -34,8 +34,10 @@ test('Customer Order Flow', async ({ page }) => {
 
   // 7. Verify cart summary and proceed to checkout.
   const cartSummary = page.getByTestId('cart-summary');
-  await expect(cartSummary).toBeVisible();
+  // First, assert the text content. Playwright's auto-retry will wait for the cart to update and the summary to appear.
   await expect(cartSummary).toContainText('1点の商品');
+  // Then, assert visibility now that we know it has appeared.
+  await expect(cartSummary).toBeVisible();
 
   await page.getByTestId('checkout-button').click();
 
