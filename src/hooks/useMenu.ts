@@ -43,7 +43,7 @@ export const menuFormSchema = z
 export type MenuFormValues = z.infer<typeof menuFormSchema>;
 
 export const useMenu = () => {
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const [menus, setMenus] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
 
