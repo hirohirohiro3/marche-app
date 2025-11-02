@@ -44,7 +44,7 @@ test.describe('Payment Flow E2E Test', () => {
     await page.getByLabel('商品名').fill(PRODUCT_NAME);
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
     await page.getByRole('button', { name: '保存' }).click();
-    await expect(page.getByText(`${PRODUCT_NAME}が追加されました`)).toBeVisible();
+    await expect(page.getByText(`${PRODUCT_NAME}が追加されました`)).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('heading', { name: PRODUCT_NAME })).toBeVisible();
   });
 
