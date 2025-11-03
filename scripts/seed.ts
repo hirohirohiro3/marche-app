@@ -1,16 +1,14 @@
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
+import * as admin from 'firebase-admin';
 
 // Initialize Firebase Admin SDK
 const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 
-initializeApp({
-  credential: cert(serviceAccount),
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
 });
 
-const db = getFirestore();
-const auth = getAuth();
+const db = admin.firestore();
+const auth = admin.auth();
 
 const TEST_USER_EMAIL = 'test@test.test';
 const TEST_USER_PASSWORD = '112233';
