@@ -21,7 +21,6 @@
     "@stripe/stripe-js": "^8.2.0",
     "@types/react-router-dom": "^5.3.3",
     "@types/recharts": "^2.0.1",
-    "@types/uuid": "^10.0.0",
     "firebase": "^12.4.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",
@@ -30,7 +29,6 @@
     "react-router-dom": "^6.30.1",
     "recharts": "^2.15.4",
     "uid": "^2.0.2",
-    "uuid": "^13.0.0",
     "zod": "^3.25.76",
     "zustand": "^5.0.8"
   },
@@ -40,6 +38,7 @@
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^5.0.4",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -49,6 +48,7 @@
     "tsx": "^4.16.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
+    "uuid": "^13.0.0",
     "vite": "^7.1.7"
   }
 }
