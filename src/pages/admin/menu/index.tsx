@@ -144,7 +144,9 @@ export default function MenuAdminPage() {
                     />
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton onClick={() => handleOpenForm(row)}><Edit /></IconButton>
+                    <IconButton onClick={() => handleOpenForm(row)}>
+                      <Edit />
+                    </IconButton>
                     <IconButton
                       onClick={() => handleOpenDeleteAlert(row)}
                       data-testid={`delete-button-${row.name}`}
@@ -165,6 +167,7 @@ export default function MenuAdminPage() {
         onSubmit={handleFormSubmit}
         editingMenuItem={editingMenuItem}
         optionGroups={dummyOptionGroups}
+        data-testid="menu-form-dialog"
       />
 
       {/* Delete Confirmation Dialog */}

@@ -6,8 +6,6 @@ test.describe('Customer Order Flow', () => {
   const PRODUCT_PRICE = '250';
 
   test.beforeEach(async ({ page }) => {
-    // 1. Create a unique user (store owner) and log in.
-    // This provides an isolated store environment for the test.
     await page.goto('/signup');
     const uniqueEmail = `test-customer-flow-${Date.now()}@example.com`;
     await page.getByLabel('店舗名').fill('カスタマーテスト店舗');
@@ -16,24 +14,44 @@ test.describe('Customer Order Flow', () => {
     await page.getByRole('button', { name: '登録して開始' }).click();
     await expect(page).toHaveURL('/admin/dashboard', { timeout: 15000 });
 
-    // 2. Get the user's UID, which is used as the storeId.
-    storeId = await page.evaluate(() => window.firebase.auth().currentUser.uid);
+    // **[FIX]** Wait for Firebase auth to be ready before getting UID.
+    // This polls the browser until `window.firebase.auth().currentUser` is available.
+    storeId = await page.evaluate(async () => {
+      const firebase = window.firebase;
+      return new Promise((resolve) => {
+        const checkAuth = () => {
+          const user = firebase.auth().currentUser;
+          if (user) {
+            resolve(user.uid);
+          } else {
+            setTimeout(checkAuth, 100); // Poll every 100ms
+          }
+        };
+        checkAuth();
+      });
+    });
     expect(storeId).toBeDefined();
 
-    // 3. Create a menu item that the customer will order.
     await page.getByRole('link', { name: 'メニュー管理' }).click();
     await expect(page).toHaveURL('/admin/menu');
+
     const addMenuItemButton = page.getByTestId('add-menu-item-button');
     await expect(addMenuItemButton).toBeVisible({ timeout: 10000 });
     await addMenuItemButton.click();
+
+    // **[FIX]** Wait for the dialog to be visible before interacting with it.
+    await expect(page.getByTestId('menu-form-dialog')).toBeVisible();
+
     await page.getByLabel('商品名').fill(PRODUCT_NAME);
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
     await page.getByRole('button', { name: '保存' }).click();
-    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 15000 });
+
+    // **[FIX]** Wait for the dialog to disappear, then verify the item appears.
+    await expect(page.getByTestId('menu-form-dialog')).not.toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 10000 });
   });
 
   test.afterEach(async ({ page }) => {
-    // Clean up the created menu item to ensure test isolation.
     if (!page.url().endsWith('/admin/menu')) {
       await page.goto('/admin/menu');
     }
@@ -51,29 +69,22 @@ test.describe('Customer Order Flow', () => {
   });
 
   test('should allow a customer to order the created item', async ({ page }) => {
-    // 1. Navigate to the customer menu page using the dynamic storeId.
     await page.goto(`/menu/${storeId}`);
-
-    // 2. Wait for the page to be ready (loading spinner disappears).
     await expect(page.getByRole('progressbar')).not.toBeVisible({ timeout: 15000 });
 
-    // 3. Add the specific test item to the cart.
     const addToCartButton = page.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`);
     await expect(addToCartButton).toBeVisible();
     await addToCartButton.click();
 
-    // 4. Verify cart summary appears and proceed to checkout.
     const cartSummary = page.getByTestId('cart-summary');
     await expect(cartSummary).toContainText('1点の商品');
     await expect(cartSummary).toBeVisible();
     await page.getByTestId('checkout-button').click();
 
-    // 5. Confirm the order on the checkout page.
     await expect(page).toHaveURL('/checkout');
     await expect(page.getByTestId('checkout-container')).toBeVisible();
     await page.getByTestId('confirm-order-button').click();
 
-    // 6. Verify the final order summary page is displayed.
     await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
     await expect(page.getByRole('progressbar')).not.toBeVisible();
     await expect(page.getByText(/注文番号/)).toBeVisible();
