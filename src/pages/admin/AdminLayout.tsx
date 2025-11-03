@@ -1,11 +1,8 @@
 
 import { AppBar, Toolbar, Typography, Button, Container } from '@mui/material';
 import { Link, Outlet } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 
 export default function AdminLayout() {
-  const { user } = useAuth();
-
   return (
     <>
       <AppBar position="static">
@@ -34,7 +31,7 @@ export default function AdminLayout() {
           <Button
             color="inherit"
             component={Link}
-            to={user ? `/menu/${user.uid}` : '/'}
+            to="/menu"
             target="_blank"
             rel="noopener noreferrer"
           >

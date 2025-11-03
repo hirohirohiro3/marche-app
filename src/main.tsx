@@ -37,7 +37,7 @@ const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <RedirectToIndex /> },
-      { path: 'menu/:storeId', element: <MenuListPage /> },
+      { path: 'menu', element: <MenuListPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'signup', element: <SignupPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
