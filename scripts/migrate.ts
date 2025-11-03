@@ -1,14 +1,17 @@
-import * as admin from 'firebase-admin';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 // IMPORTANT: Replace with your actual service account credentials
-const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS as string);
+if (getApps().length === 0) {
+  const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS as string);
+  initializeApp({
+    credential: cert(serviceAccount),
+  });
+}
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-
-const db = admin.firestore();
-const auth = admin.auth();
+const db = getFirestore();
+const auth = getAuth();
 
 // --- Configuration ---
 // The email of the user who owns the v1.5 data.

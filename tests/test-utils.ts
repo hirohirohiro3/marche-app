@@ -1,4 +1,6 @@
-import * as admin from 'firebase-admin';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 /**
  * Initializes the Firebase Admin SDK.
@@ -8,14 +10,14 @@ import * as admin from 'firebase-admin';
  */
 export function initializeTestEnvironment() {
   // Check if the app is already initialized to prevent duplicate initialization errors.
-  if (admin.apps.length === 0) {
+  if (getApps().length === 0) {
     try {
       const serviceAccount = JSON.parse(
         Buffer.from(process.env.GOOGLE_CREDENTIALS, 'base64').toString('utf-8')
       );
 
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+      initializeApp({
+        credential: cert(serviceAccount),
       });
 
       console.log('Firebase Admin SDK initialized for tests.');
@@ -28,8 +30,7 @@ export function initializeTestEnvironment() {
 
   // Return the initialized services for use in test setup.
   return {
-    db: admin.firestore(),
-    auth: admin.auth(),
-    admin,
+    db: getFirestore(),
+    auth: getAuth(),
   };
 }
