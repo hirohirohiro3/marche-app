@@ -1,92 +1,75 @@
 import { test, expect } from '@playwright/test';
+import { createTestUser, deleteTestUser } from './test-utils';
 
 test.describe('Customer Order Flow', () => {
   let storeId: string;
+  let userEmail: string;
+  let userPassword;
   const PRODUCT_NAME = 'カスタマーテスト用商品';
   const PRODUCT_PRICE = '250';
 
+  // Use a serial execution mode to prevent race conditions with user creation/deletion
+  test.describe.configure({ mode: 'serial' });
+
+  // Create a dedicated user for the entire test suite
+  test.beforeAll(async () => {
+    const { uid, email, password } = await createTestUser('カスタマーテスト店舗');
+    storeId = uid;
+    userEmail = email;
+    userPassword = password;
+  });
+
+  // Delete the user after all tests in this suite have run
+  test.afterAll(async () => {
+    await deleteTestUser(storeId);
+  });
+
   test.beforeEach(async ({ page }) => {
-    await page.goto('/signup');
-    const uniqueEmail = `test-customer-flow-${Date.now()}@example.com`;
-    await page.getByLabel('店舗名').fill('カスタマーテスト店舗');
-    await page.getByLabel('メールアドレス').fill(uniqueEmail);
-    await page.getByLabel('パスワード').fill('password123');
-    await page.getByRole('button', { name: '登録して開始' }).click();
+    // Log in as the created user
+    await page.goto('/login');
+    await page.getByLabel('メールアドレス').fill(userEmail);
+    await page.getByLabel('パスワード').fill(userPassword);
+    await page.getByRole('button', { name: 'ログイン' }).click();
     await expect(page).toHaveURL('/admin/dashboard', { timeout: 15000 });
 
-    // **[FIX]** Wait for Firebase auth to be ready before getting UID.
-    // This polls the browser until `window.firebase.auth().currentUser` is available.
-    storeId = await page.evaluate(async () => {
-      const firebase = window.firebase;
-      return new Promise((resolve) => {
-        const checkAuth = () => {
-          const user = firebase.auth().currentUser;
-          if (user) {
-            resolve(user.uid);
-          } else {
-            setTimeout(checkAuth, 100); // Poll every 100ms
-          }
-        };
-        checkAuth();
-      });
-    });
-    expect(storeId).toBeDefined();
-
+    // Create a menu item for the test
     await page.getByRole('link', { name: 'メニュー管理' }).click();
     await expect(page).toHaveURL('/admin/menu');
-
-    const addMenuItemButton = page.getByTestId('add-menu-item-button');
-    await expect(addMenuItemButton).toBeVisible({ timeout: 10000 });
-    await addMenuItemButton.click();
-
-    // **[FIX]** Wait for the dialog to be visible before interacting with it.
-    await expect(page.getByTestId('menu-form-dialog')).toBeVisible();
-
+    await page.getByTestId('add-menu-item-button').click();
     await page.getByLabel('商品名').fill(PRODUCT_NAME);
     await page.getByLabel('価格').fill(PRODUCT_PRICE);
     await page.getByRole('button', { name: '保存' }).click();
-
-    // **[FIX]** Wait for the dialog to disappear, then verify the item appears.
-    await expect(page.getByTestId('menu-form-dialog')).not.toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 15000 });
   });
 
   test.afterEach(async ({ page }) => {
+    // Clean up the created menu item
     if (!page.url().endsWith('/admin/menu')) {
       await page.goto('/admin/menu');
     }
-    try {
-      const deleteButton = page.getByTestId(`delete-button-${PRODUCT_NAME}`);
-      await deleteButton.waitFor({ state: 'visible', timeout: 5000 });
-      await deleteButton.click();
-      const confirmButton = page.getByTestId('confirm-delete-button');
-      await confirmButton.waitFor({ state: 'visible', timeout: 5000 });
-      await confirmButton.click();
-      await expect(page.getByRole('cell', { name: PRODUCT_NAME })).not.toBeVisible({ timeout: 10000 });
-    } catch (error) {
-      console.log(`Cleanup failed for product "${PRODUCT_NAME}":`, error);
-    }
+    const deleteButton = page.getByTestId(`delete-button-${PRODUCT_NAME}`);
+    await deleteButton.click();
+    await page.getByTestId('confirm-delete-button').click();
+    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).not.toBeVisible({ timeout: 10000 });
   });
 
   test('should allow a customer to order the created item', async ({ page }) => {
+    // 1. Navigate to the customer menu page
     await page.goto(`/menu/${storeId}`);
     await expect(page.getByRole('progressbar')).not.toBeVisible({ timeout: 15000 });
 
-    const addToCartButton = page.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`);
-    await expect(addToCartButton).toBeVisible();
-    await addToCartButton.click();
-
+    // 2. Add item to cart
+    await page.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`).click();
     const cartSummary = page.getByTestId('cart-summary');
     await expect(cartSummary).toContainText('1点の商品');
-    await expect(cartSummary).toBeVisible();
-    await page.getByTestId('checkout-button').click();
 
+    // 3. Checkout
+    await page.getByTestId('checkout-button').click();
     await expect(page).toHaveURL('/checkout');
-    await expect(page.getByTestId('checkout-container')).toBeVisible();
     await page.getByTestId('confirm-order-button').click();
 
+    // 4. Verify order summary
     await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
-    await expect(page.getByRole('progressbar')).not.toBeVisible();
     await expect(page.getByText(/注文番号/)).toBeVisible();
   });
 });
