@@ -103,7 +103,12 @@ export default function MenuAdminPage() {
           メニュー管理
         </Typography>
         <div>
-          <Button variant="contained" onClick={() => handleOpenForm(null)} sx={{ mr: 2}}>
+          <Button
+            variant="contained"
+            onClick={() => handleOpenForm(null)}
+            sx={{ mr: 2 }}
+            data-testid="add-menu-item-button"
+          >
             新規追加
           </Button>
           <Button variant="outlined" onClick={handleLogout}>
@@ -139,8 +144,15 @@ export default function MenuAdminPage() {
                     />
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton onClick={() => handleOpenForm(row)}><Edit /></IconButton>
-                    <IconButton onClick={() => handleOpenDeleteAlert(row)}><Delete /></IconButton>
+                    <IconButton onClick={() => handleOpenForm(row)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleOpenDeleteAlert(row)}
+                      data-testid={`delete-button-${row.name}`}
+                    >
+                      <Delete />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -155,6 +167,7 @@ export default function MenuAdminPage() {
         onSubmit={handleFormSubmit}
         editingMenuItem={editingMenuItem}
         optionGroups={dummyOptionGroups}
+        data-testid="menu-form-dialog"
       />
 
       {/* Delete Confirmation Dialog */}
@@ -165,7 +178,11 @@ export default function MenuAdminPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteAlert}>キャンセル</Button>
-          <Button onClick={handleDeleteConfirm} color="error">
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            data-testid="confirm-delete-button"
+          >
             削除
           </Button>
         </DialogActions>
