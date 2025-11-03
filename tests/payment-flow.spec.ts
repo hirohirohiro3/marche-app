@@ -50,10 +50,40 @@ test.describe('Payment Flow E2E Test', () => {
     await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 15000 });
   });
 
+  // Cleanup logic to run after each test
+  test.afterEach(async ({ page }) => {
+    // Navigate back to the menu page if not already there
+    if (!page.url().endsWith('/admin/menu')) {
+      await page.goto('/admin/menu');
+    }
+
+    // Use a try-catch block to handle cases where the item might already be deleted or was never created due to a failing test.
+    try {
+      // Wait for the delete button to be visible before clicking
+      const deleteButton = page.getByTestId(`delete-button-${PRODUCT_NAME}`);
+      await deleteButton.waitFor({ state: 'visible', timeout: 5000 });
+      await deleteButton.click();
+
+      // Wait for the confirmation dialog and click the final delete button
+      const confirmButton = page.getByTestId('confirm-delete-button');
+      await confirmButton.waitFor({ state: 'visible', timeout: 5000 });
+      await confirmButton.click();
+
+      // Wait for the item to disappear from the table to confirm deletion
+      await expect(page.getByRole('cell', { name: PRODUCT_NAME })).not.toBeVisible({ timeout: 10000 });
+    } catch (error) {
+      console.log(`Cleanup failed for product "${PRODUCT_NAME}":`, error);
+      // Allow the test run to continue even if cleanup fails
+    }
+  });
+
   test('should complete the full payment flow from customer order to admin dashboard verification', async ({ page, context }) => {
     // Part 1: Customer-side flow
     // 1. Visit the menu page
-    await page.goto('/menu');
+    // The storeId is required for the multi-tenant setup.
+    // We get it from the authenticated user in the admin session.
+    const storeId = await page.evaluate(() => window.firebase.auth().currentUser.uid);
+    await page.goto(`/menu/${storeId}`);
 
     // 2. Add the product to the cart and proceed to checkout
     await page.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`).click();

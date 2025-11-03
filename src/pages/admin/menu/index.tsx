@@ -145,7 +145,12 @@ export default function MenuAdminPage() {
                   </TableCell>
                   <TableCell align="center">
                     <IconButton onClick={() => handleOpenForm(row)}><Edit /></IconButton>
-                    <IconButton onClick={() => handleOpenDeleteAlert(row)}><Delete /></IconButton>
+                    <IconButton
+                      onClick={() => handleOpenDeleteAlert(row)}
+                      data-testid={`delete-button-${row.name}`}
+                    >
+                      <Delete />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -170,7 +175,11 @@ export default function MenuAdminPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteAlert}>キャンセル</Button>
-          <Button onClick={handleDeleteConfirm} color="error">
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            data-testid="confirm-delete-button"
+          >
             削除
           </Button>
         </DialogActions>

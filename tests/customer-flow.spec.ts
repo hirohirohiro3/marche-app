@@ -1,59 +1,81 @@
 import { test, expect } from '@playwright/test';
 
-test('Customer Order Flow', async ({ page }) => {
-  // 1. Navigate to the menu page
-  await page.goto('/menu');
+test.describe('Customer Order Flow', () => {
+  let storeId: string;
+  const PRODUCT_NAME = 'カスタマーテスト用商品';
+  const PRODUCT_PRICE = '250';
 
-  // 2. Define locators for both the main content and the potential error message.
-  const menuContainer = page.locator('main');
-  const missingConfigError = page.getByText('Firebase configuration is missing.');
+  test.beforeEach(async ({ page }) => {
+    // 1. Create a unique user (store owner) and log in.
+    // This provides an isolated store environment for the test.
+    await page.goto('/signup');
+    const uniqueEmail = `test-customer-flow-${Date.now()}@example.com`;
+    await page.getByLabel('店舗名').fill('カスタマーテスト店舗');
+    await page.getByLabel('メールアドレス').fill(uniqueEmail);
+    await page.getByLabel('パスワード').fill('password123');
+    await page.getByRole('button', { name: '登録して開始' }).click();
+    await expect(page).toHaveURL('/admin/dashboard', { timeout: 15000 });
 
-  // 3. Wait for either the main content OR the error message to become visible.
-  await expect(menuContainer.or(missingConfigError)).toBeVisible();
+    // 2. Get the user's UID, which is used as the storeId.
+    storeId = await page.evaluate(() => window.firebase.auth().currentUser.uid);
+    expect(storeId).toBeDefined();
 
-  // 4. If the error is visible (expected in CI), end the test successfully.
-  if (await missingConfigError.isVisible()) {
-    console.log('Firebase config missing, skipping UI test. This is expected in CI.');
-    return;
-  }
+    // 3. Create a menu item that the customer will order.
+    await page.getByRole('link', { name: 'メニュー管理' }).click();
+    await expect(page).toHaveURL('/admin/menu');
+    const addMenuItemButton = page.getByTestId('add-menu-item-button');
+    await expect(addMenuItemButton).toBeVisible({ timeout: 10000 });
+    await addMenuItemButton.click();
+    await page.getByLabel('商品名').fill(PRODUCT_NAME);
+    await page.getByLabel('価格').fill(PRODUCT_PRICE);
+    await page.getByRole('button', { name: '保存' }).click();
+    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 15000 });
+  });
 
-  // 5. Wait for the loading spinner to disappear, ensuring menu data is loaded.
-  await expect(page.getByRole('progressbar')).not.toBeVisible();
+  test.afterEach(async ({ page }) => {
+    // Clean up the created menu item to ensure test isolation.
+    if (!page.url().endsWith('/admin/menu')) {
+      await page.goto('/admin/menu');
+    }
+    try {
+      const deleteButton = page.getByTestId(`delete-button-${PRODUCT_NAME}`);
+      await deleteButton.waitFor({ state: 'visible', timeout: 5000 });
+      await deleteButton.click();
+      const confirmButton = page.getByTestId('confirm-delete-button');
+      await confirmButton.waitFor({ state: 'visible', timeout: 5000 });
+      await confirmButton.click();
+      await expect(page.getByRole('cell', { name: PRODUCT_NAME })).not.toBeVisible({ timeout: 10000 });
+    } catch (error) {
+      console.log(`Cleanup failed for product "${PRODUCT_NAME}":`, error);
+    }
+  });
 
-  // 6. Find the first available "add to cart" button.
-  const addToCartButtons = page.locator('[data-testid^="add-to-cart-button-"]');
-  const firstButton = addToCartButtons.first();
+  test('should allow a customer to order the created item', async ({ page }) => {
+    // 1. Navigate to the customer menu page using the dynamic storeId.
+    await page.goto(`/menu/${storeId}`);
 
-  // If no items are available, end the test successfully.
-  if (await addToCartButtons.count() === 0) {
-    console.log('No menu items found. Skipping the rest of the flow.');
-    return;
-  }
-  await expect(firstButton).toBeVisible();
-  await firstButton.click();
+    // 2. Wait for the page to be ready (loading spinner disappears).
+    await expect(page.getByRole('progressbar')).not.toBeVisible({ timeout: 15000 });
 
-  // 7. Verify cart summary and proceed to checkout.
-  const cartSummary = page.getByTestId('cart-summary');
-  // First, assert the text content. Playwright's auto-retry will wait for the cart to update and the summary to appear.
-  await expect(cartSummary).toContainText('1点の商品');
-  // Then, assert visibility now that we know it has appeared.
-  await expect(cartSummary).toBeVisible();
+    // 3. Add the specific test item to the cart.
+    const addToCartButton = page.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`);
+    await expect(addToCartButton).toBeVisible();
+    await addToCartButton.click();
 
-  await page.getByTestId('checkout-button').click();
+    // 4. Verify cart summary appears and proceed to checkout.
+    const cartSummary = page.getByTestId('cart-summary');
+    await expect(cartSummary).toContainText('1点の商品');
+    await expect(cartSummary).toBeVisible();
+    await page.getByTestId('checkout-button').click();
 
-  // 8. Confirm the order on the checkout page.
-  await expect(page).toHaveURL('/checkout');
-  await expect(page.getByTestId('checkout-container')).toBeVisible();
+    // 5. Confirm the order on the checkout page.
+    await expect(page).toHaveURL('/checkout');
+    await expect(page.getByTestId('checkout-container')).toBeVisible();
+    await page.getByTestId('confirm-order-button').click();
 
-  await page.getByTestId('confirm-order-button').click();
-
-  // 9. Verify the order summary page.
-  // Firestore transaction can be slow in CI, so we give it a generous timeout.
-  await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
-
-  // Wait for the loading spinner to disappear on the order summary page.
-  await expect(page.getByRole('progressbar')).not.toBeVisible();
-
-  // Check for the "注文番号" text, indicating success.
-  await expect(page.getByText(/注文番号/)).toBeVisible();
+    // 6. Verify the final order summary page is displayed.
+    await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
+    await expect(page.getByRole('progressbar')).not.toBeVisible();
+    await expect(page.getByText(/注文番号/)).toBeVisible();
+  });
 });
