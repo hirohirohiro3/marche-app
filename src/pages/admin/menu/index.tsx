@@ -71,13 +71,8 @@ export default function MenuAdminPage() {
   };
 
   const handleFormSubmit = async (values: MenuFormValues, imageFile: File | null) => {
-    try {
-      await saveMenuItem(values, imageFile, editingMenuItem);
-      handleCloseForm(); // Close form only on success
-    } catch (error) {
-      console.error("Error saving menu item:", error);
-      // Optionally: display an error message to the user in the UI
-    }
+    await saveMenuItem(values, imageFile, editingMenuItem);
+    handleCloseForm();
   };
 
   const handleOpenDeleteAlert = (menuItem: MenuItem) => {
