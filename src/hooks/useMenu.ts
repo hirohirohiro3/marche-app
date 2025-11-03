@@ -8,13 +8,14 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  where,
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../firebase';
 import { MenuItem } from '../types';
 import * as z from 'zod';
+import { useAuth } from './useAuth';
 
-// Zod schema and type definition co-located with the hook
 // Zod schema and type definition co-located with the hook
 export const menuFormSchema = z
   .object({
@@ -41,13 +42,25 @@ export const menuFormSchema = z
   );
 export type MenuFormValues = z.infer<typeof menuFormSchema>;
 
-export const useMenu = () => {
+export const useMenu = (storeId?: string) => {
+  const { user } = useAuth();
   const [menus, setMenus] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const targetStoreId = storeId || user?.uid;
 
   useEffect(() => {
+    if (!targetStoreId) {
+      setMenus([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    const q = query(collection(db, 'menus'), orderBy('sortOrder', 'asc'));
+    const q = query(
+      collection(db, 'menus'),
+      where('storeId', '==', targetStoreId),
+      orderBy('sortOrder', 'asc')
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const menusData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -56,8 +69,9 @@ export const useMenu = () => {
       setMenus(menusData);
       setLoading(false);
     });
+
     return () => unsubscribe();
-  }, []);
+  }, [targetStoreId]);
 
   const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
     const storage = getStorage();
@@ -88,7 +102,12 @@ export const useMenu = () => {
       if (editingMenuItem) {
         await updateDoc(doc(db, 'menus', editingMenuItem.id), dataToSave);
       } else {
-        await addDoc(collection(db, 'menus'), { ...dataToSave, isSoldOut: false });
+        if (!user) throw new Error("User not authenticated");
+        await addDoc(collection(db, 'menus'), {
+          ...dataToSave,
+          storeId: user.uid,
+          isSoldOut: false,
+        });
       }
     } catch (error) {
       console.error('Failed to save menu item:', error);

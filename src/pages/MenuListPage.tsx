@@ -3,6 +3,7 @@ import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions,
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
+import { useParams } from 'react-router-dom';
 import { MenuItem, OptionGroup } from '../types';
 import { useCartStore } from '../store/cartStore';
 import OptionSelectModal from '../components/OptionSelectModal';
@@ -76,6 +77,7 @@ const ItemQuantityControl = ({ item, onOpenOptions }: { item: MenuItem; onOpenOp
 
 
 export default function MenuListPage() {
+  const { storeId } = useParams<{ storeId: string }>();
   const [menusByCategory, setMenusByCategory] = useState<Record<string, MenuItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,9 +95,15 @@ export default function MenuListPage() {
   };
 
   useEffect(() => {
-    // Add a dummy optionGroupId to the first item for testing
+    if (!storeId) {
+      setError("店舗IDが見つかりません。");
+      setLoading(false);
+      return;
+    }
+
     const q = query(
       collection(db, "menus"),
+      where("storeId", "==", storeId),
       where("isSoldOut", "==", false),
       where("manageStock", "==", false),
       orderBy("sortOrder", "asc")
@@ -131,7 +139,7 @@ export default function MenuListPage() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [storeId]);
 
   if (loading) {
     return <Container sx={{ py: 4, textAlign: 'center' }}><CircularProgress /></Container>;

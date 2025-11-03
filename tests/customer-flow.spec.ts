@@ -1,59 +1,70 @@
 import { test, expect } from '@playwright/test';
 
-test('Customer Order Flow', async ({ page }) => {
-  // 1. Navigate to the menu page
-  await page.goto('/menu');
+test.describe('Customer Order Flow', () => {
+  const PRODUCT_NAME = 'E2Eテスト用商品（顧客フロー）';
+  const PRODUCT_PRICE = '250';
 
-  // 2. Define locators for both the main content and the potential error message.
-  const menuContainer = page.locator('main');
-  const missingConfigError = page.getByText('Firebase configuration is missing.');
+  let storeId: string;
 
-  // 3. Wait for either the main content OR the error message to become visible.
-  await expect(menuContainer.or(missingConfigError)).toBeVisible();
+  test.beforeEach(async ({ page }) => {
+    // 1. Create a unique user and log in to get the storeId
+    await page.goto('/signup');
+    const uniqueEmail = `test-user-customer-${Date.now()}@example.com`;
+    await page.getByLabel('店舗名').fill('顧客フローテスト店舗');
+    await page.getByLabel('メールアドレス').fill(uniqueEmail);
+    await page.getByLabel('パスワード').fill('password123');
+    await page.getByRole('button', { name: '登録して開始' }).click();
+    await expect(page).toHaveURL('/admin/dashboard', { timeout: 15000 });
 
-  // 4. If the error is visible (expected in CI), end the test successfully.
-  if (await missingConfigError.isVisible()) {
-    console.log('Firebase config missing, skipping UI test. This is expected in CI.');
-    return;
-  }
+    // Extract the storeId (which is the user's UID) from the URL or another source.
+    // For this test, we'll get it from the "Check customer screen" link we updated.
+    const customerMenuLink = page.getByRole('link', { name: '顧客画面を確認' });
+    const href = await customerMenuLink.getAttribute('href');
+    storeId = href!.split('/menu/')[1];
+    expect(storeId).toBeDefined();
 
-  // 5. Wait for the loading spinner to disappear, ensuring menu data is loaded.
-  await expect(page.getByRole('progressbar')).not.toBeVisible();
+    // 2. Create a test menu item via the admin UI
+    await page.getByRole('link', { name: 'メニュー管理' }).click();
+    await expect(page).toHaveURL('/admin/menu');
 
-  // 6. Find the first available "add to cart" button.
-  const addToCartButtons = page.locator('[data-testid^="add-to-cart-button-"]');
-  const firstButton = addToCartButtons.first();
+    const addMenuItemButton = page.getByTestId('add-menu-item-button');
+    await expect(addMenuItemButton).toBeVisible({ timeout: 10000 });
 
-  // If no items are available, end the test successfully.
-  if (await addToCartButtons.count() === 0) {
-    console.log('No menu items found. Skipping the rest of the flow.');
-    return;
-  }
-  await expect(firstButton).toBeVisible();
-  await firstButton.click();
+    await addMenuItemButton.click();
+    await page.getByLabel('商品名').fill(PRODUCT_NAME);
+    await page.getByLabel('価格').fill(PRODUCT_PRICE);
+    await page.getByLabel('カテゴリ').fill('E2Eテスト');
+    await page.getByRole('button', { name: '保存' }).click();
 
-  // 7. Verify cart summary and proceed to checkout.
-  const cartSummary = page.getByTestId('cart-summary');
-  // First, assert the text content. Playwright's auto-retry will wait for the cart to update and the summary to appear.
-  await expect(cartSummary).toContainText('1点の商品');
-  // Then, assert visibility now that we know it has appeared.
-  await expect(cartSummary).toBeVisible();
+    // Wait for the dialog to close, confirming the save was successful.
+    await expect(page.getByRole('dialog', { name: 'メニューを追加' })).not.toBeVisible({ timeout: 15000 });
 
-  await page.getByTestId('checkout-button').click();
+    // Verify the item is in the admin's menu list
+    await expect(page.getByRole('cell', { name: PRODUCT_NAME })).toBeVisible({ timeout: 5000 });
+  });
 
-  // 8. Confirm the order on the checkout page.
-  await expect(page).toHaveURL('/checkout');
-  await expect(page.getByTestId('checkout-container')).toBeVisible();
+  test('should allow a customer to order the created item', async ({ page }) => {
+    // 1. Navigate to the newly created store's menu page
+    await page.goto(`/menu/${storeId}`);
 
-  await page.getByTestId('confirm-order-button').click();
+    // 2. Add the product to the cart
+    await page.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`).click();
 
-  // 9. Verify the order summary page.
-  // Firestore transaction can be slow in CI, so we give it a generous timeout.
-  await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
+    // 3. Verify cart summary and proceed to checkout.
+    const cartSummary = page.getByTestId('cart-summary');
+    await expect(cartSummary).toContainText('1点の商品');
+    await expect(cartSummary).toBeVisible();
 
-  // Wait for the loading spinner to disappear on the order summary page.
-  await expect(page.getByRole('progressbar')).not.toBeVisible();
+    await page.getByTestId('checkout-button').click();
 
-  // Check for the "注文番号" text, indicating success.
-  await expect(page.getByText(/注文番号/)).toBeVisible();
+    // 4. Confirm the order on the checkout page.
+    await expect(page).toHaveURL('/checkout');
+    await expect(page.getByTestId('checkout-container')).toBeVisible();
+
+    await page.getByTestId('confirm-order-button').click();
+
+    // 5. Verify the order summary page.
+    await expect(page).toHaveURL(/\/order\/.+/, { timeout: 15000 });
+    await expect(page.getByText(/注文番号/)).toBeVisible();
+  });
 });

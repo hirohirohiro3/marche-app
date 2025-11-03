@@ -55,21 +55,26 @@ test.describe('Payment Flow E2E Test', () => {
 
   test('should complete the full payment flow from customer order to admin dashboard verification', async ({ page, context }) => {
     // Part 1: Customer-side flow
-    // 1. Visit the menu page
-    await page.goto('/menu');
+    // 1. Visit the menu page by clicking the link in the admin header
+    const pagePromise = context.waitForEvent('page');
+    await page.getByRole('link', { name: '顧客画面を確認' }).click();
+    const customerPage = await pagePromise;
+    await customerPage.waitForLoadState();
+
+    // From now on, interact with the new customer-facing page
 
     // 2. Add the product to the cart and proceed to checkout
-    await page.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`).click();
-    await page.getByTestId('checkout-button').click();
-    await expect(page).toHaveURL('/checkout');
+    await customerPage.getByTestId(`add-to-cart-button-${PRODUCT_NAME}`).click();
+    await customerPage.getByTestId('checkout-button').click();
+    await expect(customerPage).toHaveURL('/checkout');
 
     // 3. Confirm the order
-    await page.getByTestId('confirm-order-button').click();
-    await expect(page).toHaveURL(/\/payment\/.+/, { timeout: 15000 });
+    await customerPage.getByTestId('confirm-order-button').click();
+    await expect(customerPage).toHaveURL(/\/payment\/.+/, { timeout: 15000 });
 
     // 4. Complete the Stripe payment
     // Wait for the Stripe iframe to be ready
-    const stripeFrame = page.frameLocator('iframe[name^="__privateStripeFrame"]');
+    const stripeFrame = customerPage.frameLocator('iframe[name^="__privateStripeFrame"]');
     await expect(stripeFrame.locator('#Field-billingName')).toBeVisible({ timeout: 15000 });
 
     // Fill in Stripe's test payment form
@@ -84,12 +89,12 @@ test.describe('Payment Flow E2E Test', () => {
     await stripeFrame.locator('#Field-cvc').fill('123');
 
     // The payment button is outside the iframe
-    await page.getByTestId('payment-submit-button').click();
+    await customerPage.getByTestId('payment-submit-button').click();
 
     // 5. Verify the payment complete page
-    await expect(page).toHaveURL('/payment-complete', { timeout: 15000 });
-    await expect(page.getByText('お支払いが完了しました')).toBeVisible();
-    const orderNumberText = await page.locator('p').filter({ hasText: '注文番号:' }).textContent();
+    await expect(customerPage).toHaveURL('/payment-complete', { timeout: 15000 });
+    await expect(customerPage.getByText('お支払いが完了しました')).toBeVisible();
+    const orderNumberText = await customerPage.locator('p').filter({ hasText: '注文番号:' }).textContent();
     const orderNumber = orderNumberText?.split(':')[1].trim();
     expect(orderNumber).toBeDefined();
 
