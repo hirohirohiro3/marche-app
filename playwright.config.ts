@@ -25,7 +25,7 @@ export default defineConfig({
   reporter: 'html',
 
   // Global setup file for initializing Firebase Admin SDK
-  globalSetup: require.resolve('./tests/global-setup'),
+  globalSetup: './tests/global-setup.ts',
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
