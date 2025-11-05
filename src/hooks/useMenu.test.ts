@@ -9,7 +9,7 @@ import { MenuItem } from '../types';
 // Mock Firebase services and hooks
 vi.mock('../firebase');
 vi.mock('firebase/firestore');
-vi.mock('firebase/storage');
+vi.mock('firebase/storage'); // Though unused, let's keep it for consistency if other tests use it
 vi.mock('./useAuth');
 
 describe('useMenu hook', () => {
