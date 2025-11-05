@@ -1,5 +1,4 @@
-
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -31,7 +30,7 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
   const customerMenuUrl = `${window.location.origin}/menu`; // This should be dynamic based on storeId in a real multi-tenant app
 
   // Update local state when settings are fetched
-  useState(() => {
+  useEffect(() => {
     if (settings) {
       setColor(settings.color || '#000000');
     }
@@ -96,12 +95,6 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
       setIsSaving(false);
     }
   };
-
-  // This needs to be done because the `useState` above does not correctly sync.
-  // A better implementation would use a useEffect.
-  if (settings && color !== settings.color) {
-    setColor(settings.color)
-  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>

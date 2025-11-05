@@ -50,7 +50,6 @@ const dummyOptionGroups: OptionGroup[] = [
 ];
 
 export default function MenuAdminPage() {
-  const navigate = useNavigate();
   const { menus, loading, saveMenuItem, deleteMenuItem, toggleSoldOut } = useMenu();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);

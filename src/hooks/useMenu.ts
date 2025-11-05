@@ -45,6 +45,7 @@ export type MenuFormValues = z.infer<typeof menuFormSchema>;
 export const useMenu = (storeId?: string) => {
   const [menus, setMenus] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const effectiveStoreId = storeId || user?.uid;
@@ -56,19 +57,27 @@ export const useMenu = (storeId?: string) => {
     };
 
     setLoading(true);
+    setError(null);
     const q = query(
       collection(db, 'menus'),
       where('storeId', '==', effectiveStoreId),
       orderBy('sortOrder', 'asc')
     );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const menusData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as MenuItem[];
-      setMenus(menusData);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(q,
+      (snapshot) => {
+        const menusData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as MenuItem[];
+        setMenus(menusData);
+        setLoading(false);
+      },
+      (err) => {
+        console.error(err);
+        setError("メニューの読み込みに失敗しました。");
+        setLoading(false);
+      }
+    );
     return () => unsubscribe();
   }, [effectiveStoreId]);
 
@@ -145,6 +154,7 @@ export const useMenu = (storeId?: string) => {
   return {
     menus,
     loading,
+    error,
     saveMenuItem,
     deleteMenuItem,
     toggleSoldOut,
