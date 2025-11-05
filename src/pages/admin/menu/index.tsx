@@ -20,9 +20,6 @@ import {
   Switch,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
-import { auth } from "../../../firebase";
-import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 import { useMenu, MenuFormValues } from "../../../hooks/useMenu";
 import { MenuItem, OptionGroup } from "../../../types";
 import MenuFormDialog from "../../../components/MenuFormDialog";
@@ -71,8 +68,13 @@ export default function MenuAdminPage() {
   };
 
   const handleFormSubmit = async (values: MenuFormValues, imageFile: File | null) => {
-    await saveMenuItem(values, imageFile, editingMenuItem);
-    handleCloseForm();
+    try {
+      await saveMenuItem(values, imageFile, editingMenuItem);
+      handleCloseForm();
+    } catch (error) {
+      console.error("メニューの保存に失敗しました:", error);
+      // ここでユーザーにエラーを通知するUI（Snackbarなど）を表示することも可能
+    }
   };
 
   const handleOpenDeleteAlert = (menuItem: MenuItem) => {
@@ -92,24 +94,15 @@ export default function MenuAdminPage() {
     }
   };
 
-  const handleLogout = () => {
-    signOut(auth).then(() => navigate("/login"));
-  };
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h4" component="h1">
           メニュー管理
         </Typography>
-        <div>
-          <Button variant="contained" onClick={() => handleOpenForm(null)} sx={{ mr: 2}}>
-            新規追加
-          </Button>
-          <Button variant="outlined" onClick={handleLogout}>
-            ログアウト
-          </Button>
-        </div>
+        <Button variant="contained" onClick={() => handleOpenForm(null)}>
+          新規追加
+        </Button>
       </Box>
 
       {loading ? (

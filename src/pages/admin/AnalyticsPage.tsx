@@ -17,6 +17,8 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  ButtonGroup,
+  Button,
 } from '@mui/material';
 import {
   BarChart,
@@ -42,22 +44,37 @@ interface ProductSales {
   quantity: number;
 }
 
+type TimeRange = 'today' | 'this_month' | 'all_time';
+
 export default function AnalyticsPage() {
   const [summary, setSummary] = useState<SalesSummary | null>(null);
   const [topProducts, setTopProducts] = useState<ProductSales[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<TimeRange>('all_time');
 
   useEffect(() => {
     const fetchSalesData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const q = query(
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        let q = query(
           collection(db, 'orders'),
-          where('status', '==', 'completed'),
-          orderBy('createdAt', 'desc')
+          where('status', '==', 'completed')
         );
+
+        if (timeRange === 'today') {
+          q = query(q, where('createdAt', '>=', todayStart));
+        } else if (timeRange === 'this_month') {
+          q = query(q, where('createdAt', '>=', thisMonthStart));
+        }
+
+        q = query(q, orderBy('createdAt', 'desc'));
+
         const querySnapshot = await getDocs(q);
         const orders = querySnapshot.docs.map(doc => doc.data() as Order);
 
@@ -97,7 +114,7 @@ export default function AnalyticsPage() {
     };
 
     fetchSalesData();
-  }, []);
+  }, [timeRange]);
 
   if (loading) {
     return (
@@ -113,9 +130,16 @@ export default function AnalyticsPage() {
 
   return (
     <Container maxWidth="lg">
-      <Typography variant="h4" component="h1" gutterBottom>
-        売上分析
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          売上分析
+        </Typography>
+        <ButtonGroup variant="outlined" aria-label="time range button group">
+          <Button onClick={() => setTimeRange('today')} variant={timeRange === 'today' ? 'contained' : 'outlined'}>今日</Button>
+          <Button onClick={() => setTimeRange('this_month')} variant={timeRange === 'this_month' ? 'contained' : 'outlined'}>今月</Button>
+          <Button onClick={() => setTimeRange('all_time')} variant={timeRange === 'all_time' ? 'contained' : 'outlined'}>全期間</Button>
+        </ButtonGroup>
+      </Box>
 
       {summary && (
         <Grid container spacing={3} sx={{ mb: 4 }}>

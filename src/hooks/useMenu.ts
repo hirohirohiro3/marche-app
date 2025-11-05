@@ -8,13 +8,14 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  where,
 } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../firebase';
 import { MenuItem } from '../types';
 import * as z from 'zod';
+import { useAuth } from './useAuth';
 
-// Zod schema and type definition co-located with the hook
 // Zod schema and type definition co-located with the hook
 export const menuFormSchema = z
   .object({
@@ -41,13 +42,25 @@ export const menuFormSchema = z
   );
 export type MenuFormValues = z.infer<typeof menuFormSchema>;
 
-export const useMenu = () => {
+export const useMenu = (storeId?: string) => {
   const [menus, setMenus] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  const effectiveStoreId = storeId || user?.uid;
 
   useEffect(() => {
+    if (!effectiveStoreId) {
+      setLoading(false);
+      return;
+    };
+
     setLoading(true);
-    const q = query(collection(db, 'menus'), orderBy('sortOrder', 'asc'));
+    const q = query(
+      collection(db, 'menus'),
+      where('storeId', '==', effectiveStoreId),
+      orderBy('sortOrder', 'asc')
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const menusData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -57,14 +70,17 @@ export const useMenu = () => {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [effectiveStoreId]);
 
   const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
+    if (!effectiveStoreId) {
+      throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
+    }
     const storage = getStorage();
-    const storageRef = ref(storage, `menu-images/${Date.now()}_${imageFile.name}`);
+    const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
     const snapshot = await uploadBytes(storageRef, imageFile);
     return getDownloadURL(snapshot.ref);
-  }, []);
+  }, [effectiveStoreId]);
 
   const saveMenuItem = useCallback(async (
     values: MenuFormValues,
@@ -86,15 +102,24 @@ export const useMenu = () => {
       };
 
       if (editingMenuItem) {
+        // For updates, storeId is already part of the document
         await updateDoc(doc(db, 'menus', editingMenuItem.id), dataToSave);
       } else {
-        await addDoc(collection(db, 'menus'), { ...dataToSave, isSoldOut: false });
+        // For new items, add the storeId
+        if (!effectiveStoreId) {
+          throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
+        }
+        await addDoc(collection(db, 'menus'), {
+          ...dataToSave,
+          storeId: effectiveStoreId,
+          isSoldOut: false,
+        });
       }
     } catch (error) {
       console.error('Failed to save menu item:', error);
       throw error;
     }
-  }, [uploadImage]);
+  }, [uploadImage, effectiveStoreId]);
 
   const deleteMenuItem = useCallback(async (menuItemId: string) => {
     try {

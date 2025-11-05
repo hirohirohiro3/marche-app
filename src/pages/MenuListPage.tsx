@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions, Button, Box, CircularProgress, Alert, IconButton } from "@mui/material";
 import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
-import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase";
 import { MenuItem, OptionGroup } from '../types';
 import { useCartStore } from '../store/cartStore';
+import { useMenu } from '../hooks/useMenu';
 import OptionSelectModal from '../components/OptionSelectModal';
 
 // Dummy data - will be replaced with data fetching later
@@ -76,9 +76,8 @@ const ItemQuantityControl = ({ item, onOpenOptions }: { item: MenuItem; onOpenOp
 
 
 export default function MenuListPage() {
-  const [menusByCategory, setMenusByCategory] = useState<Record<string, MenuItem[]>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { storeId } = useParams<{ storeId: string }>();
+  const { menus, loading, error } = useMenu(storeId);
   const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
 
@@ -92,46 +91,17 @@ export default function MenuListPage() {
     setSelectedMenuItem(null);
   };
 
-  useEffect(() => {
-    // Add a dummy optionGroupId to the first item for testing
-    const q = query(
-      collection(db, "menus"),
-      where("isSoldOut", "==", false),
-      where("manageStock", "==", false),
-      orderBy("sortOrder", "asc")
-    );
-
-    const unsubscribe = onSnapshot(q,
-      (querySnapshot) => {
-        let menusData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MenuItem));
-
-        // --- Start of temporary code for testing ---
-        if (menusData.length > 0) {
-          menusData[0].optionGroupIds = ['1', '2'];
-        }
-        // --- End of temporary code for testing ---
-
-        const grouped = menusData.reduce((acc, menu) => {
-          const { category } = menu;
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push(menu);
-          return acc;
-        }, {} as Record<string, MenuItem[]>);
-
-        setMenusByCategory(grouped);
-        setLoading(false);
-      },
-      (err) => {
-        console.error(err);
-        setError("メニューの読み込みに失敗しました。");
-        setLoading(false);
+  const menusByCategory = menus
+    .filter(menu => !menu.isSoldOut)
+    .reduce((acc, menu) => {
+      const { category } = menu;
+      if (!acc[category]) {
+        acc[category] = [];
       }
-    );
+      acc[category].push(menu);
+      return acc;
+    }, {} as Record<string, MenuItem[]>);
 
-    return () => unsubscribe();
-  }, []);
 
   if (loading) {
     return <Container sx={{ py: 4, textAlign: 'center' }}><CircularProgress /></Container>;
