@@ -4,7 +4,9 @@ import { getAuth } from 'firebase-admin/auth';
 
 // IMPORTANT: Replace with your actual service account credentials
 if (getApps().length === 0) {
-  const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS as string);
+  const serviceAccount = JSON.parse(
+    Buffer.from(process.env.GOOGLE_CREDENTIALS, 'base64').toString('utf-8')
+  );
   initializeApp({
     credential: cert(serviceAccount),
   });

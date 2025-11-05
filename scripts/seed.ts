@@ -4,7 +4,9 @@ import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin SDK
 if (getApps().length === 0) {
-  const serviceAccount = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  const serviceAccount = JSON.parse(
+    Buffer.from(process.env.GOOGLE_CREDENTIALS, 'base64').toString('utf-8')
+  );
   initializeApp({
     credential: cert(serviceAccount),
   });
