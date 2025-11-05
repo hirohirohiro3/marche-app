@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -10,27 +9,33 @@ import {
   Link,
   Typography,
   CircularProgress,
+  TextField,
+  Grid,
 } from '@mui/material';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-import { useAuth } from '../hooks/useAuth';
+import { useQrCodeSettings } from '../hooks/useQrCodeSettings';
 
 interface QrCodeModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-interface QrCodeSettings {
-  color: string;
-  logoUrl?: string;
-}
-
 export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
-  const { user } = useAuth();
-  const [settings, setSettings] = useState<QrCodeSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const customerMenuUrl = `${window.location.origin}/menu`;
+  const { settings, loading, saveQrCodeSettings } = useQrCodeSettings();
+  const [color, setColor] = useState('#000000');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const customerMenuUrl = `${window.location.origin}/menu`; // This should be dynamic based on storeId in a real multi-tenant app
+
+  // Update local state when settings are fetched
+  useEffect(() => {
+    if (settings) {
+      setColor(settings.color || '#000000');
+    }
+  }, [settings]);
+
 
   const handleDownload = () => {
     const svgElement = document.getElementById('qr-code-svg');
@@ -71,36 +76,31 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
     img.src = dataUrl;
   };
 
-  useEffect(() => {
-    const fetchQrCodeSettings = async () => {
-      if (open && user) {
-        setLoading(true);
-        try {
-          const storeRef = doc(db, 'stores', user.uid);
-          const storeDoc = await getDoc(storeRef);
-          if (storeDoc.exists() && storeDoc.data().qrCodeSettings) {
-            setSettings(storeDoc.data().qrCodeSettings);
-          } else {
-            // Set default settings if none are found
-            setSettings({ color: '#000000' });
-          }
-        } catch (error) {
-          console.error("Failed to fetch QR code settings:", error);
-          setSettings({ color: '#000000' }); // Fallback to default on error
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setImageFile(event.target.files[0]);
+    }
+  };
 
-    fetchQrCodeSettings();
-  }, [open, user]);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await saveQrCodeSettings({ color }, imageFile);
+      // Optionally reset image file state after successful upload
+      setImageFile(null);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      // Add user-facing error notification here
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>お客様用メニューQRコード</DialogTitle>
-      <DialogContent sx={{ textAlign: 'center' }}>
-        <Box sx={{ my: 2, minHeight: 256 }}>
+      <DialogContent>
+        <Box sx={{ textAlign: 'center', my: 2, minHeight: 256 }}>
           {loading ? (
             <CircularProgress />
           ) : (
@@ -108,7 +108,7 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
               id="qr-code-svg"
               value={customerMenuUrl}
               size={256}
-              fgColor={settings?.color || '#000000'}
+              fgColor={color}
               imageSettings={
                 settings?.logoUrl
                   ? {
@@ -123,16 +123,45 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
             />
           )}
         </Box>
-        <Typography variant="caption" display="block" gutterBottom>
-          上記のQRコードを読み取ってメニューにアクセスしてください。
+        <Typography variant="caption" display="block" gutterBottom align="center">
+          QRコードを読み取ってメニューにアクセス
         </Typography>
-        <Link href={customerMenuUrl} target="_blank" rel="noopener noreferrer">
+        <Link href={customerMenuUrl} target="_blank" rel="noopener noreferrer" sx={{ display: 'block', textAlign: 'center', mb: 3 }}>
           {customerMenuUrl}
         </Link>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="QRコードの色"
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              fullWidth
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Button variant="outlined" component="label" fullWidth>
+              ロゴ画像を選択
+              <input
+                type="file"
+                hidden
+                accept="image/png, image/jpeg"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+              />
+            </Button>
+            {imageFile && (
+              <Typography variant="caption" display="block" sx={{ mt: 1, textAlign: 'center' }}>
+                選択中: {imageFile.name}
+              </Typography>
+            )}
+          </Grid>
+        </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDownload} color="primary">
-          PNGでダウンロード
+        <Button onClick={handleDownload}>PNGダウンロード</Button>
+        <Button onClick={handleSave} variant="contained" disabled={isSaving}>
+          {isSaving ? <CircularProgress size={24} /> : '設定を保存'}
         </Button>
         <Button onClick={onClose}>閉じる</Button>
       </DialogActions>

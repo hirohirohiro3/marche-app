@@ -176,7 +176,7 @@ export default function ManualOrderModal({
             mb: 2,
           }}
         >
-          <Typography variant="h6">Manual POS</Typography>
+          <Typography variant="h6">手動注文 (POS)</Typography>
           <IconButton onClick={handleClose} data-testid="close-modal-button">
             <Close />
           </IconButton>
@@ -190,7 +190,7 @@ export default function ManualOrderModal({
             md={7}
             sx={{ overflowY: 'auto', maxHeight: 'calc(90vh - 200px)' }}
           >
-            <Typography variant="h6" gutterBottom>Menu</Typography>
+            <Typography variant="h6" gutterBottom>メニュー</Typography>
             <Grid container spacing={1}>
               {menuItems.map((item) => (
                 <Grid item xs={6} sm={4} md={3} key={item.id}>
@@ -220,10 +220,10 @@ export default function ManualOrderModal({
           >
             <Paper sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }} data-testid="cart-section">
               <Typography variant="h6" gutterBottom>
-                Current Order
+                現在の注文
               </Typography>
               {cart.length === 0 ? (
-                <Typography>No items added.</Typography>
+                <Typography>商品が追加されていません。</Typography>
               ) : (
                 cart.map((item) => (
                   <Box
@@ -246,7 +246,7 @@ export default function ManualOrderModal({
                       onClick={() => handleRemoveFromCart(item.id)}
                       data-testid={`remove-from-cart-${item.id}`}
                     >
-                      Remove
+                      削除
                     </Button>
                   </Box>
                 ))
@@ -254,7 +254,7 @@ export default function ManualOrderModal({
             </Paper>
             <Box sx={{ mt: 'auto', pt: 2 }}>
               <Typography variant="h5" align="right" gutterBottom data-testid="total-price">
-                Total: ¥{totalPrice}
+                合計: ¥{totalPrice}
               </Typography>
               <Button
                 variant="contained"
@@ -267,7 +267,7 @@ export default function ManualOrderModal({
                 {isLoading ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  'Create Order & Mark as Paid'
+                  '支払い済みとして注文を作成'
                 )}
               </Button>
             </Box>
