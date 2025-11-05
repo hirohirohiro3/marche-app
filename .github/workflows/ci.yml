@@ -39,6 +39,8 @@ jobs:
         firebase deploy --only firestore:rules --project ${{ secrets.VITE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
     - name: Run Playwright tests
       run: npx playwright test
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     - name: Upload Playwright report
       uses: actions/upload-artifact@v4
       if: always()
