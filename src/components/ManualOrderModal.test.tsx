@@ -1,5 +1,5 @@
 // src/components/ManualOrderModal.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import ManualOrderModal from './ManualOrderModal';
@@ -12,8 +12,8 @@ vi.mock('../hooks/useAuth', () => ({
 }));
 
 const mockMenuItems: MenuItem[] = [
-  { id: '1', name: 'Coffee', price: 500, category: 'Drinks', isSoldOut: false, sortOrder: 1, storeId: 'test', manageStock: false },
-  { id: '2', name: 'Tea', price: 450, category: 'Drinks', isSoldOut: false, sortOrder: 2, storeId: 'test', manageStock: false },
+  { id: '1', name: 'Coffee', price: 500, category: 'Drinks', description: 'Hot coffee', imageUrl: '', isSoldOut: false, sortOrder: 1, storeId: 'test', manageStock: false },
+  { id: '2', name: 'Tea', price: 450, category: 'Drinks', description: 'Hot tea', imageUrl: '', isSoldOut: false, sortOrder: 2, storeId: 'test', manageStock: false },
 ];
 
 describe('ManualOrderModal', () => {
