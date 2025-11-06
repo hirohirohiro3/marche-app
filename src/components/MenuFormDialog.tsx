@@ -19,6 +19,7 @@ import {
   FormGroup,
   Checkbox,
 } from '@mui/material';
+import ImageCropCompressor from './ImageCropCompressor';
 
 
 interface MenuFormDialogProps {
@@ -182,22 +183,14 @@ export default function MenuFormDialog({
               helperText={errors.stock?.message}
             />
           )}
-          <Button variant="contained" component="label" sx={{ mt: 2 }}>
-            画像を選択
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={(e) =>
-                setImageFile(e.target.files ? e.target.files[0] : null)
-              }
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>商品画像</Typography>
+            <ImageCropCompressor
+              aspect={16 / 9}
+              onCropped={setImageFile}
+              initialImageUrl={editingMenuItem?.imageUrl}
             />
-          </Button>
-          {imageFile && (
-            <Typography sx={{ ml: 1, display: 'inline' }}>
-              {imageFile.name}
-            </Typography>
-          )}
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

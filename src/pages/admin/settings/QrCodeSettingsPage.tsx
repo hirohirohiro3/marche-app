@@ -1,137 +1,75 @@
 import { useState, useEffect } from 'react';
 import {
   Container, Typography, Paper, Button, Box, TextField,
-  Grid, Avatar, CircularProgress, Alert, FormControl, FormHelperText,
+  Grid, CircularProgress, Alert,
 } from '@mui/material';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../../../firebase';
-import { useAuth } from '../../../hooks/useAuth';
+import { useQrCodeSettings } from '../../../hooks/useQrCodeSettings';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import ImageCropCompressor from '../../../components/ImageCropCompressor';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 
-// Zod schema for form validation
+// Zod schema now only validates the color, as file is handled by the cropper
 const qrSettingsSchema = z.object({
-  logoFile: z.any() // Optional file upload
-    .refine((files) => !files || files.length === 0 || files[0]?.size <= 1024 * 1024, {
-      message: 'ファイルサイズは1MB以下にしてください。',
-    })
-    .refine((files) => !files || files.length === 0 || ['image/jpeg', 'image/png'].includes(files[0]?.type), {
-      message: 'JPEGまたはPNG形式の画像を選択してください。',
-    }),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
 });
 
 type QrSettingsForm = z.infer<typeof qrSettingsSchema>;
 
-const colorPalette = [
-  '#000000', // Black
-  '#4a4a4a', // Dark Gray
-  '#003366', // Dark Blue
-  '#b30000', // Dark Red
-  '#006400', // Dark Green
-  '#4b0082', // Indigo
-];
+const colorPalette = ['#000000', '#4a4a4a', '#003366', '#b30000', '#006400', '#4b0082'];
 
 export default function QrCodeSettingsPage() {
-  const { user } = useAuth();
-  const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Start with loading true
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { settings, loading: hookLoading, saveQrCodeSettings } = useQrCodeSettings();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [pageSuccess, setPageSuccess] = useState<string | null>(null);
+  const [finalPreviewUrl, setFinalPreviewUrl] = useState<string | null>(null);
 
   const {
     control,
     handleSubmit,
+    reset,
     watch,
-    setValue,
-    reset, // Use reset to set form values
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<QrSettingsForm>({
     resolver: zodResolver(qrSettingsSchema),
-    defaultValues: {
-      color: '#000000',
-      logoFile: null,
-    },
+    defaultValues: { color: '#000000' },
   });
 
-  const logoFile = watch('logoFile');
+  const watchColor = watch('color');
 
-  // Effect to load existing settings
   useEffect(() => {
-    const fetchSettings = async () => {
-      if (!user) return;
-      try {
-        const storeRef = doc(db, 'stores', user.uid);
-        const storeDoc = await getDoc(storeRef);
-        if (storeDoc.exists()) {
-          const settings = storeDoc.data()?.qrCodeSettings;
-          if (settings) {
-            reset({ color: settings.color || '#000000' });
-            if (settings.logoUrl) {
-              setPreview(settings.logoUrl);
-            }
-          }
-        }
-      } catch (err) {
-        setError('設定の読み込みに失敗しました。');
-      } finally {
-        setLoading(false);
+    if (settings) {
+      reset({ color: settings.color || '#000000' });
+      if (settings.logoUrl) {
+        setFinalPreviewUrl(settings.logoUrl);
       }
-    };
-    fetchSettings();
-  }, [user, reset]);
-
-  // Effect to update preview from file input
-  useEffect(() => {
-    if (logoFile && logoFile.length > 0) {
-      const file = logoFile[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
     }
-    // Note: We don't clear the preview if the file is removed,
-    // to allow users to see the previously saved logo.
-  }, [logoFile]);
+  }, [settings, reset]);
+
+  const handleCroppedImage = (file: File) => {
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setFinalPreviewUrl(previewUrl);
+  };
 
   const onSubmit: SubmitHandler<QrSettingsForm> = async (data) => {
-    if (!user) {
-      setError('ユーザー認証が必要です。');
-      return;
-    }
-    setError(null);
-    setSuccess(null);
-
+    setPageError(null);
+    setPageSuccess(null);
     try {
-      const storage = getStorage();
-      let logoUrl = preview; // Start with the existing preview URL
-
-      // 1. If a new file is uploaded, upload it to Storage
-      if (data.logoFile && data.logoFile.length > 0) {
-        const file = data.logoFile[0];
-        const storageRef = ref(storage, `stores/${user.uid}/qr_logo.png`);
-        await uploadBytes(storageRef, file);
-        logoUrl = await getDownloadURL(storageRef);
-      }
-
-      // 2. Save the settings to Firestore
-      const storeRef = doc(db, 'stores', user.uid);
-      await setDoc(storeRef, {
-        qrCodeSettings: {
-          logoUrl: logoUrl,
-          color: data.color,
-        }
-      }, { merge: true }); // Use merge to avoid overwriting other store data
-
-      setSuccess('設定を保存しました。');
+      await saveQrCodeSettings({ color: data.color }, imageFile);
+      setPageSuccess('設定を保存しました。');
+      setImageFile(null); // Clear file state after saving
     } catch (err) {
       console.error(err);
-      setError('設定の保存に失敗しました。');
+      setPageError('設定の保存に失敗しました。');
     }
   };
+
+  if (hookLoading) {
+    return <CircularProgress />;
+  }
 
   return (
     <Container maxWidth="md">
@@ -141,32 +79,35 @@ export default function QrCodeSettingsPage() {
         </Typography>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Grid container spacing={3}>
-            {/* Logo Upload */}
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>ロゴ画像</Typography>
-              <FormControl fullWidth error={!!errors.logoFile}>
-                <Controller
-                  name="logoFile"
-                  control={control}
-                  render={({ field }) => (
-                    <Button
-                      variant="contained"
-                      component="label"
-                    >
-                      ファイルを選択
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/jpeg,image/png"
-                        onChange={(e) => field.onChange(e.target.files)}
-                      />
-                    </Button>
-                  )}
+          <Grid container spacing={4}>
+            {/* Logo Upload and Preview */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>ロゴ画像 (1:1)</Typography>
+              <ImageCropCompressor
+                aspect={1}
+                onCropped={handleCroppedImage}
+                initialImageUrl={settings?.logoUrl}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>最終プレビュー</Typography>
+              <Box sx={{ position: 'relative', width: 256, height: 256, border: '1px solid #ccc' }}>
+                <QRCode
+                  value="DUMMY_QR_CODE_DATA" // Dummy data for preview
+                  size={256}
+                  fgColor={watchColor}
+                  level="H" // High error correction for logo
+                  imageSettings={finalPreviewUrl ? {
+                    src: finalPreviewUrl,
+                    x: undefined,
+                    y: undefined,
+                    height: 80,
+                    width: 80,
+                    excavate: true,
+                  } : undefined}
                 />
-                {preview && <Avatar src={preview} sx={{ width: 100, height: 100, mt: 2 }} />}
-                <FormHelperText>{errors.logoFile?.message as string}</FormHelperText>
-              </FormControl>
+              </Box>
             </Grid>
 
             {/* Color Palette */}
@@ -176,11 +117,11 @@ export default function QrCodeSettingsPage() {
                 name="color"
                 control={control}
                 render={({ field }) => (
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     {colorPalette.map((color) => (
                       <Box
                         key={color}
-                        onClick={() => setValue('color', color, { shouldValidate: true })}
+                        onClick={() => field.onChange(color)}
                         sx={{
                           width: 40,
                           height: 40,
@@ -195,35 +136,37 @@ export default function QrCodeSettingsPage() {
                   </Box>
                 )}
               />
-              <TextField
-                value={watch('color')}
-                onChange={(e) => setValue('color', e.target.value, { shouldValidate: true })}
-                variant="outlined"
-                size="small"
-                sx={{ mt: 1, width: 120 }}
-                error={!!errors.color}
-                helperText={errors.color?.message}
+              <Controller
+                name="color"
+                control={control}
+                render={({ field }) => (
+                    <TextField
+                        {...field}
+                        variant="outlined"
+                        size="small"
+                        sx={{ mt: 2, width: 120 }}
+                        error={!!errors.color}
+                        helperText={errors.color?.message}
+                    />
+                )}
               />
             </Grid>
 
             <Grid item xs={12}>
-              <Box sx={{ position: 'relative' }}>
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 >
-                  保存する
+                  {isSubmitting ? <CircularProgress size={24} /> : '保存する'}
                 </Button>
-                {loading && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: -1.5, ml: -8 }} />}
-              </Box>
             </Grid>
           </Grid>
         </form>
 
-        {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+        {pageError && <Alert severity="error" sx={{ mt: 2 }}>{pageError}</Alert>}
+        {pageSuccess && <Alert severity="success" sx={{ mt: 2 }}>{pageSuccess}</Alert>}
       </Paper>
     </Container>
   );

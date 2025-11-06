@@ -15,7 +15,6 @@ import { db } from '../firebase';
 import { MenuItem } from '../types';
 import * as z from 'zod';
 import { useAuth } from './useAuth';
-import { compressImage } from '../utils/imageCompressor';
 
 // Zod schema and type definition co-located with the hook
 export const menuFormSchema = z
@@ -86,12 +85,9 @@ export const useMenu = (storeId?: string) => {
     if (!effectiveStoreId) {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
-
-    const compressedImage = await compressImage(imageFile);
-
     const storage = getStorage();
-    const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${compressedImage.name}`);
-    const snapshot = await uploadBytes(storageRef, compressedImage);
+    const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
+    const snapshot = await uploadBytes(storageRef, imageFile);
     return getDownloadURL(snapshot.ref);
   }, [effectiveStoreId]);
 
