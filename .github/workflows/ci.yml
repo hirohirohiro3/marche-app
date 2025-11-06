@@ -30,7 +30,7 @@ jobs:
     - name: Seed test database
       run: npm run seed
       env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_TEST }}
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_TEST_B64 }}
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Deploy Firestore Rules to test environment
@@ -40,7 +40,7 @@ jobs:
     - name: Run Playwright tests against test environment
       run: npx playwright test
       env:
-        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_TEST }}
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_TEST_B64 }}
     - name: Upload Playwright report
       uses: actions/upload-artifact@v4
       if: always()
