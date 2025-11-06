@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { db, teardown } from './test-utils';
+import { db, teardown, auth } from './test-utils';
 import { doc, getDoc } from 'firebase/firestore';
 
 test.describe('画像アップロード機能 (クロッピングと圧縮)', () => {
