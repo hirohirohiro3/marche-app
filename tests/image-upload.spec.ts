@@ -1,6 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { db, teardown, auth } from './test-utils';
-import { doc, getDoc } from 'firebase/firestore';
+import { db, teardown } from './test-utils';
 
 test.describe('画像アップロード機能 (クロッピングと圧縮)', () => {
   let page: Page;
@@ -10,14 +9,12 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     const context = await browser.newContext();
     page = await context.newPage();
 
-    // Get storeId from the seeded data in global-setup
-    // This assumes the user created in global-setup has a known UID.
-    // Let's get it from the firestore emulator.
-    // Note: In a real scenario, we'd have a more robust way to get this.
-    // For now, we assume the test user from setup.ts is used.
-    const userDoc = await getDoc(doc(db, 'users', 'test-user'));
-    if (userDoc.exists()) {
-        storeId = userDoc.data().storeId;
+    // Get storeId from the seeded data. We use the Admin SDK here.
+    const userDocRef = db.collection('users').doc('test-user');
+    const userDoc = await userDocRef.get();
+
+    if (userDoc.exists) {
+        storeId = userDoc.data()!.storeId;
     } else {
         // Fallback for local testing if seed is different
         const testUser = {
