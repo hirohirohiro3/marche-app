@@ -14,8 +14,27 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
 
+// Validate required environment variables
+const requiredEnv: (keyof typeof firebaseConfig)[] = [
+  'apiKey',
+  'authDomain',
+  'projectId',
+  'storageBucket',
+  'messagingSenderId',
+  'appId',
+];
+
+requiredEnv.forEach((key) => {
+  if (!firebaseConfig[key]) {
+    throw new Error(`Firebase configuration error: Missing environment variable for ${key}`);
+  }
+});
+
+
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 // Initialize App Check
 if (import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
@@ -28,5 +47,3 @@ if (import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
 }
 
 // const analytics = getAnalytics(app);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
