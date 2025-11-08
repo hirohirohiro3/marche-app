@@ -3,7 +3,6 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../firebase';
 import { useAuth } from './useAuth';
-import { compressImage } from '../utils/imageCompressor';
 
 export interface QrCodeSettings {
   color: string;
@@ -45,12 +44,9 @@ export const useQrCodeSettings = () => {
     if (!storeId) {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
-
-    const compressedImage = await compressImage(imageFile);
-
     const storage = getStorage();
-    const storageRef = ref(storage, `qr-code-logos/${storeId}/${Date.now()}_${compressedImage.name}`);
-    const snapshot = await uploadBytes(storageRef, compressedImage);
+    const storageRef = ref(storage, `qr-code-logos/${storeId}/${Date.now()}_${imageFile.name}`);
+    const snapshot = await uploadBytes(storageRef, imageFile);
     return getDownloadURL(snapshot.ref);
   }, [storeId]);
 
