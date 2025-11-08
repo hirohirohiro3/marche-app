@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import {
   Button,
@@ -9,39 +10,59 @@ import {
   ListItem,
   ListItemText,
   IconButton,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
+import { useOptionGroups, OptionGroupFormValues } from '../../../hooks/useOptionGroups';
 import { OptionGroup } from '../../../types';
-
-// Dummy data for initial layout
-const dummyOptionGroups: OptionGroup[] = [
-  {
-    id: '1',
-    storeId: 'dummy-store-id',
-    name: 'サイズ',
-    selectionType: 'single',
-    choices: [
-      { id: 's', name: 'S', priceModifier: 0 },
-      { id: 'm', name: 'M', priceModifier: 50 },
-      { id: 'l', name: 'L', priceModifier: 100 },
-    ],
-  },
-  {
-    id: '2',
-    storeId: 'dummy-store-id',
-    name: 'トッピング',
-    selectionType: 'multiple',
-    choices: [
-      { id: 'cheese', name: 'チーズ', priceModifier: 100 },
-      { id: 'bacon', name: 'ベーコン', priceModifier: 150 },
-    ],
-  },
-];
+import OptionGroupFormDialog from '../../../components/OptionGroupFormDialog';
 
 export default function OptionsAdminPage() {
-  // const { optionGroups, loading } = useOptionGroups(); // To be implemented
-  const [optionGroups] = useState(dummyOptionGroups);
-  const [loading] = useState(false);
+  const { optionGroups, loading, saveOptionGroup, deleteOptionGroup } = useOptionGroups();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingOptionGroup, setEditingOptionGroup] = useState<OptionGroup | null>(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [deletingOptionGroup, setDeletingOptionGroup] = useState<OptionGroup | null>(null);
+
+  const handleOpenForm = (group: OptionGroup | null) => {
+    setEditingOptionGroup(group);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingOptionGroup(null);
+  };
+
+  const handleFormSubmit = async (values: OptionGroupFormValues) => {
+    try {
+      await saveOptionGroup(values, editingOptionGroup);
+      handleCloseForm();
+    } catch (error) {
+      console.error("オプションの保存に失敗しました:", error);
+    }
+  };
+
+  const handleOpenDeleteAlert = (group: OptionGroup) => {
+    setDeletingOptionGroup(group);
+    setIsAlertOpen(true);
+  };
+
+  const handleCloseDeleteAlert = () => {
+    setIsAlertOpen(false);
+    setDeletingOptionGroup(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deletingOptionGroup) {
+      await deleteOptionGroup(deletingOptionGroup.id);
+      handleCloseDeleteAlert();
+    }
+  };
 
   return (
     <Container maxWidth="lg">
@@ -49,13 +70,13 @@ export default function OptionsAdminPage() {
         <Typography variant="h4" component="h1">
           オプション管理
         </Typography>
-        <Button variant="contained">
+        <Button variant="contained" onClick={() => handleOpenForm(null)}>
           新規追加
         </Button>
       </Box>
 
       {loading ? (
-        <p>Loading...</p>
+        <CircularProgress />
       ) : (
         <Paper>
           <List>
@@ -64,10 +85,10 @@ export default function OptionsAdminPage() {
                 key={group.id}
                 secondaryAction={
                   <>
-                    <IconButton edge="end" aria-label="edit">
+                    <IconButton edge="end" aria-label="edit" onClick={() => handleOpenForm(group)}>
                       <Edit />
                     </IconButton>
-                    <IconButton edge="end" aria-label="delete">
+                    <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteAlert(group)}>
                       <Delete />
                     </IconButton>
                   </>
@@ -82,6 +103,26 @@ export default function OptionsAdminPage() {
           </List>
         </Paper>
       )}
+
+      <OptionGroupFormDialog
+        open={isFormOpen}
+        onClose={handleCloseForm}
+        onSubmit={handleFormSubmit}
+        editingOptionGroup={editingOptionGroup}
+      />
+
+      <Dialog open={isAlertOpen} onClose={handleCloseDeleteAlert}>
+        <DialogTitle>本当に削除しますか？</DialogTitle>
+        <DialogContent>
+          <Typography>「{deletingOptionGroup?.name}」を完全に削除します。この操作は元に戻せません。</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteAlert}>キャンセル</Button>
+          <Button onClick={handleDeleteConfirm} color="error">
+            削除
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

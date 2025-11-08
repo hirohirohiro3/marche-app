@@ -62,11 +62,12 @@ const mockMenuItems: MenuItem[] = [
 
 const mockNewMenuItem: MenuFormValues = {
   name: 'ラテ',
-  price: '700',
+  price: 700,
   category: 'ドリンク',
   description: 'ふわふわミルク',
-  sortOrder: '3',
+  sortOrder: 3,
   manageStock: false,
+  stock: 0,
   optionGroupIds: [],
 };
 
@@ -286,7 +287,7 @@ describe('useMenuフックのテスト', () => {
         ...mockNewMenuItem,
         name: '在庫管理テスト',
         manageStock: true,
-        stock: '10',
+        stock: 10,
       };
 
       await act(async () => {

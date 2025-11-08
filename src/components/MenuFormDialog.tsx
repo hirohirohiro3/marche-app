@@ -59,19 +59,18 @@ export default function MenuFormDialog({
       if (editingMenuItem) {
         reset({
           ...editingMenuItem,
-          price: String(editingMenuItem.price),
-          sortOrder: String(editingMenuItem.sortOrder),
-          stock: String(editingMenuItem.stock ?? ''),
+          stock: editingMenuItem.stock ?? null,
         });
       } else {
         reset({
           name: '',
-          price: '0',
+          price: 0,
           category: '',
           description: '',
-          sortOrder: '0',
+          sortOrder: 0,
           manageStock: false,
-          stock: '0',
+          stock: null,
+          optionGroupIds: [],
         });
       }
       setImageFile(null);

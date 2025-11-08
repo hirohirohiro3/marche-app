@@ -20,24 +20,34 @@ import { useAuth } from './useAuth';
 export const menuFormSchema = z
   .object({
     name: z.string().min(1, '商品名は必須です'),
-    price: z.string().min(1, '価格は必須です'),
+    price: z.preprocess(
+      (val) => (val === '' ? null : Number(val)),
+      z.number({ invalid_type_error: '価格は数値を入力してください' }).min(0, '価格は0以上で入力してください')
+    ),
     category: z.string().min(1, 'カテゴリは必須です'),
     description: z.string().optional(),
-    sortOrder: z.string().optional(),
+    sortOrder: z.preprocess(
+      (val) => (val === '' ? 0 : Number(val)),
+      z.number({ invalid_type_error: '表示順は数値を入力してください' }).min(0)
+    ).default(0),
     manageStock: z.boolean().default(false),
-    stock: z.string().optional(),
+    stock: z.preprocess(
+      (val) => (val === '' ? null : Number(val)),
+      z.number({ invalid_type_error: '在庫数は数値を入力してください' }).min(0, '在庫数は0以上で入力してください').nullable()
+    ),
     optionGroupIds: z.array(z.string()).default([]),
   })
   .refine(
     (data) => {
       if (data.manageStock) {
-        return data.stock !== undefined && data.stock.trim() !== '';
+        // nullでもなくundefinedでもないことを確認
+        return data.stock != null;
       }
       return true;
     },
     {
       message: '在庫管理を有効にする場合は在庫数の入力が必須です',
-      path: ['stock'], // エラーメッセージを表示するフィールド
+      path: ['stock'],
     }
   );
 export type MenuFormValues = z.infer<typeof menuFormSchema>;
@@ -104,9 +114,7 @@ export const useMenu = (storeId?: string) => {
 
       const dataToSave = {
         ...values,
-        price: parseInt(values.price, 10) || 0,
-        sortOrder: parseInt(values.sortOrder || '0', 10) || 0,
-        stock: parseInt(values.stock || '0', 10) || 0,
+        stock: values.stock ?? 0,
         imageUrl,
       };
 
