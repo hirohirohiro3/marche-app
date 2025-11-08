@@ -9,32 +9,19 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     const context = await browser.newContext();
     page = await context.newPage();
 
-    // Get storeId from the seeded data. We use the Admin SDK here.
+    // Get storeId from the seeded 'test-user' document.
+    // This test suite relies on the global setup to have created this user.
+    // If it doesn't exist, we throw an error to fail fast.
     const userDocRef = db.collection('users').doc('test-user');
     const userDoc = await userDocRef.get();
 
-    if (userDoc.exists) {
-        storeId = userDoc.data()!.storeId;
-    } else {
-        // Fallback for local testing if seed is different
-        const testUser = {
-          email: 'test@test.test',
-          password: 'password',
-        };
-        await page.goto('/login');
-        await page.fill('input[name="email"]', testUser.email);
-        await page.fill('input[name="password"]', testUser.password);
-        await page.click('button[type="submit"]');
-        await page.waitForURL('/admin/dashboard');
+    if (!userDoc.exists) {
+      throw new Error("Test setup failed: 'test-user' document not found in Firestore. Ensure global setup and seeding ran correctly.");
+    }
 
-        const url = page.url();
-        const match = url.match(/admin\/dashboard\/(.*)/);
-        if (match) {
-            storeId = match[1];
-        } else {
-            // If still not found, we have to fail.
-            throw new Error("Could not determine storeId for tests.");
-        }
+    storeId = userDoc.data()!.storeId;
+    if (!storeId) {
+      throw new Error("Test setup failed: 'storeId' not found in 'test-user' document.");
     }
   });
 
