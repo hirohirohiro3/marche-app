@@ -133,7 +133,17 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
           type="file"
           accept="image/*"
           onChange={onSelectFile}
-          style={{ display: 'none' }}
+          style={{
+            clip: 'rect(0 0 0 0)',
+            clipPath: 'inset(50%)',
+            height: 1,
+            overflow: 'hidden',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            whiteSpace: 'nowrap',
+            width: 1,
+          }}
           data-testid="file-input"
         />
       </Button>
