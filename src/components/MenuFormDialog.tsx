@@ -43,7 +43,6 @@ export default function MenuFormDialog({
     reset,
     control,
     watch,
-    trigger,
     setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<MenuFormValues>({

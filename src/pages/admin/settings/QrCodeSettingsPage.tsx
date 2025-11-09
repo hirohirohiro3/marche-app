@@ -19,7 +19,6 @@ export default function QrCodeSettingsPage() {
   const { settings, loading: hookLoading, saveQrCodeSettings } = useQrCodeSettings();
   const [pageError, setPageError] = useState<string | null>(null);
   const [pageSuccess, setPageSuccess] = useState<string | null>(null);
-  const [croppedPreview, setCroppedPreview] = useState<string | null>(null);
 
   const {
     control,
