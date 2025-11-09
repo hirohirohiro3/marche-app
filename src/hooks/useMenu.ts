@@ -36,6 +36,10 @@ export const menuFormSchema = z
       z.number({ invalid_type_error: '在庫数は数値を入力してください' }).min(0, '在庫数は0以上で入力してください').nullable()
     ),
     optionGroupIds: z.array(z.string()).default([]),
+    // For handling the uploaded file object
+    imageFile: z.instanceof(File).optional().nullable(),
+    // For displaying the existing image URL
+    imageUrl: z.string().url().optional().nullable(),
   })
   .refine(
     (data) => {
@@ -103,17 +107,20 @@ export const useMenu = (storeId?: string) => {
 
   const saveMenuItem = useCallback(async (
     values: MenuFormValues,
-    imageFile: File | null,
     editingMenuItem: MenuItem | null
   ) => {
     try {
-      let imageUrl = editingMenuItem?.imageUrl || '';
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
+      // Use the imageUrl from the form state, which could be the initial URL or null
+      let imageUrl = values.imageUrl || '';
+      // If a new image file is uploaded, upload it and update the URL
+      if (values.imageFile) {
+        imageUrl = await uploadImage(values.imageFile);
       }
 
+      // Prepare data for Firestore, excluding the client-side 'imageFile'
+      const { imageFile, ...valuesForDb } = values;
       const dataToSave = {
-        ...values,
+        ...valuesForDb,
         stock: values.stock ?? 0,
         imageUrl,
       };

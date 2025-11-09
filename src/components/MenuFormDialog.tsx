@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   Dialog,
   DialogActions,
@@ -25,7 +25,7 @@ import ImageCropCompressor from './ImageCropCompressor';
 interface MenuFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: MenuFormValues, imageFile: File | null) => void;
+  onSubmit: (values: MenuFormValues) => void;
   editingMenuItem: MenuItem | null;
   optionGroups: OptionGroup[];
 }
@@ -37,7 +37,6 @@ export default function MenuFormDialog({
   editingMenuItem,
   optionGroups,
 }: MenuFormDialogProps) {
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const {
     register,
     handleSubmit,
@@ -45,15 +44,27 @@ export default function MenuFormDialog({
     control,
     watch,
     trigger,
-    formState: { errors, isSubmitting },
+    setValue,
+    formState: { errors, isSubmitting, isValid },
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
+    mode: 'onChange', // enable validation on change
     defaultValues: {
+      name: '',
+      price: 0,
+      category: '',
+      description: '',
+      sortOrder: 0,
       manageStock: false,
+      stock: null,
+      optionGroupIds: [],
+      imageFile: null,
+      imageUrl: null,
     },
   });
 
   const watchManageStock = watch('manageStock');
+  const watchImageUrl = watch('imageUrl');
 
   useEffect(() => {
     if (open) {
@@ -61,6 +72,7 @@ export default function MenuFormDialog({
         reset({
           ...editingMenuItem,
           stock: editingMenuItem.stock ?? null,
+          imageFile: null, // Clear file input on open
         });
       } else {
         reset({
@@ -72,14 +84,15 @@ export default function MenuFormDialog({
           manageStock: false,
           stock: null,
           optionGroupIds: [],
+          imageFile: null,
+          imageUrl: null,
         });
       }
-      setImageFile(null);
     }
   }, [open, editingMenuItem, reset]);
 
   const handleFormSubmit = (values: MenuFormValues) => {
-    onSubmit(values, imageFile);
+    onSubmit(values);
   };
 
   return (
@@ -90,6 +103,7 @@ export default function MenuFormDialog({
       <DialogContent>
         <Box
           component="form"
+          noValidate
           onSubmit={handleSubmit(handleFormSubmit)}
           sx={{ mt: 2 }}
         >
@@ -98,6 +112,7 @@ export default function MenuFormDialog({
             label="商品名"
             fullWidth
             margin="dense"
+            required
             error={!!errors.name}
             helperText={errors.name?.message}
           />
@@ -107,6 +122,7 @@ export default function MenuFormDialog({
             type="number"
             fullWidth
             margin="dense"
+            required
             error={!!errors.price}
             helperText={errors.price?.message}
           />
@@ -115,6 +131,7 @@ export default function MenuFormDialog({
             label="カテゴリ"
             fullWidth
             margin="dense"
+            required
             error={!!errors.category}
             helperText={errors.category?.message}
           />
@@ -187,11 +204,11 @@ export default function MenuFormDialog({
             <Typography variant="subtitle1" gutterBottom>商品画像</Typography>
             <ImageCropCompressor
               aspect={16 / 9}
-              onCropped={(file) => {
-                setImageFile(file);
-                trigger();
+              onCropped={async (file) => {
+                setValue('imageFile', file, { shouldValidate: true, shouldDirty: true });
+                // No need to call trigger manually if using mode: 'onChange'
               }}
-              initialImageUrl={editingMenuItem?.imageUrl}
+              initialImageUrl={watchImageUrl}
             />
           </Box>
         </Box>
@@ -201,7 +218,7 @@ export default function MenuFormDialog({
         <Button
           onClick={handleSubmit(handleFormSubmit)}
           variant="contained"
-          disabled={isSubmitting}
+          disabled={!isValid || isSubmitting}
         >
           {isSubmitting ? '保存中...' : '保存'}
         </Button>

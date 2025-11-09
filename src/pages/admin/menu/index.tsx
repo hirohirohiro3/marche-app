@@ -66,9 +66,9 @@ export default function MenuAdminPage() {
     setEditingMenuItem(null);
   };
 
-  const handleFormSubmit = async (values: MenuFormValues, imageFile: File | null) => {
+  const handleFormSubmit = async (values: MenuFormValues) => {
     try {
-      await saveMenuItem(values, imageFile, editingMenuItem);
+      await saveMenuItem(values, editingMenuItem);
       handleCloseForm();
     } catch (error) {
       console.error("メニューの保存に失敗しました:", error);

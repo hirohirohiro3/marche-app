@@ -1,8 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../firebase';
 import { useAuth } from './useAuth';
+import { z } from 'zod';
+
+export const qrSettingsSchema = z.object({
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
+  logoFile: z.instanceof(File).optional().nullable(),
+  logoUrl: z.string().url().optional().nullable(),
+});
+
+export type QrSettingsFormValues = z.infer<typeof qrSettingsSchema>;
 
 export interface QrCodeSettings {
   color: string;
@@ -34,6 +43,8 @@ export const useQrCodeSettings = () => {
         } finally {
           setLoading(false);
         }
+      } else {
+        setLoading(false);
       }
     };
 
@@ -50,31 +61,33 @@ export const useQrCodeSettings = () => {
     return getDownloadURL(snapshot.ref);
   }, [storeId]);
 
-  const saveQrCodeSettings = useCallback(async (newSettings: Partial<QrCodeSettings>, imageFile: File | null) => {
+  const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
     if (!storeId) {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
     try {
-      let logoUrl = settings?.logoUrl || '';
-      if (imageFile) {
-        logoUrl = await uploadLogoImage(imageFile);
+      let logoUrl = values.logoUrl || '';
+      if (values.logoFile) {
+        logoUrl = await uploadLogoImage(values.logoFile);
       }
 
-      const settingsToSave = {
-        ...settings,
-        ...newSettings,
+      const { logoFile, ...valuesForDb } = values;
+
+      const settingsToSave: QrCodeSettings = {
+        ...valuesForDb,
         logoUrl,
       };
 
       const storeRef = doc(db, 'stores', storeId);
-      await updateDoc(storeRef, { qrCodeSettings: settingsToSave });
-      setSettings(settingsToSave as QrCodeSettings);
+      // Use setDoc with merge: true to create or update the document
+      await setDoc(storeRef, { qrCodeSettings: settingsToSave }, { merge: true });
+      setSettings(settingsToSave);
 
     } catch (error) {
       console.error('Failed to save QR code settings:', error);
       throw error;
     }
-  }, [storeId, settings, uploadLogoImage]);
+  }, [storeId, uploadLogoImage]);
 
   return { settings, loading, saveQrCodeSettings };
 };
