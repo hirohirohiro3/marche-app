@@ -26,6 +26,7 @@ export default function QrCodeSettingsPage() {
     reset,
     watch,
     setValue,
+    trigger,
     formState: { errors, isSubmitting, isValid },
   } = useForm<QrSettingsFormValues>({
     resolver: zodResolver(qrSettingsSchema),
@@ -91,8 +92,9 @@ export default function QrCodeSettingsPage() {
               <Typography variant="h6" gutterBottom>ロゴ画像 (1:1)</Typography>
               <ImageCropCompressor
                 aspect={1}
-                onCropped={(file) => {
-                  setValue('logoFile', file, { shouldValidate: true, shouldDirty: true });
+                onCropped={async (file) => {
+                  setValue('logoFile', file, { shouldDirty: true });
+                  await trigger();
                 }}
                 initialImageUrl={watchLogoUrl}
               />

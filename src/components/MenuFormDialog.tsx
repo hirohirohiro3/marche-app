@@ -44,6 +44,7 @@ export default function MenuFormDialog({
     control,
     watch,
     setValue,
+    trigger,
     formState: { errors, isSubmitting, isValid },
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
@@ -204,8 +205,8 @@ export default function MenuFormDialog({
             <ImageCropCompressor
               aspect={16 / 9}
               onCropped={async (file) => {
-                setValue('imageFile', file, { shouldValidate: true, shouldDirty: true });
-                // No need to call trigger manually if using mode: 'onChange'
+                setValue('imageFile', file, { shouldDirty: true });
+                await trigger();
               }}
               initialImageUrl={watchImageUrl}
             />
