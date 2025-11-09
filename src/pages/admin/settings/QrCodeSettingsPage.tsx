@@ -31,6 +31,7 @@ export default function QrCodeSettingsPage() {
     handleSubmit,
     reset,
     watch,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<QrSettingsForm>({
     resolver: zodResolver(qrSettingsSchema),
@@ -85,7 +86,10 @@ export default function QrCodeSettingsPage() {
               <Typography variant="h6" gutterBottom>ロゴ画像 (1:1)</Typography>
               <ImageCropCompressor
                 aspect={1}
-                onCropped={handleCroppedImage}
+                onCropped={(file) => {
+                  handleCroppedImage(file);
+                  trigger();
+                }}
                 initialImageUrl={settings?.logoUrl}
               />
             </Grid>

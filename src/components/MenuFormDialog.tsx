@@ -44,6 +44,7 @@ export default function MenuFormDialog({
     reset,
     control,
     watch,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
@@ -186,7 +187,10 @@ export default function MenuFormDialog({
             <Typography variant="subtitle1" gutterBottom>商品画像</Typography>
             <ImageCropCompressor
               aspect={16 / 9}
-              onCropped={setImageFile}
+              onCropped={(file) => {
+                setImageFile(file);
+                trigger();
+              }}
               initialImageUrl={editingMenuItem?.imageUrl}
             />
           </Box>

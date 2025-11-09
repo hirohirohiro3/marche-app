@@ -129,7 +129,13 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
     <Box>
       <Button variant="contained" component="label">
         画像を選択
-        <input type="file" accept="image/*" onChange={onSelectFile} hidden data-testid="file-input" />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onSelectFile}
+          style={{ display: 'none' }}
+          data-testid="file-input"
+        />
       </Button>
 
       {imgSrc && (
