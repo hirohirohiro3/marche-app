@@ -67,6 +67,7 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
   const [isLoading, setIsLoading] = useState(false);
   const [finalPreview, setFinalPreview] = useState<string | null>(initialImageUrl || null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [originalFileName, setOriginalFileName] = useState('cropped.jpg');
 
   const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,12 +126,22 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
     }
   };
 
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <Box>
-      <Button variant="contained" component="label">
+      <Button variant="contained" onClick={handleButtonClick}>
         画像を選択
-        <input type="file" accept="image/*" onChange={onSelectFile} hidden />
       </Button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={onSelectFile}
+        hidden
+      />
 
       {imgSrc && (
         <Box mt={2}>
