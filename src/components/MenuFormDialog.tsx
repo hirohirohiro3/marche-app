@@ -67,6 +67,10 @@ export default function MenuFormDialog({
   const watchImageUrl = watch('imageUrl');
 
   useEffect(() => {
+    console.log(`[MenuFormDialog] Form validity changed: ${isValid}`);
+  }, [isValid]);
+
+  useEffect(() => {
     if (open) {
       if (editingMenuItem) {
         reset({

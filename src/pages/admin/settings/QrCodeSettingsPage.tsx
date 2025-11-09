@@ -43,6 +43,10 @@ export default function QrCodeSettingsPage() {
   const watchLogoFile = watch('logoFile');
 
   useEffect(() => {
+    console.log(`[QrCodeSettingsPage] Form validity changed: ${isValid}`);
+  }, [isValid]);
+
+  useEffect(() => {
     if (settings) {
       reset({
         color: settings.color || '#000000',

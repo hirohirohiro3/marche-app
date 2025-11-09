@@ -84,7 +84,7 @@ export const useQrCodeSettings = () => {
       setSettings(settingsToSave);
 
     } catch (error) {
-      console.error('Failed to save QR code settings:', error);
+      console.error('Failed to save QR code settings with detailed error:', error);
       throw error;
     }
   }, [storeId, uploadLogoImage]);

@@ -140,7 +140,7 @@ export const useMenu = (storeId?: string) => {
         });
       }
     } catch (error) {
-      console.error('Failed to save menu item:', error);
+      console.error('Failed to save menu item with detailed error:', error);
       throw error;
     }
   }, [uploadImage, effectiveStoreId]);
