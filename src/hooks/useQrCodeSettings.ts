@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 export const qrSettingsSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
-  logoFile: z.instanceof(File).optional().nullable(),
+  logoFile: z.any().optional().nullable(),
   logoUrl: z.string().url().optional().nullable(),
 });
 

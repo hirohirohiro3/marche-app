@@ -32,6 +32,9 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
   test('メニュー管理で画像を選択するとクロッピングUIが表示され、保存できること', async () => {
     await page.goto(`/admin/menu`);
 
+    // Wait for the main content to load
+    await expect(page.getByRole('button', { name: '新規追加' })).toBeVisible({ timeout: 10000 });
+
     // Open the "新規追加" dialog
     await page.getByRole('button', { name: '新規追加' }).click();
 
@@ -72,6 +75,9 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
 
   test('QRコード設定で画像を選択するとクロッピングUIが表示され、保存できること', async () => {
     await page.goto(`/admin/settings/qrcode`);
+
+    // Wait for the main content to load by checking for the page title
+    await expect(page.getByRole('heading', { name: 'QRコード設定' })).toBeVisible({ timeout: 10000 });
 
     const imageSelectButton = page.getByRole('button', { name: '画像を選択' });
     await expect(imageSelectButton).toBeVisible();

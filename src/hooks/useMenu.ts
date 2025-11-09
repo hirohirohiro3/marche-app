@@ -37,7 +37,7 @@ export const menuFormSchema = z
     ),
     optionGroupIds: z.array(z.string()).default([]),
     // For handling the uploaded file object
-    imageFile: z.instanceof(File).optional().nullable(),
+    imageFile: z.any().optional().nullable(),
     // For displaying the existing image URL
     imageUrl: z.string().url().optional().nullable(),
   })
