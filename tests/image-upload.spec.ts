@@ -42,11 +42,9 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     const imageSelectButton = dialog.getByRole('button', { name: '画像を選択' });
     await expect(imageSelectButton).toBeVisible();
 
-    // Set up a file chooser handler
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await imageSelectButton.click();
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles('./public/vite.svg'); // Use a test image
+    // Use setInputFiles for robustness, bypassing the file chooser dialog.
+    const fileInput = dialog.getByTestId('file-input');
+    await fileInput.setInputFiles('./public/vite.svg');
 
     // After selecting a file, the cropper UI should appear.
     // We can verify this by checking for the "切り抜きを決定" button.
@@ -78,11 +76,9 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     const imageSelectButton = page.getByRole('button', { name: '画像を選択' });
     await expect(imageSelectButton).toBeVisible();
 
-    // Set up a file chooser handler
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await imageSelectButton.click();
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles('./public/vite.svg');
+    // Use setInputFiles for robustness, bypassing the file chooser dialog.
+    const fileInput = page.getByTestId('file-input');
+    await fileInput.setInputFiles('./public/vite.svg');
 
     const cropButton = page.getByRole('button', { name: '切り抜きを決定' });
     await expect(cropButton).toBeVisible();
