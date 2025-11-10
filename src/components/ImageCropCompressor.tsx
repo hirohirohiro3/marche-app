@@ -108,11 +108,13 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
         return;
       }
 
-      const compressedFile = await imageCompression(croppedImageFile, {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1200,
-        useWebWorker: true,
-      });
+      // Bypass compression for debugging
+      const compressedFile = croppedImageFile;
+      // const compressedFile = await imageCompression(croppedImageFile, {
+      //   maxSizeMB: 0.5,
+      //   maxWidthOrHeight: 1200,
+      //   useWebWorker: true,
+      // });
 
       const previewUrl = URL.createObjectURL(compressedFile);
       setFinalPreview(previewUrl);
