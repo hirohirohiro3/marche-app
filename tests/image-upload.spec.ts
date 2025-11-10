@@ -13,7 +13,7 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     await page.getByLabel('店舗名').fill('テスト店舗');
     await page.getByLabel('メールアドレス').fill(uniqueEmail);
     await page.getByLabel('パスワード').fill(password);
-    await page.getByRole('button', { name: '登録する' }).click();
+    await page.getByRole('button', { name: '登録して開始' }).click();
 
     // After signup, user should be redirected to the admin dashboard
     await expect(page).toHaveURL('/admin/dashboard', { timeout: 10000 });

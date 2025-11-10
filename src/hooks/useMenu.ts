@@ -96,13 +96,20 @@ export const useMenu = (storeId?: string) => {
   }, [effectiveStoreId]);
 
   const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
-    if (!effectiveStoreId) {
-      throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
+    if (!user || !effectiveStoreId) {
+      console.error('[useMenu:uploadImage] User or store ID is not available.', { uid: user?.uid, effectiveStoreId });
+      throw new Error("ユーザー情報またはストアIDが取得できません。");
     }
-    const storage = getStorage();
-    const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
-    const snapshot = await uploadBytes(storageRef, imageFile);
-    return getDownloadURL(snapshot.ref);
+    try {
+      const storage = getStorage();
+      const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
+      console.log(`[useMenu:uploadImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
+      const snapshot = await uploadBytes(storageRef, imageFile);
+      return getDownloadURL(snapshot.ref);
+    } catch (error) {
+      console.error('[useMenu:uploadImage] Image upload failed with error object:', JSON.stringify(error, null, 2));
+      throw error;
+    }
   }, [effectiveStoreId, user]);
 
   const saveMenuItem = useCallback(async (

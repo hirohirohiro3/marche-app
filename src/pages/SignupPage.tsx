@@ -57,7 +57,7 @@ export default function SignupPage() {
 
       navigate("/admin/dashboard");
     } catch (error: any) {
-      console.error("Signup failed:", error);
+      console.error("Signup failed with error object:", JSON.stringify(error, null, 2));
       if (error.code === 'auth/email-already-in-use') {
         setSignupError("このメールアドレスは既に使用されています。");
       } else {
