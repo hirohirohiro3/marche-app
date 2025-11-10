@@ -1,20 +1,28 @@
-import { test, expect, Page } from '@playwright/test';
-import { TEST_USER_UID } from './test-utils';
+import { test, expect } from '@playwright/test';
 
 test.describe('画像アップロード機能 (クロッピングと圧縮)', () => {
-  let page: Page;
-  const storeId = TEST_USER_UID; // Use the same UID as in global-setup
 
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    page = await context.newPage();
+  // Run signup before each test to ensure a clean, authenticated state.
+  test.beforeEach(async ({ page }) => {
+    const uniqueEmail = `test-user-${Date.now()}@example.com`;
+    const password = 'password123';
+
+    await page.goto('/signup');
+
+    // Fill out the signup form
+    await page.getByLabel('店舗名').fill('テスト店舗');
+    await page.getByLabel('メールアドレス').fill(uniqueEmail);
+    await page.getByLabel('パスワード').fill(password);
+    await page.getByRole('button', { name: '登録する' }).click();
+
+    // After signup, user should be redirected to the admin dashboard
+    await expect(page).toHaveURL('/admin/dashboard', { timeout: 10000 });
+    // Ensure the dashboard is loaded before proceeding
+    await expect(page.getByRole('heading', { name: 'ダッシュボード' })).toBeVisible();
   });
 
-  // test.afterAll(async () => {
-  //   await teardown();
-  // });
 
-  test('メニュー管理で画像を選択するとクロッピングUIが表示され、保存できること', async () => {
+  test('メニュー管理で画像を選択するとクロッピングUIが表示され、保存できること', async ({ page }) => {
     await page.goto(`/admin/menu`);
 
     // Wait for the main content to load
@@ -58,7 +66,7 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     await expect(page.getByText('テスト商品')).toBeVisible();
   });
 
-  test('QRコード設定で画像を選択するとクロッピングUIが表示され、保存できること', async () => {
+  test('QRコード設定で画像を選択するとクロッピングUIが表示され、保存できること', async ({ page }) => {
     await page.goto(`/admin/settings/qrcode`);
 
     // Wait for the main content to load by checking for the page title
