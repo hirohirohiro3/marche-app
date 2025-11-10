@@ -52,8 +52,6 @@ export const useQrCodeSettings = () => {
   }, [storeId]);
 
   const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
-    console.log(`[useQrCodeSettings-DEBUG] Auth UID: ${user?.uid}, Store ID for Upload: ${storeId}`);
-    console.log(`[useQrCodeSettings-DEBUG] Uploading file: name=${imageFile.name}, size=${imageFile.size}, type=${imageFile.type}`);
     if (!storeId) {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }

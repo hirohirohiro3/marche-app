@@ -52,7 +52,7 @@ async function getCroppedImg(
           resolve(null);
           return;
         }
-        resolve(new File([blob], fileName, { type: blob.type }));
+        resolve(new File([blob], fileName, { type: 'image/jpeg' }));
       },
       'image/jpeg',
       0.95
@@ -102,12 +102,13 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
     setIsLoading(true);
 
     try {
-      const croppedImageFile = await getCroppedImg(imgRef.current, completedCrop, originalFileName);
+      const croppedImageFile = await getCroppedImg(
+        imgRef.current,
+        completedCrop,
+        originalFileName
+      );
       if (!croppedImageFile) {
         setIsLoading(false);
-        return;
-      }
-
         return;
       }
 

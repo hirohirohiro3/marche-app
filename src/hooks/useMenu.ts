@@ -96,9 +96,6 @@ export const useMenu = (storeId?: string) => {
   }, [effectiveStoreId]);
 
   const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
-    console.log('[useMenu] uploadImage user object:', user); // Add this line for debugging
-    console.log(`[useMenu-DEBUG] Auth UID: ${user?.uid}, Store ID for Upload: ${effectiveStoreId}`);
-    console.log(`[useMenu-DEBUG] Uploading file: name=${imageFile.name}, size=${imageFile.size}, type=${imageFile.type}`);
     if (!effectiveStoreId) {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
