@@ -22,7 +22,55 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import { useMenu, MenuFormValues } from "../../../hooks/useMenu";
 import { MenuItem, OptionGroup } from "../../../types";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 import MenuFormDialog from "../../../components/MenuFormDialog";
+
+import { useAuth } from "../../../hooks/useAuth";
+
+// --- MINIMAL UPLOAD TEST ---
+const MinimalUploadTest = () => {
+  const { user } = useAuth();
+  const [file, setFile] = useState<File | null>(null);
+  const [message, setMessage] = useState('');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file || !user?.uid) {
+      setMessage('ファイルを選択するか、ログインしているか確認してください。');
+      return;
+    }
+    setMessage('アップロードを開始します...');
+    try {
+      const storage = getStorage();
+      const storageRef = ref(storage, `minimal-test/${user.uid}/${file.name}`);
+
+      console.log(`[MinimalUploadTest] Uploading to: ${storageRef.fullPath}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      console.log('[MinimalUploadTest] Upload successful!', snapshot);
+
+      setMessage(`アップロード成功！ Path: ${snapshot.ref.fullPath}`);
+    } catch (error) {
+      console.error('[MinimalUploadTest] Upload failed:', error);
+      setMessage(`アップロード失敗: ${error.message}`);
+    }
+  };
+
+  return (
+    <Box sx={{ border: '2px dashed red', p: 2, mb: 2 }}>
+      <Typography variant="h6">最小構成アップロードテスト</Typography>
+      <input type="file" onChange={handleFileChange} />
+      <Button onClick={handleUpload} variant="contained" sx={{ ml: 2 }}>テストアップロード</Button>
+      <Typography sx={{ mt: 1 }}>{message}</Typography>
+    </Box>
+  );
+};
+// --- END MINIMAL UPLOAD TEST ---
+
 
 // Dummy data for initial layout - to be replaced with a hook
 const dummyOptionGroups: OptionGroup[] = [
@@ -98,6 +146,7 @@ export default function MenuAdminPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <MinimalUploadTest />
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h4" component="h1">
           メニュー管理
