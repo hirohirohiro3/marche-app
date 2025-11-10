@@ -54,7 +54,8 @@ const MinimalUploadTest = () => {
       console.log('[MinimalUploadTest] Upload successful!', snapshot);
 
       setMessage(`アップロード成功！ Path: ${snapshot.ref.fullPath}`);
-    } catch (error) {
+    } catch (e) {
+      const error = e as any;
       console.error('[MinimalUploadTest] Upload failed:', error);
       setMessage(`アップロード失敗: ${error.message}`);
     }
