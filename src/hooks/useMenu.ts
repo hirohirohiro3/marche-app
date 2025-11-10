@@ -104,7 +104,7 @@ export const useMenu = (storeId?: string) => {
     const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
     const snapshot = await uploadBytes(storageRef, imageFile);
     return getDownloadURL(snapshot.ref);
-  }, [effectiveStoreId]);
+  }, [effectiveStoreId, user]);
 
   const saveMenuItem = useCallback(async (
     values: MenuFormValues,
@@ -160,7 +160,7 @@ export const useMenu = (storeId?: string) => {
       console.error('Failed to save menu item with detailed error:', error);
       throw error;
     }
-  }, [uploadImage, effectiveStoreId]);
+  }, [uploadImage, effectiveStoreId, user]);
 
   const deleteMenuItem = useCallback(async (menuItemId: string) => {
     try {

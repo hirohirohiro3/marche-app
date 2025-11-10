@@ -194,7 +194,7 @@ describe('useMenuフックのテスト', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await act(async () => {
-        await result.current.saveMenuItem(mockNewMenuItem, null, null);
+        await result.current.saveMenuItem(mockNewMenuItem, null);
       });
 
       expect(mockedAddDoc).toHaveBeenCalledTimes(1);
@@ -217,9 +217,10 @@ describe('useMenuフックのテスト', () => {
       const updatedValues = { ...mockNewMenuItem, name: 'エスプレッソ（改）' };
 
       await act(async () => {
-        await result.current.saveMenuItem(updatedValues, null, editingItem);
+        await result.current.saveMenuItem(updatedValues, editingItem);
       });
 
+      expect(mockedAddDoc).not.toHaveBeenCalled();
       expect(mockedUpdateDoc).toHaveBeenCalledTimes(1);
       expect(mockedUpdateDoc).toHaveBeenCalledWith(
         `doc:menus/${editingItem.id}`,
@@ -262,9 +263,10 @@ describe('useMenuフックのテスト', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       const mockImageFile = new File(['dummy content'], 'test.png', { type: 'image/png' });
+      const valuesWithImage: MenuFormValues = { ...mockNewMenuItem, imageFile: mockImageFile };
 
       await act(async () => {
-        await result.current.saveMenuItem(mockNewMenuItem, mockImageFile, null);
+        await result.current.saveMenuItem(valuesWithImage, null);
       });
 
       expect(mockedUploadBytes).toHaveBeenCalledTimes(1);
@@ -291,9 +293,10 @@ describe('useMenuフックのテスト', () => {
       };
 
       await act(async () => {
-        await result.current.saveMenuItem(updatedValues, null, editingItem);
+        await result.current.saveMenuItem(updatedValues, editingItem);
       });
 
+      expect(mockedAddDoc).not.toHaveBeenCalled();
       expect(mockedUpdateDoc).toHaveBeenCalledTimes(1);
       expect(mockedUpdateDoc).toHaveBeenCalledWith(
         `doc:menus/${editingItem.id}`,

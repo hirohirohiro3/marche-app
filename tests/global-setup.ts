@@ -1,8 +1,5 @@
-import { db } from './test-utils';
+import { db, TEST_USER_UID } from './test-utils';
 import { FullConfig } from '@playwright/test';
-
-// This UID should correspond to the user used in the E2E tests.
-const TEST_USER_UID = 'gOCluucPI5hzje5lVgLXj7BJQAu1';
 
 async function globalSetup(config: FullConfig) {
   console.log('--- Starting global setup for tests ---');

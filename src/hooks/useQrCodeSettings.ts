@@ -59,7 +59,7 @@ export const useQrCodeSettings = () => {
     const storageRef = ref(storage, `qr-code-logos/${storeId}/${Date.now()}_${imageFile.name}`);
     const snapshot = await uploadBytes(storageRef, imageFile);
     return getDownloadURL(snapshot.ref);
-  }, [storeId]);
+  }, [storeId, user]);
 
   const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
     console.log('[useQrCodeSettings] saveQrCodeSettings started.', values);
@@ -99,7 +99,7 @@ export const useQrCodeSettings = () => {
       console.error('Failed to save QR code settings with detailed error:', error);
       throw error;
     }
-  }, [storeId, uploadLogoImage]);
+  }, [storeId, uploadLogoImage, user]);
 
   return { settings, loading, saveQrCodeSettings };
 };
