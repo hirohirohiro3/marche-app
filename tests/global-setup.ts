@@ -1,16 +1,19 @@
-import { db, auth, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_USER_UID } from './test-utils';
+import { db } from './test-utils';
 import { FullConfig } from '@playwright/test';
-import { signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+
+// This UID should correspond to the user used in the E2E tests.
+// The user is expected to be created via the Firebase console or a separate seeding script
+// with this specific UID for test predictability.
+const TEST_USER_UID = 'gOCluucPI5hzje5lVgLXj7BJQAu1';
 
 async function globalSetup(config: FullConfig) {
   console.log('--- Starting global setup for tests ---');
 
   try {
-    // Authenticate as a user to get permissions if needed, though Admin SDK should bypass rules.
-    // Re-authenticating here ensures we have a valid session.
-    await signInWithEmailAndPassword(auth, TEST_USER_EMAIL, TEST_USER_PASSWORD);
-    console.log('Global setup: Signed in as test user.');
+    // NOTE: We are using the CLIENT SDK here with Admin credentials.
+    // This setup bypasses security rules and writes directly to Firestore.
+    // No client-side authentication is needed in this setup script.
 
     // Create a store for the test user
     const storeRef = doc(db, 'stores', TEST_USER_UID);
@@ -42,7 +45,6 @@ async function globalSetup(config: FullConfig) {
     // We throw the error to prevent tests from running in a broken state.
     throw new Error('Global setup failed, aborting tests.');
   }
-
 
   console.log('--- Global setup complete ---');
 }
