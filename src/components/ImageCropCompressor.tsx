@@ -2,7 +2,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import { useState, useRef } from 'react';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import { Button, Box, CircularProgress, Typography } from '@mui/material';
-import imageCompression from 'browser-image-compression';
+// import imageCompression from 'browser-image-compression';
 
 interface ImageCropCompressorProps {
   aspect: number;
