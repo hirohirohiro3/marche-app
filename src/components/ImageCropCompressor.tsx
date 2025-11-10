@@ -2,7 +2,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import { useState, useRef } from 'react';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import { Button, Box, CircularProgress, Typography } from '@mui/material';
-// import imageCompression from 'browser-image-compression';
+import imageCompression from 'browser-image-compression';
 
 interface ImageCropCompressorProps {
   aspect: number;
@@ -108,17 +108,25 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
         return;
       }
 
-      // Bypass compression for debugging
-      const compressedFile = croppedImageFile;
-      // const compressedFile = await imageCompression(croppedImageFile, {
-      //   maxSizeMB: 0.5,
-      //   maxWidthOrHeight: 1200,
-      //   useWebWorker: true,
-      // });
+        return;
+      }
 
-      const previewUrl = URL.createObjectURL(compressedFile);
+      const compressedFile = await imageCompression(croppedImageFile, {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1200,
+        useWebWorker: true,
+      });
+
+      // Re-create a clean File object from ArrayBuffer to ensure compatibility
+      const buffer = await compressedFile.arrayBuffer();
+      const blob = new Blob([buffer], { type: compressedFile.type });
+      const cleanFile = new File([blob], compressedFile.name, {
+        type: compressedFile.type,
+      });
+
+      const previewUrl = URL.createObjectURL(cleanFile);
       setFinalPreview(previewUrl);
-      onCropped(compressedFile);
+      onCropped(cleanFile);
     } catch (error) {
       console.error('Image processing failed:', error);
     } finally {
