@@ -130,22 +130,30 @@ export const useMenu = (storeId?: string) => {
       console.log('[useMenu] Data prepared for Firestore:', dataToSave);
 
       if (editingMenuItem) {
-        // For updates, storeId is already part of the document
         console.log(`[useMenu] Updating existing menu item with id: ${editingMenuItem.id}`);
-        await updateDoc(doc(db, 'menus', editingMenuItem.id), dataToSave);
-        console.log('[useMenu] Menu item updated successfully.');
+        try {
+          await updateDoc(doc(db, 'menus', editingMenuItem.id), dataToSave);
+          console.log('[useMenu] Firestore updateDoc successful.');
+        } catch (dbError) {
+          console.error('[useMenu] Firestore updateDoc ERROR:', dbError);
+          throw dbError;
+        }
       } else {
-        // For new items, add the storeId
         if (!effectiveStoreId) {
           throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
         }
         console.log('[useMenu] Creating new menu item.');
-        await addDoc(collection(db, 'menus'), {
-          ...dataToSave,
-          storeId: effectiveStoreId,
-          isSoldOut: false,
-        });
-        console.log('[useMenu] New menu item created successfully.');
+        try {
+          await addDoc(collection(db, 'menus'), {
+            ...dataToSave,
+            storeId: effectiveStoreId,
+            isSoldOut: false,
+          });
+          console.log('[useMenu] Firestore addDoc successful.');
+        } catch (dbError) {
+          console.error('[useMenu] Firestore addDoc ERROR:', dbError);
+          throw dbError;
+        }
       }
     } catch (error) {
       console.error('Failed to save menu item with detailed error:', error);

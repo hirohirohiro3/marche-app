@@ -1,33 +1,18 @@
 import { test, expect, Page } from '@playwright/test';
-import { db, teardown } from './test-utils';
+import { TEST_USER_UID } from './test-utils';
 
 test.describe('画像アップロード機能 (クロッピングと圧縮)', () => {
   let page: Page;
-  let storeId: string;
+  const storeId = TEST_USER_UID; // Use the same UID as in global-setup
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
     page = await context.newPage();
-
-    // Get storeId from the seeded 'test-user' document.
-    // This test suite relies on the global setup to have created this user.
-    // If it doesn't exist, we throw an error to fail fast.
-    const userDocRef = db.collection('users').doc('test-user');
-    const userDoc = await userDocRef.get();
-
-    if (!userDoc.exists) {
-      throw new Error("Test setup failed: 'test-user' document not found in Firestore. Ensure global setup and seeding ran correctly.");
-    }
-
-    storeId = userDoc.data()!.storeId;
-    if (!storeId) {
-      throw new Error("Test setup failed: 'storeId' not found in 'test-user' document.");
-    }
   });
 
-  test.afterAll(async () => {
-    await teardown();
-  });
+  // test.afterAll(async () => {
+  //   await teardown();
+  // });
 
   test('メニュー管理で画像を選択するとクロッピングUIが表示され、保存できること', async () => {
     await page.goto(`/admin/menu`);

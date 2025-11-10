@@ -85,10 +85,15 @@ export const useQrCodeSettings = () => {
 
       const storeRef = doc(db, 'stores', storeId);
       console.log(`[useQrCodeSettings] Updating/creating settings for storeId: ${storeId}`);
-      // Use setDoc with merge: true to create or update the document
-      await setDoc(storeRef, { qrCodeSettings: settingsToSave }, { merge: true });
-      console.log('[useQrCodeSettings] Settings saved successfully.');
-      setSettings(settingsToSave);
+      try {
+        // Use setDoc with merge: true to create or update the document
+        await setDoc(storeRef, { qrCodeSettings: settingsToSave }, { merge: true });
+        console.log('[useQrCodeSettings] Firestore setDoc successful.');
+        setSettings(settingsToSave);
+      } catch (dbError) {
+        console.error('[useQrCodeSettings] Firestore setDoc ERROR:', dbError);
+        throw dbError;
+      }
 
     } catch (error) {
       console.error('Failed to save QR code settings with detailed error:', error);
