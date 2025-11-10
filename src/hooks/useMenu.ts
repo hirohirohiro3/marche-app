@@ -109,12 +109,15 @@ export const useMenu = (storeId?: string) => {
     values: MenuFormValues,
     editingMenuItem: MenuItem | null
   ) => {
+    console.log('[useMenu] saveMenuItem started.', { values, editingMenuItem });
     try {
       // Use the imageUrl from the form state, which could be the initial URL or null
       let imageUrl = values.imageUrl || '';
       // If a new image file is uploaded, upload it and update the URL
       if (values.imageFile) {
+        console.log('[useMenu] New image file found, starting upload...');
         imageUrl = await uploadImage(values.imageFile);
+        console.log('[useMenu] Image upload finished, URL:', imageUrl);
       }
 
       // Prepare data for Firestore, excluding the client-side 'imageFile'
@@ -124,20 +127,25 @@ export const useMenu = (storeId?: string) => {
         stock: values.stock ?? 0,
         imageUrl,
       };
+      console.log('[useMenu] Data prepared for Firestore:', dataToSave);
 
       if (editingMenuItem) {
         // For updates, storeId is already part of the document
+        console.log(`[useMenu] Updating existing menu item with id: ${editingMenuItem.id}`);
         await updateDoc(doc(db, 'menus', editingMenuItem.id), dataToSave);
+        console.log('[useMenu] Menu item updated successfully.');
       } else {
         // For new items, add the storeId
         if (!effectiveStoreId) {
           throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
         }
+        console.log('[useMenu] Creating new menu item.');
         await addDoc(collection(db, 'menus'), {
           ...dataToSave,
           storeId: effectiveStoreId,
           isSoldOut: false,
         });
+        console.log('[useMenu] New menu item created successfully.');
       }
     } catch (error) {
       console.error('Failed to save menu item with detailed error:', error);

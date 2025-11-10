@@ -65,15 +65,18 @@ export default function QrCodeSettingsPage() {
   }, [watchLogoFile, watchLogoUrl]);
 
   const onSubmit: SubmitHandler<QrSettingsFormValues> = async (data) => {
+    console.log('[QrCodeSettingsPage] onSubmit started.', data);
     setPageError(null);
     setPageSuccess(null);
     try {
+      console.log('[QrCodeSettingsPage] Calling saveQrCodeSettings...');
       await saveQrCodeSettings(data);
+      console.log('[QrCodeSettingsPage] saveQrCodeSettings finished.');
       setPageSuccess('設定を保存しました。');
       // After successful save, reset the file input in the form state
       setValue('logoFile', null, { shouldValidate: true });
     } catch (err) {
-      console.error(err);
+      console.error('[QrCodeSettingsPage] Failed to save settings:', err);
       setPageError('設定の保存に失敗しました。');
     }
   };

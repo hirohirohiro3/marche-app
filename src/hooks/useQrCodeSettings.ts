@@ -62,13 +62,16 @@ export const useQrCodeSettings = () => {
   }, [storeId]);
 
   const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
+    console.log('[useQrCodeSettings] saveQrCodeSettings started.', values);
     if (!storeId) {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
     try {
       let logoUrl = values.logoUrl || '';
       if (values.logoFile) {
+        console.log('[useQrCodeSettings] New logo file found, starting upload...');
         logoUrl = await uploadLogoImage(values.logoFile);
+        console.log('[useQrCodeSettings] Logo upload finished, URL:', logoUrl);
       }
 
       const { logoFile, ...valuesForDb } = values;
@@ -77,10 +80,14 @@ export const useQrCodeSettings = () => {
         ...valuesForDb,
         logoUrl,
       };
+      console.log('[useQrCodeSettings] Data prepared for Firestore:', settingsToSave);
+
 
       const storeRef = doc(db, 'stores', storeId);
+      console.log(`[useQrCodeSettings] Updating/creating settings for storeId: ${storeId}`);
       // Use setDoc with merge: true to create or update the document
       await setDoc(storeRef, { qrCodeSettings: settingsToSave }, { merge: true });
+      console.log('[useQrCodeSettings] Settings saved successfully.');
       setSettings(settingsToSave);
 
     } catch (error) {

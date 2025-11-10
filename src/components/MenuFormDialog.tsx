@@ -96,7 +96,9 @@ export default function MenuFormDialog({
   }, [open, editingMenuItem, reset]);
 
   const handleFormSubmit = (values: MenuFormValues) => {
+    console.log('[MenuFormDialog] handleFormSubmit started.', values);
     onSubmit(values);
+    console.log('[MenuFormDialog] onSubmit prop called.');
   };
 
   return (

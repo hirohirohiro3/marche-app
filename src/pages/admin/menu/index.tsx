@@ -67,11 +67,14 @@ export default function MenuAdminPage() {
   };
 
   const handleFormSubmit = async (values: MenuFormValues) => {
+    console.log('[MenuAdminPage] handleFormSubmit started.', values);
     try {
+      console.log('[MenuAdminPage] Calling saveMenuItem...');
       await saveMenuItem(values, editingMenuItem);
+      console.log('[MenuAdminPage] saveMenuItem finished. Closing form.');
       handleCloseForm();
     } catch (error) {
-      console.error("メニューの保存に失敗しました:", error);
+      console.error("[MenuAdminPage] Failed to save menu item:", error);
       // ここでユーザーにエラーを通知するUI（Snackbarなど）を表示することも可能
     }
   };
