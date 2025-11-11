@@ -38,5 +38,16 @@ export default defineConfig({
     stdout: 'pipe',
     stderr: 'pipe',
     timeout: 120000, // 2 minutes
+    env: Object.entries(process.env)
+      .filter(([key]) => key.startsWith('VITE_'))
+      .reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as { [key: string]: string },
+      ),
   },
 });
