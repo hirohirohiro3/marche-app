@@ -100,14 +100,20 @@ export const useMenu = (storeId?: string) => {
       console.error('[useMenu:uploadImage] User or store ID is not available.', { uid: user?.uid, effectiveStoreId });
       throw new Error("ユーザー情報またはストアIDが取得できません。");
     }
+    const storage = getStorage();
+    const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
+    console.log(`[useMenu:uploadImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
     try {
-      const storage = getStorage();
-      const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
-      console.log(`[useMenu:uploadImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
-      const snapshot = await uploadBytes(storageRef, imageFile);
+      // Re-create a clean File object from ArrayBuffer to ensure compatibility
+      const buffer = await imageFile.arrayBuffer();
+      const blob = new Blob([buffer], { type: imageFile.type });
+      const cleanFile = new File([blob], imageFile.name, {
+        type: imageFile.type,
+      });
+      const snapshot = await uploadBytes(storageRef, cleanFile);
       return getDownloadURL(snapshot.ref);
     } catch (error) {
-      console.error('[useMenu:uploadImage] Image upload failed with error object:', JSON.stringify(error, null, 2));
+      console.error('[useMenu:uploadImage] Image upload failed with detailed error:', JSON.stringify(error, null, 2));
       throw error;
     }
   }, [effectiveStoreId, user]);

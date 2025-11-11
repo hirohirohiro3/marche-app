@@ -53,12 +53,25 @@ export const useQrCodeSettings = () => {
 
   const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
     if (!storeId) {
+      console.error('[useQrCodeSettings:uploadLogoImage] Store ID is not available.');
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
     const storage = getStorage();
     const storageRef = ref(storage, `qr-code-logos/${storeId}/${Date.now()}_${imageFile.name}`);
-    const snapshot = await uploadBytes(storageRef, imageFile);
-    return getDownloadURL(snapshot.ref);
+    console.log(`[useQrCodeSettings:uploadLogoImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
+    try {
+      // Re-create a clean File object from ArrayBuffer to ensure compatibility
+      const buffer = await imageFile.arrayBuffer();
+      const blob = new Blob([buffer], { type: imageFile.type });
+      const cleanFile = new File([blob], imageFile.name, {
+        type: imageFile.type,
+      });
+      const snapshot = await uploadBytes(storageRef, cleanFile);
+      return getDownloadURL(snapshot.ref);
+    } catch (error) {
+      console.error('[useQrCodeSettings:uploadLogoImage] Image upload failed with detailed error:', JSON.stringify(error, null, 2));
+      throw error;
+    }
   }, [storeId, user]);
 
   const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
