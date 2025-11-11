@@ -66,9 +66,6 @@ export default function MenuFormDialog({
   const watchManageStock = watch('manageStock');
   const watchImageUrl = watch('imageUrl');
 
-  useEffect(() => {
-    console.log(`[MenuFormDialog] Form validity changed: ${isValid}`);
-  }, [isValid]);
 
   useEffect(() => {
     if (open) {
@@ -212,7 +209,7 @@ export default function MenuFormDialog({
               aspect={16 / 9}
               onCropped={async (file) => {
                 setValue('imageFile', file, { shouldDirty: true });
-                await trigger();
+                await trigger('imageFile');
               }}
               initialImageUrl={watchImageUrl}
             />

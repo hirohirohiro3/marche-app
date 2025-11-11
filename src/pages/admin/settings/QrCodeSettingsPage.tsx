@@ -42,9 +42,6 @@ export default function QrCodeSettingsPage() {
   const watchLogoUrl = watch('logoUrl');
   const watchLogoFile = watch('logoFile');
 
-  useEffect(() => {
-    console.log(`[QrCodeSettingsPage] Form validity changed: ${isValid}`);
-  }, [isValid]);
 
   useEffect(() => {
     if (settings) {
@@ -101,7 +98,7 @@ export default function QrCodeSettingsPage() {
                 aspect={1}
                 onCropped={async (file) => {
                   setValue('logoFile', file, { shouldDirty: true });
-                  await trigger();
+                  await trigger('logoFile');
                 }}
                 initialImageUrl={watchLogoUrl}
               />
