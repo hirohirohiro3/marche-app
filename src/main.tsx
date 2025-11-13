@@ -1,3 +1,4 @@
+console.log("JULES_BUILD_V5_DEPLOYMENT_VERIFICATION");
 import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, useNavigate, Navigate } from 'react-router-dom';
