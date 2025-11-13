@@ -1,4 +1,4 @@
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
@@ -20,13 +20,14 @@ const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
   projectId: projectId,
+  // Always use the default storage bucket derived from the project ID.
   storageBucket: `${projectId}.appspot.com`,
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID,
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
 
-let app;
+let app: FirebaseApp;
 
 try {
   // Validate required environment variables

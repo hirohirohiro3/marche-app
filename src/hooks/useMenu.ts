@@ -10,8 +10,8 @@ import {
   doc,
   where,
 } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
 import { MenuItem } from '../types';
 import * as z from 'zod';
 import { useAuth } from './useAuth';
@@ -100,7 +100,6 @@ export const useMenu = (storeId?: string) => {
       console.error('[useMenu:uploadImage] User or store ID is not available.', { uid: user?.uid, effectiveStoreId });
       throw new Error("ユーザー情報またはストアIDが取得できません。");
     }
-    const storage = getStorage();
     const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
     console.log(`[useMenu:uploadImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
     try {
@@ -128,9 +127,15 @@ export const useMenu = (storeId?: string) => {
       let imageUrl = values.imageUrl || '';
       // If a new image file is uploaded, upload it and update the URL
       if (values.imageFile) {
-        console.log('[useMenu] New image file found, starting upload...');
-        imageUrl = await uploadImage(values.imageFile);
-        console.log('[useMenu] Image upload finished, URL:', imageUrl);
+        try {
+          console.log('[useMenu] New image file found, starting upload...');
+          imageUrl = await uploadImage(values.imageFile);
+          console.log('[useMenu] Image upload finished, URL:', imageUrl);
+        } catch (uploadError) {
+          console.error('[useMenu] Image upload failed within saveMenuItem:', uploadError);
+          // Throw a more specific error for the UI to catch.
+          throw new Error('画像のアップロードに失敗しました。ネットワーク接続を確認するか、別の画像でお試しください。');
+        }
       }
 
       // Prepare data for Firestore, excluding the client-side 'imageFile'
