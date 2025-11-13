@@ -52,7 +52,7 @@ async function getCroppedImg(
           resolve(null);
           return;
         }
-        resolve(new File([blob], fileName, { type: blob.type }));
+        resolve(new File([blob], fileName, { type: 'image/jpeg' }));
       },
       'image/jpeg',
       0.95
@@ -102,7 +102,11 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
     setIsLoading(true);
 
     try {
-      const croppedImageFile = await getCroppedImg(imgRef.current, completedCrop, originalFileName);
+      const croppedImageFile = await getCroppedImg(
+        imgRef.current,
+        completedCrop,
+        originalFileName
+      );
       if (!croppedImageFile) {
         setIsLoading(false);
         return;
@@ -114,9 +118,16 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
         useWebWorker: true,
       });
 
-      const previewUrl = URL.createObjectURL(compressedFile);
+      // Re-create a clean File object from ArrayBuffer to ensure compatibility
+      const buffer = await compressedFile.arrayBuffer();
+      const blob = new Blob([buffer], { type: compressedFile.type });
+      const cleanFile = new File([blob], compressedFile.name, {
+        type: compressedFile.type,
+      });
+
+      const previewUrl = URL.createObjectURL(cleanFile);
       setFinalPreview(previewUrl);
-      onCropped(compressedFile);
+      onCropped(cleanFile);
     } catch (error) {
       console.error('Image processing failed:', error);
     } finally {
@@ -129,7 +140,23 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
     <Box>
       <Button variant="contained" component="label">
         画像を選択
-        <input type="file" accept="image/*" onChange={onSelectFile} hidden />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onSelectFile}
+          style={{
+            clip: 'rect(0 0 0 0)',
+            clipPath: 'inset(50%)',
+            height: 1,
+            overflow: 'hidden',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            whiteSpace: 'nowrap',
+            width: 1,
+          }}
+          data-testid="file-input"
+        />
       </Button>
 
       {imgSrc && (

@@ -1,52 +1,35 @@
-import { test, expect, Page } from '@playwright/test';
-import { db, teardown, auth } from './test-utils';
-import { doc, getDoc } from 'firebase/firestore';
+import { test, expect } from '@playwright/test';
 
 test.describe('画像アップロード機能 (クロッピングと圧縮)', () => {
-  let page: Page;
-  let storeId: string;
 
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    page = await context.newPage();
+  // Run signup before each test to ensure a clean, authenticated state.
+  test.beforeEach(async ({ page }) => {
+    const uniqueEmail = `test-user-${Date.now()}@example.com`;
+    const password = 'password123';
 
-    // Get storeId from the seeded data in global-setup
-    // This assumes the user created in global-setup has a known UID.
-    // Let's get it from the firestore emulator.
-    // Note: In a real scenario, we'd have a more robust way to get this.
-    // For now, we assume the test user from setup.ts is used.
-    const userDoc = await getDoc(doc(db, 'users', 'test-user'));
-    if (userDoc.exists()) {
-        storeId = userDoc.data().storeId;
-    } else {
-        // Fallback for local testing if seed is different
-        const testUser = {
-          email: 'test@test.test',
-          password: 'password',
-        };
-        await page.goto('/login');
-        await page.fill('input[name="email"]', testUser.email);
-        await page.fill('input[name="password"]', testUser.password);
-        await page.click('button[type="submit"]');
-        await page.waitForURL('/admin/dashboard');
+    await page.goto('/signup');
 
-        const url = page.url();
-        const match = url.match(/admin\/dashboard\/(.*)/);
-        if (match) {
-            storeId = match[1];
-        } else {
-            // If still not found, we have to fail.
-            throw new Error("Could not determine storeId for tests.");
-        }
-    }
+    // Fill out the signup form
+    await page.getByLabel('店舗名').fill('テスト店舗');
+    await page.getByLabel('メールアドレス').fill(uniqueEmail);
+    await page.getByLabel('パスワード').fill(password);
+    await page.getByRole('button', { name: '登録して開始' }).click();
+
+    // After signup, user should be redirected to the admin dashboard
+    await expect(page).toHaveURL('/admin/dashboard', { timeout: 10000 });
+    // Ensure the dashboard is loaded before proceeding
+    await expect(page.getByRole('heading', { name: 'ダッシュボード' })).toBeVisible();
   });
 
-  test.afterAll(async () => {
-    await teardown();
-  });
 
-  test('メニュー管理で画像を選択するとクロッピングUIが表示され、保存できること', async () => {
+  test('メニュー管理で画像を選択するとクロッピングUIが表示され、保存できること', async ({ page }) => {
     await page.goto(`/admin/menu`);
+
+    // Wait for auth to be restored by waiting for the account icon to be visible
+    await expect(page.getByLabel('account of current user')).toBeVisible();
+
+    // Now, wait for the page-specific content to load
+    await expect(page.getByRole('button', { name: '新規追加' })).toBeVisible();
 
     // Open the "新規追加" dialog
     await page.getByRole('button', { name: '新規追加' }).click();
@@ -58,11 +41,9 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     const imageSelectButton = dialog.getByRole('button', { name: '画像を選択' });
     await expect(imageSelectButton).toBeVisible();
 
-    // Set up a file chooser handler
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await imageSelectButton.click();
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles('./public/vite.svg'); // Use a test image
+    // Use setInputFiles for robustness, bypassing the file chooser dialog.
+    const fileInput = dialog.getByTestId('file-input');
+    await fileInput.setInputFiles('./public/vite.svg');
 
     // After selecting a file, the cropper UI should appear.
     // We can verify this by checking for the "切り抜きを決定" button.
@@ -88,17 +69,21 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     await expect(page.getByText('テスト商品')).toBeVisible();
   });
 
-  test('QRコード設定で画像を選択するとクロッピングUIが表示され、保存できること', async () => {
+  test('QRコード設定で画像を選択するとクロッピングUIが表示され、保存できること', async ({ page }) => {
     await page.goto(`/admin/settings/qrcode`);
+
+    // Wait for auth to be restored by waiting for the account icon to be visible
+    await expect(page.getByLabel('account of current user')).toBeVisible();
+
+    // Now, wait for the page-specific content to load by checking for the page title
+    await expect(page.getByRole('heading', { name: 'QRコード設定' })).toBeVisible();
 
     const imageSelectButton = page.getByRole('button', { name: '画像を選択' });
     await expect(imageSelectButton).toBeVisible();
 
-    // Set up a file chooser handler
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await imageSelectButton.click();
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles('./public/vite.svg');
+    // Use setInputFiles for robustness, bypassing the file chooser dialog.
+    const fileInput = page.getByTestId('file-input');
+    await fileInput.setInputFiles('./public/vite.svg');
 
     const cropButton = page.getByRole('button', { name: '切り抜きを決定' });
     await expect(cropButton).toBeVisible();
