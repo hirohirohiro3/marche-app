@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
 import { useAuth } from './useAuth';
 import { z } from 'zod';
 
@@ -56,7 +56,6 @@ export const useQrCodeSettings = () => {
       console.error('[useQrCodeSettings:uploadLogoImage] Store ID is not available.');
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
-    const storage = getStorage();
     const storageRef = ref(storage, `qr-code-logos/${storeId}/${Date.now()}_${imageFile.name}`);
     console.log(`[useQrCodeSettings:uploadLogoImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
     try {
