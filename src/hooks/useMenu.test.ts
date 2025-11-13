@@ -32,14 +32,28 @@ vi.mock('../firebase', () => ({
     },
   },
 }));
+import { getIdToken } from 'firebase/auth';
+
 vi.mock('firebase/auth');
 vi.mock('firebase/firestore');
-vi.mock('firebase/storage');
+// storage is still needed for the bucket name
+vi.mock('firebase/storage', async (importOriginal) => {
+  const original = await importOriginal<typeof import('firebase/storage')>();
+  return {
+    ...original,
+    ref: vi.fn(),
+    uploadBytes: vi.fn(),
+    getDownloadURL: vi.fn(),
+  };
+});
 vi.mock('./useAuth');
 
 // Cast mocks to the correct type for TypeScript intelligence
 // Custom Hooks
 const mockedUseAuth = useAuth as vi.Mock;
+
+// Auth
+const mockedGetIdToken = getIdToken as vi.Mock;
 
 // Firestore
 const mockedCollection = collection as vi.Mock;
@@ -96,6 +110,13 @@ describe('useMenuフックのテスト', () => {
     mockedUseAuth.mockReturnValue({
       user: { uid: 'test-user-id' },
       loading: false,
+    });
+    mockedGetIdToken.mockResolvedValue('test-token');
+
+    // Mock global fetch
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ downloadTokens: 'test-download-token' }),
     });
 
     // Firestore Mocks
@@ -277,13 +298,15 @@ describe('useMenuフックのテスト', () => {
         await result.current.saveMenuItem(valuesWithImage, null);
       });
 
-      expect(mockedUploadBytes).toHaveBeenCalledTimes(1);
-      expect(mockedGetDownloadURL).toHaveBeenCalledTimes(1);
+      // Check if fetch was called for the upload
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+
+      // Check if addDoc was called with the correct data, including the generated download URL
       expect(mockedAddDoc).toHaveBeenCalledWith(
         'collection:menus',
         expect.objectContaining({
           name: 'ラテ',
-          imageUrl: 'http://mock-url/image.png',
+          imageUrl: expect.stringContaining('https://firebasestorage.googleapis.com/v0/b/test-project-id.appspot.com/o/menu-images%2Ftest-store-id'),
         })
       );
     });
