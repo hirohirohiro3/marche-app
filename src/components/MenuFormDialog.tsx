@@ -10,6 +10,7 @@ import {
   Typography,
   Switch,
   FormControlLabel,
+  Alert,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,6 +29,7 @@ interface MenuFormDialogProps {
   onSubmit: (values: MenuFormValues) => void;
   editingMenuItem: MenuItem | null;
   optionGroups: OptionGroup[];
+  error?: string | null;
 }
 
 export default function MenuFormDialog({
@@ -36,6 +38,7 @@ export default function MenuFormDialog({
   onSubmit,
   editingMenuItem,
   optionGroups,
+  error,
 }: MenuFormDialogProps) {
   const {
     register,
@@ -92,12 +95,6 @@ export default function MenuFormDialog({
     }
   }, [open, editingMenuItem, reset]);
 
-  const handleFormSubmit = async (values: MenuFormValues) => {
-    console.log('[MenuFormDialog] handleFormSubmit started.', values);
-    await onSubmit(values);
-    console.log('[MenuFormDialog] onSubmit prop called.');
-  };
-
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
@@ -107,9 +104,10 @@ export default function MenuFormDialog({
         <Box
           component="form"
           noValidate
-          onSubmit={handleSubmit(handleFormSubmit)}
+          onSubmit={handleSubmit(onSubmit)}
           sx={{ mt: 2 }}
         >
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           <TextField
             {...register('name')}
             label="商品名"
@@ -219,7 +217,7 @@ export default function MenuFormDialog({
       <DialogActions>
         <Button onClick={onClose}>キャンセル</Button>
         <Button
-          onClick={handleSubmit(handleFormSubmit)}
+          onClick={handleSubmit(onSubmit)}
           variant="contained"
           disabled={!isValid || isSubmitting}
         >
