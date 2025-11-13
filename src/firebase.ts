@@ -20,8 +20,9 @@ const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
   projectId: projectId,
-  // Always use the default storage bucket derived from the project ID.
-  storageBucket: `${projectId}.appspot.com`,
+  // NOTE: 環境変数 VITE_STORAGE_BUCKET が意図せず設定されている可能性があるため、
+  // projectId から動的に生成したデフォルト値を強制的に使用する。
+  storageBucket: `${import.meta.env.VITE_PROJECT_ID}.appspot.com`,
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID,
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
