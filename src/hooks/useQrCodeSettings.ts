@@ -1,8 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../firebase';
 import { useAuth } from './useAuth';
+import { z } from 'zod';
+
+export const qrSettingsSchema = z.object({
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
+  logoFile: z.any().optional().nullable(),
+  logoUrl: z.string().url().optional().nullable(),
+});
+
+export type QrSettingsFormValues = z.infer<typeof qrSettingsSchema>;
 
 export interface QrCodeSettings {
   color: string;
@@ -34,6 +43,8 @@ export const useQrCodeSettings = () => {
         } finally {
           setLoading(false);
         }
+      } else {
+        setLoading(false);
       }
     };
 
@@ -42,39 +53,66 @@ export const useQrCodeSettings = () => {
 
   const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
     if (!storeId) {
+      console.error('[useQrCodeSettings:uploadLogoImage] Store ID is not available.');
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
     const storage = getStorage();
     const storageRef = ref(storage, `qr-code-logos/${storeId}/${Date.now()}_${imageFile.name}`);
-    const snapshot = await uploadBytes(storageRef, imageFile);
-    return getDownloadURL(snapshot.ref);
-  }, [storeId]);
+    console.log(`[useQrCodeSettings:uploadLogoImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
+    try {
+      // Re-create a clean File object from ArrayBuffer to ensure compatibility
+      const buffer = await imageFile.arrayBuffer();
+      const blob = new Blob([buffer], { type: imageFile.type });
+      const cleanFile = new File([blob], imageFile.name, {
+        type: imageFile.type,
+      });
+      const snapshot = await uploadBytes(storageRef, cleanFile);
+      return getDownloadURL(snapshot.ref);
+    } catch (error) {
+      console.error('[useQrCodeSettings:uploadLogoImage] Image upload failed with detailed error:', JSON.stringify(error, null, 2));
+      throw error;
+    }
+  }, [storeId, user]);
 
-  const saveQrCodeSettings = useCallback(async (newSettings: Partial<QrCodeSettings>, imageFile: File | null) => {
+  const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
+    console.log('[useQrCodeSettings] saveQrCodeSettings started.', values);
     if (!storeId) {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
     try {
-      let logoUrl = settings?.logoUrl || '';
-      if (imageFile) {
-        logoUrl = await uploadLogoImage(imageFile);
+      let logoUrl = values.logoUrl || '';
+      if (values.logoFile) {
+        console.log('[useQrCodeSettings] New logo file found, starting upload...');
+        logoUrl = await uploadLogoImage(values.logoFile);
+        console.log('[useQrCodeSettings] Logo upload finished, URL:', logoUrl);
       }
 
-      const settingsToSave = {
-        ...settings,
-        ...newSettings,
+      const { logoFile, ...valuesForDb } = values;
+
+      const settingsToSave: QrCodeSettings = {
+        ...valuesForDb,
         logoUrl,
       };
+      console.log('[useQrCodeSettings] Data prepared for Firestore:', settingsToSave);
+
 
       const storeRef = doc(db, 'stores', storeId);
-      await updateDoc(storeRef, { qrCodeSettings: settingsToSave });
-      setSettings(settingsToSave as QrCodeSettings);
+      console.log(`[useQrCodeSettings] Updating/creating settings for storeId: ${storeId}`);
+      try {
+        // Use setDoc with merge: true to create or update the document
+        await setDoc(storeRef, { qrCodeSettings: settingsToSave }, { merge: true });
+        console.log('[useQrCodeSettings] Firestore setDoc successful.');
+        setSettings(settingsToSave);
+      } catch (dbError) {
+        console.error('[useQrCodeSettings] Firestore setDoc ERROR:', dbError);
+        throw dbError;
+      }
 
     } catch (error) {
-      console.error('Failed to save QR code settings:', error);
+      console.error('Failed to save QR code settings with detailed error:', error);
       throw error;
     }
-  }, [storeId, settings, uploadLogoImage]);
+  }, [storeId, uploadLogoImage, user]);
 
   return { settings, loading, saveQrCodeSettings };
 };

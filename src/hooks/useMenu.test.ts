@@ -12,7 +12,7 @@ import {
   doc,
   where,
 } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from './useAuth';
 import { MenuItem } from '../types/index';
 
@@ -23,6 +23,14 @@ import { MenuItem } from '../types/index';
 // Mock Firebase services and custom hooks
 vi.mock('../firebase', () => ({
   db: {}, // Mock db object, as it's just a dependency for firestore functions
+  app: { options: { storageBucket: 'test-project-id.appspot.com' } },
+  storage: {
+    app: {
+      options: {
+        storageBucket: 'test-project-id.appspot.com',
+      },
+    },
+  },
 }));
 vi.mock('firebase/auth');
 vi.mock('firebase/firestore');
@@ -45,7 +53,6 @@ const mockedDoc = doc as vi.Mock;
 const mockedWhere = where as vi.Mock;
 
 // Storage
-const mockedGetStorage = getStorage as vi.Mock;
 const mockedRef = ref as vi.Mock;
 const mockedUploadBytes = uploadBytes as vi.Mock;
 const mockedGetDownloadURL = getDownloadURL as vi.Mock;
@@ -62,11 +69,12 @@ const mockMenuItems: MenuItem[] = [
 
 const mockNewMenuItem: MenuFormValues = {
   name: 'ラテ',
-  price: '700',
+  price: 700,
   category: 'ドリンク',
   description: 'ふわふわミルク',
-  sortOrder: '3',
+  sortOrder: 3,
   manageStock: false,
+  stock: 0,
   optionGroupIds: [],
 };
 
@@ -108,7 +116,6 @@ describe('useMenuフックのテスト', () => {
     });
 
     // Storage Mocks
-    mockedGetStorage.mockReturnValue({});
     mockedRef.mockImplementation((_: any, path: string) => `ref:${path}`);
     mockedUploadBytes.mockResolvedValue({} as any);
     mockedGetDownloadURL.mockResolvedValue('http://mock-url/image.png');
@@ -193,7 +200,7 @@ describe('useMenuフックのテスト', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       await act(async () => {
-        await result.current.saveMenuItem(mockNewMenuItem, null, null);
+        await result.current.saveMenuItem(mockNewMenuItem, null);
       });
 
       expect(mockedAddDoc).toHaveBeenCalledTimes(1);
@@ -216,9 +223,10 @@ describe('useMenuフックのテスト', () => {
       const updatedValues = { ...mockNewMenuItem, name: 'エスプレッソ（改）' };
 
       await act(async () => {
-        await result.current.saveMenuItem(updatedValues, null, editingItem);
+        await result.current.saveMenuItem(updatedValues, editingItem);
       });
 
+      expect(mockedAddDoc).not.toHaveBeenCalled();
       expect(mockedUpdateDoc).toHaveBeenCalledTimes(1);
       expect(mockedUpdateDoc).toHaveBeenCalledWith(
         `doc:menus/${editingItem.id}`,
@@ -261,9 +269,12 @@ describe('useMenuフックのテスト', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       const mockImageFile = new File(['dummy content'], 'test.png', { type: 'image/png' });
+      // Vitest/JSDOM environment's File object doesn't have arrayBuffer, so we mock it.
+      mockImageFile.arrayBuffer = vi.fn().mockResolvedValue(new ArrayBuffer(0));
+      const valuesWithImage: MenuFormValues = { ...mockNewMenuItem, imageFile: mockImageFile };
 
       await act(async () => {
-        await result.current.saveMenuItem(mockNewMenuItem, mockImageFile, null);
+        await result.current.saveMenuItem(valuesWithImage, null);
       });
 
       expect(mockedUploadBytes).toHaveBeenCalledTimes(1);
@@ -286,13 +297,14 @@ describe('useMenuフックのテスト', () => {
         ...mockNewMenuItem,
         name: '在庫管理テスト',
         manageStock: true,
-        stock: '10',
+        stock: 10,
       };
 
       await act(async () => {
-        await result.current.saveMenuItem(updatedValues, null, editingItem);
+        await result.current.saveMenuItem(updatedValues, editingItem);
       });
 
+      expect(mockedAddDoc).not.toHaveBeenCalled();
       expect(mockedUpdateDoc).toHaveBeenCalledTimes(1);
       expect(mockedUpdateDoc).toHaveBeenCalledWith(
         `doc:menus/${editingItem.id}`,

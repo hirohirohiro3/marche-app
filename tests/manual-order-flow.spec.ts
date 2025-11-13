@@ -36,16 +36,17 @@ test.describe('Manual Order Flow', () => {
     const firstItemName = (await firstMenuItem.textContent()) as string;
     const secondItemName = (await secondMenuItem.textContent()) as string;
 
-    // 2. Add items to the cart
-    await firstMenuItem.click();
-    await secondMenuItem.click();
-    await firstMenuItem.click(); // Add one more of the first item
-
-    // Verify the cart UI has updated correctly before creating the order.
-    // This makes the test more robust by waiting for the state to settle.
     const cartSection = modal.getByTestId('cart-section');
-    await expect(cartSection.getByText(`${firstItemName} x 2`)).toBeVisible();
+
+    // 2. Add items to the cart, waiting for the UI to update after each click
+    await firstMenuItem.click();
+    await expect(cartSection.getByText(`${firstItemName} x 1`)).toBeVisible();
+
+    await secondMenuItem.click();
     await expect(cartSection.getByText(`${secondItemName} x 1`)).toBeVisible();
+
+    await firstMenuItem.click(); // Add one more of the first item
+    await expect(cartSection.getByText(`${firstItemName} x 2`)).toBeVisible();
 
     // 3. Create the order
     await page.getByTestId('create-order-button').click();

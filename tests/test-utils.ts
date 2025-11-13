@@ -7,6 +7,10 @@ import { Auth } from 'firebase-admin/auth';
 let db: Firestore;
 let auth: Auth;
 
+// This UID should correspond to the user used in the E2E tests.
+// It's defined here to be easily shared across test files.
+export const TEST_USER_UID = 'gOCluucPI5hzje5lVgLXj7BJQAu1';
+
 /**
  * Initializes the Firebase Admin SDK for the test environment.
  * This function ensures that the SDK is initialized only once and should be
