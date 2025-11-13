@@ -23,6 +23,7 @@ import { MenuItem } from '../types/index';
 // Mock Firebase services and custom hooks
 vi.mock('../firebase', () => ({
   db: {}, // Mock db object, as it's just a dependency for firestore functions
+  app: { options: { storageBucket: 'test-project-id.appspot.com' } },
 }));
 vi.mock('firebase/auth');
 vi.mock('firebase/firestore');
@@ -109,7 +110,13 @@ describe('useMenuフックのテスト', () => {
     });
 
     // Storage Mocks
-    mockedGetStorage.mockReturnValue({});
+    mockedGetStorage.mockReturnValue({
+      app: {
+        options: {
+          storageBucket: 'test-project-id.appspot.com',
+        },
+      },
+    });
     mockedRef.mockImplementation((_: any, path: string) => `ref:${path}`);
     mockedUploadBytes.mockResolvedValue({} as any);
     mockedGetDownloadURL.mockResolvedValue('http://mock-url/image.png');
@@ -263,6 +270,8 @@ describe('useMenuフックのテスト', () => {
       await waitFor(() => expect(result.current.loading).toBe(false));
 
       const mockImageFile = new File(['dummy content'], 'test.png', { type: 'image/png' });
+      // Vitest/JSDOM environment's File object doesn't have arrayBuffer, so we mock it.
+      mockImageFile.arrayBuffer = vi.fn().mockResolvedValue(new ArrayBuffer(0));
       const valuesWithImage: MenuFormValues = { ...mockNewMenuItem, imageFile: mockImageFile };
 
       await act(async () => {
