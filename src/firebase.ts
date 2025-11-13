@@ -1,4 +1,4 @@
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
@@ -20,13 +20,15 @@ const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
   projectId: projectId,
-  storageBucket: `${projectId}.appspot.com`,
+  // NOTE: 環境変数 VITE_STORAGE_BUCKET が意図せず設定されている可能性があるため、
+  // projectId から動的に生成したデフォルト値を強制的に使用する。
+  storageBucket: `${import.meta.env.VITE_PROJECT_ID}.appspot.com`,
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID,
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
 
-let app;
+let app: FirebaseApp;
 
 try {
   // Validate required environment variables

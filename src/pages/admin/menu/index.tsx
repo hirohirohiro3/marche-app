@@ -55,27 +55,32 @@ export default function MenuAdminPage() {
   const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [deletingMenuItem, setDeletingMenuItem] = useState<MenuItem | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleOpenForm = (menuItem: MenuItem | null) => {
     setEditingMenuItem(menuItem);
+    setFormError(null); // Clear previous errors when opening
     setIsFormOpen(true);
   };
 
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingMenuItem(null);
+    setFormError(null); // Also clear errors on close
   };
 
   const handleFormSubmit = async (values: MenuFormValues) => {
     console.log('[MenuAdminPage] handleFormSubmit started.', values);
+    setFormError(null);
     try {
       console.log('[MenuAdminPage] Calling saveMenuItem...');
       await saveMenuItem(values, editingMenuItem);
       console.log('[MenuAdminPage] saveMenuItem finished. Closing form.');
       handleCloseForm();
     } catch (error) {
-      console.error("[MenuAdminPage] Failed to save menu item:", error);
-      // ここでユーザーにエラーを通知するUI（Snackbarなど）を表示することも可能
+      const errorMessage = error instanceof Error ? error.message : '不明なエラーが発生しました。';
+      console.error("[MenuAdminPage] Failed to save menu item:", errorMessage);
+      setFormError(errorMessage);
     }
   };
 
@@ -150,6 +155,7 @@ export default function MenuAdminPage() {
         onSubmit={handleFormSubmit}
         editingMenuItem={editingMenuItem}
         optionGroups={dummyOptionGroups}
+        error={formError}
       />
 
       {/* Delete Confirmation Dialog */}
