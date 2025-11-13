@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   Dialog,
   DialogActions,
@@ -10,6 +10,7 @@ import {
   Typography,
   Switch,
   FormControlLabel,
+  Alert,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,9 +26,10 @@ import ImageCropCompressor from './ImageCropCompressor';
 interface MenuFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: MenuFormValues, imageFile: File | null) => void;
+  onSubmit: (values: MenuFormValues) => void;
   editingMenuItem: MenuItem | null;
   optionGroups: OptionGroup[];
+  error?: string | null;
 }
 
 export default function MenuFormDialog({
@@ -36,51 +38,62 @@ export default function MenuFormDialog({
   onSubmit,
   editingMenuItem,
   optionGroups,
+  error,
 }: MenuFormDialogProps) {
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const {
     register,
     handleSubmit,
     reset,
     control,
     watch,
-    formState: { errors, isSubmitting },
+    setValue,
+    trigger,
+    formState: { errors, isSubmitting, isValid },
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
+    mode: 'onChange', // enable validation on change
     defaultValues: {
+      name: '',
+      price: 0,
+      category: '',
+      description: '',
+      sortOrder: 0,
       manageStock: false,
+      stock: null,
+      optionGroupIds: [],
+      imageFile: null,
+      imageUrl: null,
     },
   });
 
   const watchManageStock = watch('manageStock');
+  const watchImageUrl = watch('imageUrl');
+
 
   useEffect(() => {
     if (open) {
       if (editingMenuItem) {
         reset({
           ...editingMenuItem,
-          price: String(editingMenuItem.price),
-          sortOrder: String(editingMenuItem.sortOrder),
-          stock: String(editingMenuItem.stock ?? ''),
+          stock: editingMenuItem.stock ?? null,
+          imageFile: null, // Clear file input on open
         });
       } else {
         reset({
           name: '',
-          price: '0',
+          price: 0,
           category: '',
           description: '',
-          sortOrder: '0',
+          sortOrder: 0,
           manageStock: false,
-          stock: '0',
+          stock: null,
+          optionGroupIds: [],
+          imageFile: null,
+          imageUrl: null,
         });
       }
-      setImageFile(null);
     }
   }, [open, editingMenuItem, reset]);
-
-  const handleFormSubmit = (values: MenuFormValues) => {
-    onSubmit(values, imageFile);
-  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -90,14 +103,17 @@ export default function MenuFormDialog({
       <DialogContent>
         <Box
           component="form"
-          onSubmit={handleSubmit(handleFormSubmit)}
+          noValidate
+          onSubmit={handleSubmit(onSubmit)}
           sx={{ mt: 2 }}
         >
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           <TextField
             {...register('name')}
             label="商品名"
             fullWidth
             margin="dense"
+            required
             error={!!errors.name}
             helperText={errors.name?.message}
           />
@@ -107,6 +123,7 @@ export default function MenuFormDialog({
             type="number"
             fullWidth
             margin="dense"
+            required
             error={!!errors.price}
             helperText={errors.price?.message}
           />
@@ -115,6 +132,7 @@ export default function MenuFormDialog({
             label="カテゴリ"
             fullWidth
             margin="dense"
+            required
             error={!!errors.category}
             helperText={errors.category?.message}
           />
@@ -187,8 +205,11 @@ export default function MenuFormDialog({
             <Typography variant="subtitle1" gutterBottom>商品画像</Typography>
             <ImageCropCompressor
               aspect={16 / 9}
-              onCropped={setImageFile}
-              initialImageUrl={editingMenuItem?.imageUrl}
+              onCropped={async (file) => {
+                setValue('imageFile', file, { shouldDirty: true });
+                await trigger('imageFile');
+              }}
+              initialImageUrl={watchImageUrl}
             />
           </Box>
         </Box>
@@ -196,9 +217,9 @@ export default function MenuFormDialog({
       <DialogActions>
         <Button onClick={onClose}>キャンセル</Button>
         <Button
-          onClick={handleSubmit(handleFormSubmit)}
+          onClick={handleSubmit(onSubmit)}
           variant="contained"
-          disabled={isSubmitting}
+          disabled={!isValid || isSubmitting}
         >
           {isSubmitting ? '保存中...' : '保存'}
         </Button>

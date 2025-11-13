@@ -36,6 +36,7 @@ async function seed() {
       }
     }
     const userRecord = await auth.createUser({
+      uid: 'test-user',
       email: TEST_USER_EMAIL,
       password: TEST_USER_PASSWORD,
     });
@@ -44,7 +45,7 @@ async function seed() {
 
     const menusCollection = db.collection('menus');
     const ordersCollection = db.collection('orders');
-    const systemSettingsRef = db.doc('system_settings/orderNumbers');
+    const systemSettingsRef = db.doc('system_settings/single_doc');
 
     // 1. Clear existing data
     console.log('Clearing existing data...');
@@ -77,6 +78,13 @@ async function seed() {
     await systemSettingsRef.set({
       nextQrOrderNumber: 101,
       nextManualOrderNumber: 1,
+    });
+
+    // 4. Create user document
+    console.log('Creating user document...');
+    await db.collection('users').doc('test-user').set({
+      storeId: storeId,
+      email: TEST_USER_EMAIL,
     });
 
     console.log('Database seeded successfully!');

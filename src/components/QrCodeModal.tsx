@@ -85,7 +85,12 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await saveQrCodeSettings({ color }, imageFile);
+      // Adapt to the new hook signature which expects a single object
+      await saveQrCodeSettings({
+        color,
+        logoFile: imageFile,
+        logoUrl: settings?.logoUrl || null,
+      });
       // Optionally reset image file state after successful upload
       setImageFile(null);
     } catch (error) {

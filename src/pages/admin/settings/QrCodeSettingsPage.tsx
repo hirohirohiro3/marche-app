@@ -1,68 +1,79 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Container, Typography, Paper, Button, Box, TextField,
   Grid, CircularProgress, Alert,
 } from '@mui/material';
-import { useQrCodeSettings } from '../../../hooks/useQrCodeSettings';
+import {
+  useQrCodeSettings,
+  qrSettingsSchema,
+  QrSettingsFormValues,
+} from '../../../hooks/useQrCodeSettings';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import ImageCropCompressor from '../../../components/ImageCropCompressor';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
-
-// Zod schema now only validates the color, as file is handled by the cropper
-const qrSettingsSchema = z.object({
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
-});
-
-type QrSettingsForm = z.infer<typeof qrSettingsSchema>;
 
 const colorPalette = ['#000000', '#4a4a4a', '#003366', '#b30000', '#006400', '#4b0082'];
 
 export default function QrCodeSettingsPage() {
   const { settings, loading: hookLoading, saveQrCodeSettings } = useQrCodeSettings();
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [pageError, setPageError] = useState<string | null>(null);
   const [pageSuccess, setPageSuccess] = useState<string | null>(null);
-  const [finalPreviewUrl, setFinalPreviewUrl] = useState<string | null>(null);
 
   const {
     control,
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isSubmitting },
-  } = useForm<QrSettingsForm>({
+    setValue,
+    trigger,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm<QrSettingsFormValues>({
     resolver: zodResolver(qrSettingsSchema),
-    defaultValues: { color: '#000000' },
+    mode: 'onChange',
+    defaultValues: {
+      color: '#000000',
+      logoFile: null,
+      logoUrl: null,
+    },
   });
 
   const watchColor = watch('color');
+  const watchLogoUrl = watch('logoUrl');
+  const watchLogoFile = watch('logoFile');
+
 
   useEffect(() => {
     if (settings) {
-      reset({ color: settings.color || '#000000' });
-      if (settings.logoUrl) {
-        setFinalPreviewUrl(settings.logoUrl);
-      }
+      reset({
+        color: settings.color || '#000000',
+        logoUrl: settings.logoUrl || null,
+        logoFile: null,
+      });
     }
   }, [settings, reset]);
 
-  const handleCroppedImage = (file: File) => {
-    setImageFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    setFinalPreviewUrl(previewUrl);
-  };
+  // Create a memoized preview URL to prevent re-renders
+  const finalPreviewUrl = useMemo(() => {
+    if (watchLogoFile) {
+      return URL.createObjectURL(watchLogoFile);
+    }
+    return watchLogoUrl;
+  }, [watchLogoFile, watchLogoUrl]);
 
-  const onSubmit: SubmitHandler<QrSettingsForm> = async (data) => {
+  const onSubmit: SubmitHandler<QrSettingsFormValues> = async (data) => {
+    console.log('[QrCodeSettingsPage] onSubmit started.', data);
     setPageError(null);
     setPageSuccess(null);
     try {
-      await saveQrCodeSettings({ color: data.color }, imageFile);
+      console.log('[QrCodeSettingsPage] Calling saveQrCodeSettings...');
+      await saveQrCodeSettings(data);
+      console.log('[QrCodeSettingsPage] saveQrCodeSettings finished.');
       setPageSuccess('設定を保存しました。');
-      setImageFile(null); // Clear file state after saving
+      // After successful save, reset the file input in the form state
+      setValue('logoFile', null, { shouldValidate: true });
     } catch (err) {
-      console.error(err);
+      console.error('[QrCodeSettingsPage] Failed to save settings:', err);
       setPageError('設定の保存に失敗しました。');
     }
   };
@@ -85,8 +96,11 @@ export default function QrCodeSettingsPage() {
               <Typography variant="h6" gutterBottom>ロゴ画像 (1:1)</Typography>
               <ImageCropCompressor
                 aspect={1}
-                onCropped={handleCroppedImage}
-                initialImageUrl={settings?.logoUrl}
+                onCropped={async (file) => {
+                  setValue('logoFile', file, { shouldDirty: true });
+                  await trigger('logoFile');
+                }}
+                initialImageUrl={watchLogoUrl}
               />
             </Grid>
 
@@ -94,7 +108,7 @@ export default function QrCodeSettingsPage() {
               <Typography variant="h6" gutterBottom>最終プレビュー</Typography>
               <Box sx={{ position: 'relative', width: 256, height: 256, border: '1px solid #ccc' }}>
                 <QRCode
-                  value="DUMMY_QR_CODE_DATA" // Dummy data for preview
+                  value={`https://yourapp.com/menu/${settings ? 'your-store-id' : 'preview'}`} // Use a real URL structure
                   size={256}
                   fgColor={watchColor}
                   level="H" // High error correction for logo
@@ -157,7 +171,7 @@ export default function QrCodeSettingsPage() {
                   type="submit"
                   variant="contained"
                   color="primary"
-                  disabled={isSubmitting}
+                  disabled={!isValid || isSubmitting}
                 >
                   {isSubmitting ? <CircularProgress size={24} /> : '保存する'}
                 </Button>

@@ -1,6 +1,12 @@
 // src/__mocks__/firebase.ts
 import { vi } from 'vitest';
 
+export const app = {
+  options: {
+    storageBucket: 'test-project-id.appspot.com',
+  },
+};
+
 export const auth = {
   // You can add mock properties or methods if needed by your tests
   onAuthStateChanged: vi.fn(),
