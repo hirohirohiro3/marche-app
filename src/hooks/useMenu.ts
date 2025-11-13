@@ -10,7 +10,7 @@ import {
   doc,
   where,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getIdToken } from 'firebase/auth';
 import { db, storage } from '../firebase';
 import { MenuItem } from '../types';
 import * as z from 'zod';
@@ -100,19 +100,39 @@ export const useMenu = (storeId?: string) => {
       console.error('[useMenu:uploadImage] User or store ID is not available.', { uid: user?.uid, effectiveStoreId });
       throw new Error("ユーザー情報またはストアIDが取得できません。");
     }
-    const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
-    console.log(`[useMenu:uploadImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
+
     try {
-      // Re-create a clean File object from ArrayBuffer to ensure compatibility
-      const buffer = await imageFile.arrayBuffer();
-      const blob = new Blob([buffer], { type: imageFile.type });
-      const cleanFile = new File([blob], imageFile.name, {
-        type: imageFile.type,
+      const token = await getIdToken(user);
+      const fileName = `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`;
+      const bucket = storage.app.options.storageBucket;
+      const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodeURIComponent(fileName)}`;
+
+      console.log(`[useMenu:uploadImage] Uploading via REST API to: ${url}`);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': imageFile.type,
+          'Authorization': `Firebase ${token}`,
+        },
+        body: imageFile,
       });
-      const snapshot = await uploadBytes(storageRef, cleanFile);
-      return getDownloadURL(snapshot.ref);
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('[useMenu:uploadImage] REST API upload failed. Status:', response.status, 'Body:', errorBody);
+        throw new Error(`画像のアップロードに失敗しました (HTTP ${response.status})`);
+      }
+
+      const data = await response.json();
+      const downloadToken = data.downloadTokens;
+      const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
+
+      console.log(`[useMenu:uploadImage] REST API upload successful. URL: ${downloadUrl}`);
+      return downloadUrl;
+
     } catch (error) {
-      console.error('[useMenu:uploadImage] Image upload failed with detailed error:', JSON.stringify(error, null, 2));
+      console.error('[useMenu:uploadImage] Image upload failed with detailed error:', error);
       throw error;
     }
   }, [effectiveStoreId, user]);
