@@ -28,6 +28,9 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
 
+// Log the final firebaseConfig object for debugging
+console.log('[Firebase] Final Firebase Config:', JSON.stringify(firebaseConfig, null, 2));
+
 let app: FirebaseApp;
 
 try {
@@ -81,7 +84,11 @@ try {
 export { app };
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
+
+// NOTE: SDKの内部的な挙動によりstorageBucketが無視されるケースに対応するため、
+// バケットのURLを第2引数で明示的に指定して強制する。
+const storageBucketUrl = `gs://${firebaseConfig.projectId}.appspot.com`;
+export const storage = getStorage(app, storageBucketUrl);
 
 
 // const analytics = getAnalytics(app);
