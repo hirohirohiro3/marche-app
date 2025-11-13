@@ -100,6 +100,8 @@ export const useMenu = (storeId?: string) => {
       console.error('[useMenu:uploadImage] User or store ID is not available.', { uid: user?.uid, effectiveStoreId });
       throw new Error("ユーザー情報またはストアIDが取得できません。");
     }
+    // Deep log of the storage object's configuration right before usage
+    console.log('[useMenu:uploadImage] Storage object config:', JSON.stringify(storage.app.options, null, 2));
     const storageRef = ref(storage, `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`);
     console.log(`[useMenu:uploadImage] Uploading to gs://${storage.app.options.storageBucket}/${storageRef.fullPath}`);
     try {
