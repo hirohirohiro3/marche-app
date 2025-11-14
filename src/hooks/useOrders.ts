@@ -79,6 +79,7 @@ export const useOrders = (storeId: string | undefined) => {
 
   const handleEndOfDay = useCallback(async () => {
     if (!storeId) return;
+    console.log("[useOrders] Starting handleEndOfDay...");
     try {
       const activeOrdersQuery = query(
         collection(db, 'orders'),
@@ -86,16 +87,21 @@ export const useOrders = (storeId: string | undefined) => {
         where('status', 'in', ['new', 'paid'])
       );
       const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
-      const settingsRef = doc(db, 'system_settings', 'single_doc');
+      const settingsRef = doc(db, 'system_settings', 'orderNumbers');
 
       await runTransaction(db, async (transaction) => {
+        console.log("[useOrders] Inside runTransaction for handleEndOfDay.");
+        // Mark all active orders as completed
         activeOrdersSnapshot.forEach((orderDoc) => {
           transaction.update(orderDoc.ref, { status: 'completed' });
         });
-        transaction.update(settingsRef, {
+
+        console.log("[useOrders] Resetting order numbers.");
+        // Reset order numbers. Use set with merge option to create if not exists.
+        transaction.set(settingsRef, {
           nextQrOrderNumber: 101,
           nextManualOrderNumber: 1,
-        });
+        }, { merge: true });
       });
       console.log('End of day process completed successfully.');
     } catch (error) {

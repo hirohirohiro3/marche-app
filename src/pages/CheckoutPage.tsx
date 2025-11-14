@@ -17,16 +17,27 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     setError(null);
     try {
+      console.log("[CheckoutPage] Starting handleConfirmOrder...");
       const settingsRef = doc(db, "system_settings", "orderNumbers");
 
       // Use a transaction to atomically get and increment the order number
       const newOrderId = await runTransaction(db, async (transaction) => {
+        console.log("[CheckoutPage] Inside runTransaction. Getting settings doc...");
         const settingsDoc = await transaction.get(settingsRef);
-        if (!settingsDoc.exists()) {
-          throw "System settings not found!";
+        let newOrderNumber;
+        if (settingsDoc.exists()) {
+          console.log("[CheckoutPage] Settings doc exists. Updating nextQrOrderNumber.");
+          newOrderNumber = settingsDoc.data().nextQrOrderNumber;
+          transaction.update(settingsRef, { nextQrOrderNumber: newOrderNumber + 1 });
+        } else {
+          console.log("[CheckoutPage] Settings doc does not exist. Creating with initial values.");
+          newOrderNumber = 101; // Start from 101 if document doesn't exist
+          transaction.set(settingsRef, {
+            nextQrOrderNumber: newOrderNumber + 1,
+            nextManualOrderNumber: 1, // Also initialize the manual order number
+          });
         }
-        const newOrderNumber = settingsDoc.data().nextQrOrderNumber;
-        transaction.update(settingsRef, { nextQrOrderNumber: newOrderNumber + 1 });
+        console.log(`[CheckoutPage] New QR order number will be: ${newOrderNumber}`);
 
         const newOrderRef = doc(collection(db, "orders"));
         transaction.set(newOrderRef, {

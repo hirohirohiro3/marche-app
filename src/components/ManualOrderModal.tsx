@@ -104,15 +104,27 @@ export default function ManualOrderModal({
     setIsLoading(true);
 
     try {
+      console.log("[ManualOrderModal] Starting handleCreateOrder...");
       await runTransaction(db, async (transaction) => {
+        console.log("[ManualOrderModal] Inside runTransaction. Getting settings doc...");
         // 1. Get and update the order number
-        const settingsRef = doc(db, 'system_settings', 'single_doc');
+        const settingsRef = doc(db, 'system_settings', 'orderNumbers');
         const settingsDoc = await transaction.get(settingsRef);
-        if (!settingsDoc.exists()) {
-          throw new Error('System settings not found!');
+
+        let newOrderNumber;
+        if (settingsDoc.exists()) {
+          console.log("[ManualOrderModal] Settings doc exists. Updating nextManualOrderNumber.");
+          newOrderNumber = settingsDoc.data().nextManualOrderNumber;
+          transaction.update(settingsRef, { nextManualOrderNumber: newOrderNumber + 1 });
+        } else {
+          console.log("[ManualOrderModal] Settings doc does not exist. Creating with initial values.");
+          newOrderNumber = 1; // Start from 1 if document doesn't exist
+          transaction.set(settingsRef, {
+            nextManualOrderNumber: newOrderNumber + 1,
+            nextQrOrderNumber: 101, // Also initialize the QR order number
+          });
         }
-        const newOrderNumber = settingsDoc.data().nextManualOrderNumber;
-        transaction.update(settingsRef, { nextManualOrderNumber: newOrderNumber + 1 });
+        console.log(`[ManualOrderModal] New manual order number will be: ${newOrderNumber}`);
 
         // 2. Process stock updates for inventory-managed items
         for (const cartItem of cart) {
