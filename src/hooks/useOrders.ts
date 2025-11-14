@@ -84,15 +84,15 @@ export const useOrders = (storeId: string | undefined) => {
       const activeOrdersQuery = query(
         collection(db, 'orders'),
         where('storeId', '==', storeId),
-        where('status', 'in', ['new', 'paid'])
+        where('status', 'in', ['new', 'paid', 'completed'])
       );
       const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
       const settingsRef = doc(db, 'system_settings', 'orderNumbers');
 
       await runTransaction(db, async (transaction) => {
-        // Mark all active orders as completed
+        // Mark all active orders as cancelled
         activeOrdersSnapshot.forEach((orderDoc) => {
-          transaction.update(orderDoc.ref, { status: 'completed' });
+          transaction.update(orderDoc.ref, { status: 'cancelled' });
         });
 
         // Reset order numbers. Use set with merge option to create if not exists.
