@@ -106,7 +106,7 @@ export default function ManualOrderModal({
     try {
       await runTransaction(db, async (transaction) => {
         // 1. Get and update the order number
-        const settingsRef = doc(db, 'system_settings', 'single_doc');
+        const settingsRef = doc(db, 'system_settings', 'orderNumbers');
         const settingsDoc = await transaction.get(settingsRef);
         if (!settingsDoc.exists()) {
           throw new Error('System settings not found!');

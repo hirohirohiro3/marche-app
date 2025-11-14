@@ -86,7 +86,7 @@ export const useOrders = (storeId: string | undefined) => {
         where('status', 'in', ['new', 'paid'])
       );
       const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
-      const settingsRef = doc(db, 'system_settings', 'single_doc');
+      const settingsRef = doc(db, 'system_settings', 'orderNumbers');
 
       await runTransaction(db, async (transaction) => {
         activeOrdersSnapshot.forEach((orderDoc) => {
