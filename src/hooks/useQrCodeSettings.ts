@@ -1,9 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getIdToken } from 'firebase/auth';
-import { db, storage } from '../firebase';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { db } from '../firebase';
 import { useAuth } from './useAuth';
 import { z } from 'zod';
+
+// Helper function to convert File to Base64
+const toBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
 
 export const qrSettingsSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
@@ -52,46 +61,41 @@ export const useQrCodeSettings = () => {
   }, [storeId]);
 
   const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
-    if (!user || !storeId) {
-      console.error('[useQrCodeSettings:uploadLogoImage] User or store ID is not available.');
-      throw new Error("ユーザー情報またはストアIDが取得できません。");
+    if (!storeId) {
+      throw new Error("ストアIDが取得できませんでした。");
     }
 
     try {
-      const token = await getIdToken(user);
-      const fileName = `qr-code-logos/${storeId}/${Date.now()}_${imageFile.name}`;
-      const bucket = storage.app.options.storageBucket;
-      const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodeURIComponent(fileName)}`;
+      // 1. Convert the file to a Base64 string.
+      const base64String = await toBase64(imageFile);
 
-      console.log(`[useQrCodeSettings:uploadLogoImage] Uploading via REST API to: ${url}`);
+      // 2. Get a reference to the Firebase Function.
+      const functions = getFunctions();
+      const uploadFunction = httpsCallable(functions, 'uploadQrCodeLogo');
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': imageFile.type,
-          'Authorization': `Firebase ${token}`,
-        },
-        body: imageFile,
+      console.log('[useQrCodeSettings] Calling "uploadQrCodeLogo" function...');
+
+      // 3. Call the function with the file data.
+      const result = await uploadFunction({
+        file: base64String,
+        fileType: imageFile.type,
       });
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('[useQrCodeSettings:uploadLogoImage] REST API upload failed. Status:', response.status, 'Body:', errorBody);
-        throw new Error(`ロゴ画像のアップロードに失敗しました (HTTP ${response.status})`);
+      // 4. Extract the URL from the result.
+      const { url } = result.data as { url: string };
+
+      if (!url) {
+        throw new Error('Function did not return a URL.');
       }
 
-      const data = await response.json();
-      const downloadToken = data.downloadTokens;
-      const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
-
-      console.log(`[useQrCodeSettings:uploadLogoImage] REST API upload successful. URL: ${downloadUrl}`);
-      return downloadUrl;
+      console.log(`[useQrCodeSettings] Got URL from function: ${url}`);
+      return url;
 
     } catch (error) {
-      console.error('[useQrCodeSettings:uploadLogoImage] Image upload failed with detailed error:', error);
-      throw error;
+      console.error('Error calling uploadQrCodeLogo function:', error);
+      throw new Error(`ロゴ画像のアップロード中にエラーが発生しました。: ${error}`);
     }
-  }, [storeId, user]);
+  }, [storeId]);
 
   const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
     console.log('[useQrCodeSettings] saveQrCodeSettings started.', values);
@@ -131,7 +135,7 @@ export const useQrCodeSettings = () => {
       console.error('Failed to save QR code settings with detailed error:', error);
       throw error;
     }
-  }, [storeId, uploadLogoImage, user]);
+  }, [storeId, uploadLogoImage]);
 
   return { settings, loading, saveQrCodeSettings };
 };
