@@ -57,6 +57,15 @@ export const useQrCodeSettings = () => {
       throw new Error("ストアIDが取得できません。");
     }
 
+    // Helper function to convert File to Base64
+    const toBase64 = (file: File): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+      });
+
     try {
       // 1. Correctly construct the file path for Firebase Storage.
       const fileName = `${Date.now()}_${imageFile.name}`;

@@ -21,3 +21,4 @@ admin.initializeApp();
  */
 export { createPaymentIntent } from "./createPaymentIntent";
 export { handleStripeWebhook } from "./handleStripeWebhook";
+export { uploadQrCodeLogo } from "./uploadQrCodeLogo";
