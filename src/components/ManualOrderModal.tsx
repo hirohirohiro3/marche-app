@@ -104,7 +104,9 @@ export default function ManualOrderModal({
     setIsLoading(true);
 
     try {
+      console.log("[ManualOrderModal] Starting handleCreateOrder...");
       await runTransaction(db, async (transaction) => {
+        console.log("[ManualOrderModal] Inside runTransaction. Getting settings doc...");
         // 1. Get and update the order number
         const settingsRef = doc(db, 'system_settings', 'orderNumbers');
         const settingsDoc = await transaction.get(settingsRef);

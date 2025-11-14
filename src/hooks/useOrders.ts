@@ -79,6 +79,7 @@ export const useOrders = (storeId: string | undefined) => {
 
   const handleEndOfDay = useCallback(async () => {
     if (!storeId) return;
+    console.log("[useOrders] Starting handleEndOfDay...");
     try {
       const activeOrdersQuery = query(
         collection(db, 'orders'),

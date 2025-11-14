@@ -17,10 +17,12 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     setError(null);
     try {
+      console.log("[CheckoutPage] Starting handleConfirmOrder...");
       const settingsRef = doc(db, "system_settings", "orderNumbers");
 
       // Use a transaction to atomically get and increment the order number
       const newOrderId = await runTransaction(db, async (transaction) => {
+        console.log("[CheckoutPage] Inside runTransaction. Getting settings doc...");
         const settingsDoc = await transaction.get(settingsRef);
         let newOrderNumber;
         if (settingsDoc.exists()) {
