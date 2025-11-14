@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { useAuth } from '../../hooks/useAuth';
 import { Order } from '../../types';
 import {
   Typography,
@@ -47,6 +48,7 @@ interface ProductSales {
 type TimeRange = 'today' | 'this_month' | 'all_time';
 
 export default function AnalyticsPage() {
+  const { user, loading: authLoading } = useAuth();
   const [summary, setSummary] = useState<SalesSummary | null>(null);
   const [topProducts, setTopProducts] = useState<ProductSales[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -55,6 +57,11 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const fetchSalesData = async () => {
+      if (!user) {
+        // ユーザーがまだ読み込まれていない、またはログインしていない
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
@@ -64,7 +71,8 @@ export default function AnalyticsPage() {
 
         let q = query(
           collection(db, 'orders'),
-          where('status', '==', 'completed')
+          where('status', '==', 'completed'),
+          where('storeId', '==', user.uid)
         );
 
         if (timeRange === 'today') {
@@ -114,9 +122,9 @@ export default function AnalyticsPage() {
     };
 
     fetchSalesData();
-  }, [timeRange]);
+  }, [timeRange, user]);
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
