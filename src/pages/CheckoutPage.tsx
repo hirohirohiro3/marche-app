@@ -22,11 +22,17 @@ export default function CheckoutPage() {
       // Use a transaction to atomically get and increment the order number
       const newOrderId = await runTransaction(db, async (transaction) => {
         const settingsDoc = await transaction.get(settingsRef);
-        if (!settingsDoc.exists()) {
-          throw "System settings not found!";
+        let newOrderNumber;
+        if (settingsDoc.exists()) {
+          newOrderNumber = settingsDoc.data().nextQrOrderNumber;
+          transaction.update(settingsRef, { nextQrOrderNumber: newOrderNumber + 1 });
+        } else {
+          newOrderNumber = 101; // Start from 101 if document doesn't exist
+          transaction.set(settingsRef, {
+            nextQrOrderNumber: newOrderNumber + 1,
+            nextManualOrderNumber: 1, // Also initialize the manual order number
+          });
         }
-        const newOrderNumber = settingsDoc.data().nextQrOrderNumber;
-        transaction.update(settingsRef, { nextQrOrderNumber: newOrderNumber + 1 });
 
         const newOrderRef = doc(collection(db, "orders"));
         transaction.set(newOrderRef, {
