@@ -58,21 +58,15 @@ export const useQrCodeSettings = () => {
     }
 
     try {
-      // Workaround for file objects from image compressors that may cause issues.
-      // Reconstruct a "clean" File object before uploading.
-      const arrayBuffer = await imageFile.arrayBuffer();
-      const blob = new Blob([arrayBuffer], { type: imageFile.type });
-      const cleanFile = new File([blob], imageFile.name, { type: imageFile.type });
-
       // 1. Correctly construct the file path for Firebase Storage.
-      const fileName = `${Date.now()}_${cleanFile.name}`;
+      const fileName = `${Date.now()}_${imageFile.name}`;
       const filePath = `qr-code-logos/${storeId}/${fileName}`;
       const storageRef = ref(storage, filePath);
 
       console.log(`[useQrCodeSettings:uploadLogoImage] Uploading to: ${filePath}`);
 
       // 2. Upload the file using the Firebase SDK.
-      const uploadResult = await uploadBytes(storageRef, cleanFile);
+      const uploadResult = await uploadBytes(storageRef, imageFile);
       console.log('[useQrCodeSettings:uploadLogoImage] Image upload successful.', uploadResult);
 
       // 3. Get the download URL for the uploaded file.
