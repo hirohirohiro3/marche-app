@@ -9,9 +9,7 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(user === null);
 
   useEffect(() => {
-    console.log('[useAuth] Initializing with user:', auth.currentUser?.uid);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('[useAuth] Auth state changed. New user:', user?.uid);
       setUser(user);
       setLoading(false);
     });
