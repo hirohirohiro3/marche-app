@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getIdToken } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
 import { useAuth } from './useAuth';
 import { z } from 'zod';
@@ -52,46 +52,35 @@ export const useQrCodeSettings = () => {
   }, [storeId]);
 
   const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
-    if (!user || !storeId) {
-      console.error('[useQrCodeSettings:uploadLogoImage] User or store ID is not available.');
-      throw new Error("ユーザー情報またはストアIDが取得できません。");
+    if (!storeId) {
+      console.error('[useQrCodeSettings:uploadLogoImage] store ID is not available.');
+      throw new Error("ストアIDが取得できません。");
     }
 
     try {
-      const token = await getIdToken(user);
-      const fileName = `qr-code-logos/${storeId}/${Date.now()}_${imageFile.name}`;
-      const bucket = storage.app.options.storageBucket;
-      const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodeURIComponent(fileName)}`;
+      // 1. Correctly construct the file path for Firebase Storage.
+      const fileName = `${Date.now()}_${imageFile.name}`;
+      const filePath = `qr-code-logos/${storeId}/${fileName}`;
+      const storageRef = ref(storage, filePath);
 
-      console.log(`[useQrCodeSettings:uploadLogoImage] Uploading via REST API to: ${url}`);
+      console.log(`[useQrCodeSettings:uploadLogoImage] Uploading to: ${filePath}`);
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': imageFile.type,
-          'Authorization': `Firebase ${token}`,
-        },
-        body: imageFile,
-      });
+      // 2. Upload the file using the Firebase SDK.
+      const uploadResult = await uploadBytes(storageRef, imageFile);
+      console.log('[useQrCodeSettings:uploadLogoImage] Image upload successful.', uploadResult);
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('[useQrCodeSettings:uploadLogoImage] REST API upload failed. Status:', response.status, 'Body:', errorBody);
-        throw new Error(`ロゴ画像のアップロードに失敗しました (HTTP ${response.status})`);
-      }
+      // 3. Get the download URL for the uploaded file.
+      const downloadUrl = await getDownloadURL(uploadResult.ref);
+      console.log(`[useQrCodeSettings:uploadLogoImage] Got download URL: ${downloadUrl}`);
 
-      const data = await response.json();
-      const downloadToken = data.downloadTokens;
-      const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
-
-      console.log(`[useQrCodeSettings:uploadLogoImage] REST API upload successful. URL: ${downloadUrl}`);
       return downloadUrl;
 
     } catch (error) {
       console.error('[useQrCodeSettings:uploadLogoImage] Image upload failed with detailed error:', error);
-      throw error;
+      // It's good practice to throw the original error for better debugging.
+      throw new Error(`ロゴ画像のアップロードに失敗しました: ${error}`);
     }
-  }, [storeId, user]);
+  }, [storeId]);
 
   const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
     console.log('[useQrCodeSettings] saveQrCodeSettings started.', values);
@@ -131,7 +120,7 @@ export const useQrCodeSettings = () => {
       console.error('Failed to save QR code settings with detailed error:', error);
       throw error;
     }
-  }, [storeId, uploadLogoImage, user]);
+  }, [storeId, uploadLogoImage]);
 
   return { settings, loading, saveQrCodeSettings };
 };
