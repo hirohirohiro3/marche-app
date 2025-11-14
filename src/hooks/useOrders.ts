@@ -90,13 +90,11 @@ export const useOrders = (storeId: string | undefined) => {
       const settingsRef = doc(db, 'system_settings', 'orderNumbers');
 
       await runTransaction(db, async (transaction) => {
-        console.log("[useOrders] Inside runTransaction for handleEndOfDay.");
         // Mark all active orders as completed
         activeOrdersSnapshot.forEach((orderDoc) => {
           transaction.update(orderDoc.ref, { status: 'completed' });
         });
 
-        console.log("[useOrders] Resetting order numbers.");
         // Reset order numbers. Use set with merge option to create if not exists.
         transaction.set(settingsRef, {
           nextQrOrderNumber: 101,

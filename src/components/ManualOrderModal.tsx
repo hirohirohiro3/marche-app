@@ -113,18 +113,15 @@ export default function ManualOrderModal({
 
         let newOrderNumber;
         if (settingsDoc.exists()) {
-          console.log("[ManualOrderModal] Settings doc exists. Updating nextManualOrderNumber.");
           newOrderNumber = settingsDoc.data().nextManualOrderNumber;
           transaction.update(settingsRef, { nextManualOrderNumber: newOrderNumber + 1 });
         } else {
-          console.log("[ManualOrderModal] Settings doc does not exist. Creating with initial values.");
           newOrderNumber = 1; // Start from 1 if document doesn't exist
           transaction.set(settingsRef, {
             nextManualOrderNumber: newOrderNumber + 1,
             nextQrOrderNumber: 101, // Also initialize the QR order number
           });
         }
-        console.log(`[ManualOrderModal] New manual order number will be: ${newOrderNumber}`);
 
         // 2. Process stock updates for inventory-managed items
         for (const cartItem of cart) {
