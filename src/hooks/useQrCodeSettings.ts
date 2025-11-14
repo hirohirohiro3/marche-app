@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
 import { useAuth } from './useAuth';
 import { z } from 'zod';
 
@@ -53,7 +53,8 @@ export const useQrCodeSettings = () => {
 
   const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
     if (!storeId) {
-      throw new Error("ストアIDが取得できませんでした。");
+      console.error('[useQrCodeSettings:uploadLogoImage] store ID is not available.');
+      throw new Error("ストアIDが取得できません。");
     }
 
     // Helper function to convert File to Base64
@@ -66,34 +67,27 @@ export const useQrCodeSettings = () => {
       });
 
     try {
-      // 1. Convert the file to a Base64 string.
-      const base64String = await toBase64(imageFile);
+      // 1. Correctly construct the file path for Firebase Storage.
+      const fileName = `${Date.now()}_${imageFile.name}`;
+      const filePath = `qr-code-logos/${storeId}/${fileName}`;
+      const storageRef = ref(storage, filePath);
 
-      // 2. Get a reference to the Firebase Function.
-      const functions = getFunctions();
-      const uploadFunction = httpsCallable(functions, 'uploadQrCodeLogo');
+      console.log(`[useQrCodeSettings:uploadLogoImage] Uploading to: ${filePath}`);
 
-      console.log('[useQrCodeSettings] Calling "uploadQrCodeLogo" function...');
+      // 2. Upload the file using the Firebase SDK.
+      const uploadResult = await uploadBytes(storageRef, imageFile);
+      console.log('[useQrCodeSettings:uploadLogoImage] Image upload successful.', uploadResult);
 
-      // 3. Call the function with the file data.
-      const result = await uploadFunction({
-        file: base64String,
-        fileType: imageFile.type,
-      });
+      // 3. Get the download URL for the uploaded file.
+      const downloadUrl = await getDownloadURL(uploadResult.ref);
+      console.log(`[useQrCodeSettings:uploadLogoImage] Got download URL: ${downloadUrl}`);
 
-      // 4. Extract the URL from the result.
-      const { url } = result.data as { url: string };
-
-      if (!url) {
-        throw new Error('Function did not return a URL.');
-      }
-
-      console.log(`[useQrCodeSettings] Got URL from function: ${url}`);
-      return url;
+      return downloadUrl;
 
     } catch (error) {
-      console.error('Error calling uploadQrCodeLogo function:', error);
-      throw new Error(`ロゴ画像のアップロード中にエラーが発生しました。: ${error}`);
+      console.error('[useQrCodeSettings:uploadLogoImage] Image upload failed with detailed error:', error);
+      // It's good practice to throw the original error for better debugging.
+      throw new Error(`ロゴ画像のアップロードに失敗しました: ${error}`);
     }
   }, [storeId]);
 
