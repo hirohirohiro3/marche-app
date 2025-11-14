@@ -5,15 +5,6 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-console.log('[Firebase] Starting initialization...');
-
-// Log all VITE env vars for debugging purposes in CI
-for (const key in import.meta.env) {
-  if (key.startsWith('VITE_')) {
-    console.log(`[Firebase] Env Var ${key}=${import.meta.env[key]}`);
-  }
-}
-
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
 const firebaseConfig = {
@@ -27,9 +18,6 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_APP_ID,
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 };
-
-// Log the final firebaseConfig object for debugging
-console.log('[Firebase] Final Firebase Config:', JSON.stringify(firebaseConfig, null, 2));
 
 let app: FirebaseApp;
 
@@ -48,30 +36,23 @@ try {
   if (missingVars.length > 0) {
     throw new Error(`Firebase configuration error: Missing environment variables for ${missingVars.join(', ')}`);
   }
-  console.log('[Firebase] All required environment variables are present.');
 
 
   // Initialize Firebase
   if (getApps().length === 0) {
     app = initializeApp(firebaseConfig);
-    console.log('[Firebase] Firebase app initialized successfully.');
   } else {
     app = getApps()[0];
-    console.log('[Firebase] Firebase app already initialized.');
   }
 
   // Initialize App Check
   if (import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
-    console.log('[Firebase] VITE_RECAPTCHA_SITE_KEY found, initializing App Check.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.DEV;
     initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
       isTokenAutoRefreshEnabled: true
     });
-    console.log('[Firebase] App Check initialized.');
-  } else {
-    console.warn('[Firebase] VITE_RECAPTCHA_SITE_KEY is not set. Skipping App Check initialization.');
   }
 
 } catch (error) {
