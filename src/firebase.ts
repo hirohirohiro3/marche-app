@@ -4,6 +4,7 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -70,6 +71,7 @@ export const db = getFirestore(app);
 // バケットのURLを第2引数で明示的に指定して強制する。
 const storageBucketUrl = `gs://${firebaseConfig.projectId}.appspot.com`;
 export const storage = getStorage(app, storageBucketUrl);
+export const functions = getFunctions(app, 'asia-northeast1');
 
 
 // const analytics = getAnalytics(app);
