@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../firebase';
 import { useAuth } from './useAuth';
 import { z } from 'zod';
 
@@ -51,34 +51,43 @@ export const useQrCodeSettings = () => {
     fetchQrCodeSettings();
   }, [storeId]);
 
+// Reusable utility to convert File to Base64 Data URL
+const fileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
   const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
     if (!storeId) {
-      console.error('[useQrCodeSettings:uploadLogoImage] store ID is not available.');
       throw new Error("ストアIDが取得できません。");
     }
 
     try {
-      // 1. Correctly construct the file path for Firebase Storage.
-      const fileName = `${Date.now()}_${imageFile.name}`;
-      const filePath = `qr-code-logos/${storeId}/${fileName}`;
-      const storageRef = ref(storage, filePath);
+      console.log(`[useQrCodeSettings:uploadLogoImage] Starting upload for file: ${imageFile.name}`);
+      const imageDataUrl = await fileToDataUrl(imageFile);
 
-      console.log(`[useQrCodeSettings:uploadLogoImage] Uploading to: ${filePath}`);
+      const uploadImageFunction = httpsCallable(functions, 'uploadImage');
+      const result = await uploadImageFunction({
+        imageDataUrl,
+        path: 'qr-code-logos',
+      });
 
-      // 2. Upload the file using the Firebase SDK.
-      const uploadResult = await uploadBytes(storageRef, imageFile);
-      console.log('[useQrCodeSettings:uploadLogoImage] Image upload successful.', uploadResult);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = result.data as { imageUrl: string };
 
-      // 3. Get the download URL for the uploaded file.
-      const downloadUrl = await getDownloadURL(uploadResult.ref);
-      console.log(`[useQrCodeSettings:uploadLogoImage] Got download URL: ${downloadUrl}`);
+      if (!data.imageUrl) {
+        throw new Error('Function returned an invalid image URL.');
+      }
 
-      return downloadUrl;
-
+      console.log(`[useQrCodeSettings:uploadLogoImage] Upload successful. URL: ${data.imageUrl}`);
+      return data.imageUrl;
     } catch (error) {
-      console.error('[useQrCodeSettings:uploadLogoImage] Image upload failed with detailed error:', error);
-      // It's good practice to throw the original error for better debugging.
-      throw new Error(`ロゴ画像のアップロードに失敗しました: ${error}`);
+      console.error('[useQrCodeSettings:uploadLogoImage] Image upload via function failed:', error);
+      throw new Error('ロゴ画像のアップロードに失敗しました。');
     }
   }, [storeId]);
 

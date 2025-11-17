@@ -8,7 +8,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY environment variable is not set.");
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
+  apiVersion: "2025-10-29.clover",
 });
 
 const db = admin.firestore();
@@ -28,7 +28,7 @@ export const handleStripeWebhook = functions.https.onRequest(
 
     try {
       // 1. Verify the event came from Stripe
-      event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+      event = stripe.webhooks.constructEvent((req as any).rawBody, sig, endpointSecret);
     } catch (err: any) {
       console.error("Webhook signature verification failed.", err);
       res.status(400).send(`Webhook Error: ${err.message}`);

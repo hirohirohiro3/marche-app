@@ -23,29 +23,16 @@ import { MenuItem } from '../types/index';
 // Mock Firebase services and custom hooks
 vi.mock('../firebase', () => ({
   db: {}, // Mock db object, as it's just a dependency for firestore functions
-  app: { options: { storageBucket: 'test-project-id.appspot.com' } },
-  storage: {
-    app: {
-      options: {
-        storageBucket: 'test-project-id.appspot.com',
-      },
-    },
-  },
+  functions: {}, // Mock functions object for httpsCallable
 }));
+
+import { httpsCallable } from 'firebase/functions';
 import { getIdToken } from 'firebase/auth';
+import { functions } from '../firebase';
 
 vi.mock('firebase/auth');
 vi.mock('firebase/firestore');
-// storage is still needed for the bucket name
-vi.mock('firebase/storage', async (importOriginal) => {
-  const original = await importOriginal<typeof import('firebase/storage')>();
-  return {
-    ...original,
-    ref: vi.fn(),
-    uploadBytes: vi.fn(),
-    getDownloadURL: vi.fn(),
-  };
-});
+vi.mock('firebase/functions');
 vi.mock('./useAuth');
 
 // Cast mocks to the correct type for TypeScript intelligence
@@ -66,10 +53,7 @@ const mockedDeleteDoc = deleteDoc as vi.Mock;
 const mockedDoc = doc as vi.Mock;
 const mockedWhere = where as vi.Mock;
 
-// Storage
-const mockedRef = ref as vi.Mock;
-const mockedUploadBytes = uploadBytes as vi.Mock;
-const mockedGetDownloadURL = getDownloadURL as vi.Mock;
+const mockedHttpsCallable = httpsCallable as vi.Mock;
 
 
 //================================================================================
@@ -113,11 +97,12 @@ describe('useMenuフックのテスト', () => {
     });
     mockedGetIdToken.mockResolvedValue('test-token');
 
-    // Mock global fetch
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ downloadTokens: 'test-download-token' }),
+    // Mock for httpsCallable
+    const mockUploadImageFunction = vi.fn().mockResolvedValue({
+      data: { imageUrl: 'http://mock-url/image.png' },
     });
+    mockedHttpsCallable.mockReturnValue(mockUploadImageFunction);
+
 
     // Firestore Mocks
     mockedQuery.mockImplementation((_: any, ...args: any[]) => ['query', ...args]);
@@ -135,11 +120,6 @@ describe('useMenuフックのテスト', () => {
       onErrorCallback = onError;
       return () => {}; // unsubscribe function
     });
-
-    // Storage Mocks
-    mockedRef.mockImplementation((_: any, path: string) => `ref:${path}`);
-    mockedUploadBytes.mockResolvedValue({} as any);
-    mockedGetDownloadURL.mockResolvedValue('http://mock-url/image.png');
   });
 
   afterEach(() => {
@@ -298,15 +278,20 @@ describe('useMenuフックのテスト', () => {
         await result.current.saveMenuItem(valuesWithImage, null);
       });
 
-      // Check if fetch was called for the upload
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+      // Check if httpsCallable was used for the upload
+      const mockUploadImageFunction = mockedHttpsCallable.mock.results[0].value;
+      expect(mockedHttpsCallable).toHaveBeenCalledWith(functions, 'uploadImage');
+      expect(mockUploadImageFunction).toHaveBeenCalledWith({
+        imageDataUrl: expect.any(String),
+        path: 'menu-images',
+      });
 
-      // Check if addDoc was called with the correct data, including the generated download URL
+      // Check if addDoc was called with the correct data, including the mocked download URL
       expect(mockedAddDoc).toHaveBeenCalledWith(
         'collection:menus',
         expect.objectContaining({
           name: 'ラテ',
-          imageUrl: expect.stringContaining('https://firebasestorage.googleapis.com/v0/b/test-project-id.appspot.com/o/menu-images%2Ftest-store-id'),
+          imageUrl: 'http://mock-url/image.png',
         })
       );
     });

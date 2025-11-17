@@ -2,7 +2,7 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting on merge
-on:
+'on':
   push:
     branches:
       - main
@@ -11,21 +11,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create .env.local
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install functions dependencies
+        run: npm ci --prefix functions
+      - name: Create .env.local for build
         run: |
-          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> .env.local
-          echo "VITE_AUTH_DOMAIN=${{ secrets.VITE_AUTH_DOMAIN }}" >> .env.local
-          echo "VITE_PROJECT_ID=${{ secrets.VITE_PROJECT_ID }}" >> .env.local
-          echo "VITE_MESSAGING_SENDER_ID=${{ secrets.VITE_MESSAGING_SENDER_ID }}" >> .env.local
-          echo "VITE_APP_ID=${{ secrets.VITE_APP_ID }}" >> .env.local
-      - name: Create .env for Firebase Functions
+          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY_PROD }}" >> .env.local
+          echo "VITE_AUTH_DOMAIN=${{ secrets.VITE_AUTH_DOMAIN_PROD }}" >> .env.local
+          echo "VITE_PROJECT_ID=${{ secrets.VITE_PROJECT_ID_PROD }}" >> .env.local
+          echo "VITE_MESSAGING_SENDER_ID=${{ secrets.VITE_MESSAGING_SENDER_ID_PROD }}" >> .env.local
+          echo "VITE_APP_ID=${{ secrets.VITE_APP_ID_PROD }}" >> .env.local
+          echo "VITE_MEASUREMENT_ID=${{ secrets.VITE_MEASUREMENT_ID_PROD }}" >> .env.local
+          echo "VITE_RECAPTCHA_SITE_KEY=${{ secrets.VITE_RECAPTCHA_SITE_KEY_PROD }}" >> .env.local
+      - name: Create .env for Functions
         run: |
-          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}" >> functions/.env
-          echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}" >> functions/.env
-      - run: npm ci && npm run build
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_PROD }}" >> functions/.env
+          echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET_PROD }}" >> functions/.env
+      - name: Build application
+        run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MARCHE_ORDER_APP }}
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MARCHE_ORDER_APP }}'
           channelId: live
           projectId: marche-order-app
