@@ -71,7 +71,9 @@ export const uploadImage = functions
       const filePath = `${path}/${uid}/${fileName}`;
 
       // 6. Upload the file to Firebase Storage
-      const bucket = storage.bucket(); // Using the default bucket
+      // Explicitly specify the bucket to prevent resolution issues
+      const bucketName = `${process.env.GCLOUD_PROJECT}.appspot.com`;
+      const bucket = storage.bucket(bucketName);
       const file = bucket.file(filePath);
 
       await file.save(buffer, {
