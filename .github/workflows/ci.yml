@@ -17,7 +17,10 @@ jobs:
       with:
         node-version: 20.x
         cache: 'npm'
-    - run: npm ci
+    - name: Install root dependencies
+      run: npm ci
+    - name: Install functions dependencies
+      run: npm ci --prefix functions
     - name: Create .env.local for build
       run: |
         echo "VITE_API_KEY=${{ secrets.VITE_API_KEY_TEST }}" >> .env.local

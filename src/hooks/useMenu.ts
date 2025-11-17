@@ -10,8 +10,8 @@ import {
   doc,
   where,
 } from 'firebase/firestore';
-import { getIdToken } from 'firebase/auth';
-import { db, storage } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../firebase';
 import { MenuItem } from '../types';
 import * as z from 'zod';
 import { useAuth } from './useAuth';
@@ -95,47 +95,45 @@ export const useMenu = (storeId?: string) => {
     return () => unsubscribe();
   }, [effectiveStoreId]);
 
+// Reusable utility to convert File to Base64 Data URL
+const fileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
   const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
-    if (!user || !effectiveStoreId) {
-      console.error('[useMenu:uploadImage] User or store ID is not available.', { uid: user?.uid, effectiveStoreId });
-      throw new Error("ユーザー情報またはストアIDが取得できません。");
+    if (!user) {
+      throw new Error("ユーザー情報が取得できません。");
     }
 
     try {
-      const token = await getIdToken(user);
-      const fileName = `menu-images/${effectiveStoreId}/${Date.now()}_${imageFile.name}`;
-      const bucket = storage.app.options.storageBucket;
-      const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodeURIComponent(fileName)}`;
+      console.log(`[useMenu:uploadImage] Starting upload for file: ${imageFile.name}`);
+      const imageDataUrl = await fileToDataUrl(imageFile);
 
-      console.log(`[useMenu:uploadImage] Uploading via REST API to: ${url}`);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': imageFile.type,
-          'Authorization': `Firebase ${token}`,
-        },
-        body: imageFile,
+      const uploadImageFunction = httpsCallable(functions, 'uploadImage');
+      const result = await uploadImageFunction({
+        imageDataUrl,
+        path: 'menu-images',
       });
 
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('[useMenu:uploadImage] REST API upload failed. Status:', response.status, 'Body:', errorBody);
-        throw new Error(`画像のアップロードに失敗しました (HTTP ${response.status})`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = result.data as { imageUrl: string };
+
+      if (!data.imageUrl) {
+        throw new Error('Function returned an invalid image URL.');
       }
 
-      const data = await response.json();
-      const downloadToken = data.downloadTokens;
-      const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
-
-      console.log(`[useMenu:uploadImage] REST API upload successful. URL: ${downloadUrl}`);
-      return downloadUrl;
-
+      console.log(`[useMenu:uploadImage] Upload successful. URL: ${data.imageUrl}`);
+      return data.imageUrl;
     } catch (error) {
-      console.error('[useMenu:uploadImage] Image upload failed with detailed error:', error);
-      throw error;
+      console.error('[useMenu:uploadImage] Image upload via function failed:', error);
+      throw new Error('画像のアップロードに失敗しました。');
     }
-  }, [effectiveStoreId, user]);
+  }, [user]);
 
   const saveMenuItem = useCallback(async (
     values: MenuFormValues,
