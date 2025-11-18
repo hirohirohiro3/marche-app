@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container, Typography, Paper, Button, Box, TextField,
   Grid, CircularProgress, Alert,
@@ -10,7 +10,6 @@ import {
 } from '../../../hooks/useQrCodeSettings';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ImageCropCompressor from '../../../components/ImageCropCompressor';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 
 const colorPalette = ['#000000', '#4a4a4a', '#003366', '#b30000', '#006400', '#4b0082'];
@@ -26,7 +25,6 @@ export default function QrCodeSettingsPage() {
     reset,
     watch,
     setValue,
-    trigger,
     formState: { errors, isSubmitting, isValid },
   } = useForm<QrSettingsFormValues>({
     resolver: zodResolver(qrSettingsSchema),
