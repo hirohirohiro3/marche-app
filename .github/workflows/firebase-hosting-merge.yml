@@ -29,16 +29,6 @@ jobs:
           echo "VITE_APP_ID=${{ secrets.VITE_APP_ID_PROD }}" >> .env.local
           echo "VITE_MEASUREMENT_ID=${{ secrets.VITE_MEASUREMENT_ID_PROD }}" >> .env.local
           echo "VITE_RECAPTCHA_SITE_KEY=${{ secrets.VITE_RECAPTCHA_SITE_KEY_PROD }}" >> .env.local
-      - name: Create .env for Functions
-        run: |
-          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_PROD }}" >> functions/.env
-          echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET_PROD }}" >> functions/.env
-      - name: Verify .env file
-        run: |
-          ls -la functions/
-          echo "--- .env file content ---"
-          cat functions/.env
-          echo "-------------------------"
       - name: Build application
         run: npm run build
       - name: Build and Deploy Firebase Functions
@@ -50,6 +40,8 @@ jobs:
           npm install -g firebase-tools
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MARCHE_ORDER_APP }}' > /tmp/serviceAccountKey.json
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/serviceAccountKey.json
+          export STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_PROD }}
+          export STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET_PROD }}
           firebase deploy --only functions --project marche-order-app --non-interactive
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

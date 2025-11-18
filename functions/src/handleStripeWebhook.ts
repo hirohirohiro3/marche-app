@@ -2,12 +2,10 @@ import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 import Stripe from "stripe";
 import { Request, Response } from "express";
+import { stripeSecretKey, stripeWebhookSecret } from "./config";
 
-// Initialize Stripe with the secret key from environment variables
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY environment variable is not set.");
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+// Initialize Stripe with the secret key from the securely stored parameter
+const stripe = new Stripe(stripeSecretKey.value(), {
   apiVersion: "2025-10-29.clover",
 });
 
@@ -17,12 +15,7 @@ export const handleStripeWebhook = functions.https.onRequest(
   async (req: Request, res: Response) => {
     const sig = req.headers["stripe-signature"] as string;
 
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    if (!endpointSecret) {
-      console.error("STRIPE_WEBHOOK_SECRET environment variable is not set.");
-      res.status(500).send("Internal Server Error: Webhook secret not configured.");
-      return;
-    }
+    const endpointSecret = stripeWebhookSecret.value();
 
     let event: Stripe.Event;
 

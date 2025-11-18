@@ -1,12 +1,10 @@
 import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 import Stripe from "stripe";
+import { stripeSecretKey } from "./config";
 
-// Initialize Stripe with the secret key from environment variables
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY environment variable is not set.");
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+// Initialize Stripe with the secret key from the securely stored parameter
+const stripe = new Stripe(stripeSecretKey.value(), {
   apiVersion: "2025-10-29.clover",
 });
 
