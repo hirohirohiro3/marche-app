@@ -7,8 +7,8 @@ import { z } from 'zod';
 
 export const qrSettingsSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
-  logoFile: z.any().optional().nullable(),
-  logoUrl: z.string().url().optional().nullable(),
+  // logoFile: z.any().optional().nullable(), // Temporarily disabled
+  // logoUrl: z.string().url().optional().nullable(), // Temporarily disabled
 });
 
 export type QrSettingsFormValues = z.infer<typeof qrSettingsSchema>;
@@ -52,44 +52,44 @@ export const useQrCodeSettings = () => {
   }, [storeId]);
 
 // Reusable utility to convert File to Base64 Data URL
-const fileToDataUrl = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
+// const fileToDataUrl = (file: File): Promise<string> => {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.onload = () => resolve(reader.result as string);
+//     reader.onerror = reject;
+//     reader.readAsDataURL(file);
+//   });
+// };
 
-  const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
-    if (!storeId) {
-      throw new Error("ストアIDが取得できません。");
-    }
+  // const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
+  //   if (!storeId) {
+  //     throw new Error("ストアIDが取得できません。");
+  //   }
 
-    try {
-      console.log(`[useQrCodeSettings:uploadLogoImage] Starting upload for file: ${imageFile.name}`);
-      const imageDataUrl = await fileToDataUrl(imageFile);
+  //   try {
+  //     console.log(`[useQrCodeSettings:uploadLogoImage] Starting upload for file: ${imageFile.name}`);
+  //     const imageDataUrl = await fileToDataUrl(imageFile);
 
-      const uploadImageFunction = httpsCallable(functions, 'uploadImage');
-      const result = await uploadImageFunction({
-        imageDataUrl,
-        path: 'qr-code-logos',
-      });
+  //     const uploadImageFunction = httpsCallable(functions, 'uploadImage');
+  //     const result = await uploadImageFunction({
+  //       imageDataUrl,
+  //       path: 'qr-code-logos',
+  //     });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = result.data as { imageUrl: string };
+  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //     const data = result.data as { imageUrl: string };
 
-      if (!data.imageUrl) {
-        throw new Error('Function returned an invalid image URL.');
-      }
+  //     if (!data.imageUrl) {
+  //       throw new Error('Function returned an invalid image URL.');
+  //     }
 
-      console.log(`[useQrCodeSettings:uploadLogoImage] Upload successful. URL: ${data.imageUrl}`);
-      return data.imageUrl;
-    } catch (error) {
-      console.error('[useQrCodeSettings:uploadLogoImage] Image upload via function failed:', error);
-      throw new Error('ロゴ画像のアップロードに失敗しました。');
-    }
-  }, [storeId]);
+  //     console.log(`[useQrCodeSettings:uploadLogoImage] Upload successful. URL: ${data.imageUrl}`);
+  //     return data.imageUrl;
+  //   } catch (error) {
+  //     console.error('[useQrCodeSettings:uploadLogoImage] Image upload via function failed:', error);
+  //     throw new Error('ロゴ画像のアップロードに失敗しました。');
+  //   }
+  // }, [storeId]);
 
   const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
     console.log('[useQrCodeSettings] saveQrCodeSettings started.', values);
@@ -97,18 +97,18 @@ const fileToDataUrl = (file: File): Promise<string> => {
       throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
     }
     try {
-      let logoUrl = values.logoUrl || '';
-      if (values.logoFile) {
-        console.log('[useQrCodeSettings] New logo file found, starting upload...');
-        logoUrl = await uploadLogoImage(values.logoFile);
-        console.log('[useQrCodeSettings] Logo upload finished, URL:', logoUrl);
-      }
+      // let logoUrl = values.logoUrl || ''; // Temporarily disabled
+      // if (values.logoFile) { // Temporarily disabled
+      //   console.log('[useQrCodeSettings] New logo file found, starting upload...');
+      //   logoUrl = await uploadLogoImage(values.logoFile);
+      //   console.log('[useQrCodeSettings] Logo upload finished, URL:', logoUrl);
+      // }
 
-      const { logoFile, ...valuesForDb } = values;
+      // const { logoFile, ...valuesForDb } = values; // Temporarily disabled
 
       const settingsToSave: QrCodeSettings = {
-        ...valuesForDb,
-        logoUrl,
+        ...values,
+        // logoUrl, // Temporarily disabled
       };
       console.log('[useQrCodeSettings] Data prepared for Firestore:', settingsToSave);
 
@@ -129,7 +129,7 @@ const fileToDataUrl = (file: File): Promise<string> => {
       console.error('Failed to save QR code settings with detailed error:', error);
       throw error;
     }
-  }, [storeId, uploadLogoImage]);
+  }, [storeId]);
 
   return { settings, loading, saveQrCodeSettings };
 };

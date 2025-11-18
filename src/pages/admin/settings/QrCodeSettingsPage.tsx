@@ -31,21 +31,21 @@ export default function QrCodeSettingsPage() {
     mode: 'onChange',
     defaultValues: {
       color: '#000000',
-      logoFile: null,
-      logoUrl: null,
+      // logoFile: null, // Temporarily disabled
+      // logoUrl: null, // Temporarily disabled
     },
   });
 
   const watchColor = watch('color');
-  const watchLogoUrl = watch('logoUrl');
+  // const watchLogoUrl = watch('logoUrl');
 
 
   useEffect(() => {
     if (settings) {
       reset({
         color: settings.color || '#000000',
-        logoUrl: settings.logoUrl || null,
-        logoFile: null,
+        // logoUrl: settings.logoUrl || null, // Temporarily disabled
+        // logoFile: null, // Temporarily disabled
       });
     }
   }, [settings, reset]);
@@ -60,7 +60,7 @@ export default function QrCodeSettingsPage() {
       console.log('[QrCodeSettingsPage] saveQrCodeSettings finished.');
       setPageSuccess('設定を保存しました。');
       // After successful save, reset the file input in the form state
-      setValue('logoFile', null, { shouldValidate: true });
+      // setValue('logoFile', null, { shouldValidate: true }); // Temporarily disabled
     } catch (err) {
       console.error('[QrCodeSettingsPage] Failed to save settings:', err);
       setPageError('設定の保存に失敗しました。');
@@ -102,14 +102,14 @@ export default function QrCodeSettingsPage() {
                   size={256}
                   fgColor={watchColor}
                   level="H" // High error correction for logo
-                  imageSettings={watchLogoUrl ? {
-                    src: watchLogoUrl,
-                    x: undefined,
-                    y: undefined,
-                    height: 80,
-                    width: 80,
-                    excavate: true,
-                  } : undefined}
+                  // imageSettings={watchLogoUrl ? { // Temporarily disabled
+                  //   src: watchLogoUrl,
+                  //   x: undefined,
+                  //   y: undefined,
+                  //   height: 80,
+                  //   width: 80,
+                  //   excavate: true,
+                  // } : undefined}
                 />
               </Box>
             </Grid>
