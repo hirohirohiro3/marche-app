@@ -4,15 +4,20 @@ import Stripe from "stripe";
 import { Request, Response } from "express";
 import { stripeSecretKey, stripeWebhookSecret } from "./config";
 
-// Initialize Stripe with the secret key from the securely stored parameter
-const stripe = new Stripe(stripeSecretKey.value(), {
-  apiVersion: "2025-10-29.clover",
-});
-
 const db = admin.firestore();
 
 export const handleStripeWebhook = functions.https.onRequest(
   async (req: Request, res: Response) => {
+    // Stripe initialization is moved inside the function handler.
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error("STRIPE_SECRET_KEY environment variable is not set.");
+      res.status(500).send("Internal Server Error: Stripe secret key not configured.");
+      return;
+    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-10-29.clover",
+    });
+
     const sig = req.headers["stripe-signature"] as string;
 
     const endpointSecret = stripeWebhookSecret.value();
