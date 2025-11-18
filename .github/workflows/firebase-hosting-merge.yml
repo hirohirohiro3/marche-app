@@ -33,8 +33,24 @@ jobs:
         run: |
           echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_PROD }}" >> functions/.env
           echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET_PROD }}" >> functions/.env
+      - name: Verify .env file
+        run: |
+          ls -la functions/
+          echo "--- .env file content ---"
+          cat functions/.env
+          echo "-------------------------"
       - name: Build application
         run: npm run build
+      - name: Build and Deploy Firebase Functions
+        run: |
+          cd functions
+          npm ci
+          npm run build
+          cd ..
+          npm install -g firebase-tools
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MARCHE_ORDER_APP }}' > /tmp/serviceAccountKey.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/serviceAccountKey.json
+          firebase deploy --only functions --project marche-order-app --non-interactive
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
