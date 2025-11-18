@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container, Typography, Paper, Button, Box, TextField,
   Grid, CircularProgress, Alert,
@@ -10,7 +10,6 @@ import {
 } from '../../../hooks/useQrCodeSettings';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ImageCropCompressor from '../../../components/ImageCropCompressor';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 
 const colorPalette = ['#000000', '#4a4a4a', '#003366', '#b30000', '#006400', '#4b0082'];
@@ -26,7 +25,6 @@ export default function QrCodeSettingsPage() {
     reset,
     watch,
     setValue,
-    trigger,
     formState: { errors, isSubmitting, isValid },
   } = useForm<QrSettingsFormValues>({
     resolver: zodResolver(qrSettingsSchema),
@@ -40,7 +38,6 @@ export default function QrCodeSettingsPage() {
 
   const watchColor = watch('color');
   const watchLogoUrl = watch('logoUrl');
-  const watchLogoFile = watch('logoFile');
 
 
   useEffect(() => {
@@ -52,14 +49,6 @@ export default function QrCodeSettingsPage() {
       });
     }
   }, [settings, reset]);
-
-  // Create a memoized preview URL to prevent re-renders
-  const finalPreviewUrl = useMemo(() => {
-    if (watchLogoFile) {
-      return URL.createObjectURL(watchLogoFile);
-    }
-    return watchLogoUrl;
-  }, [watchLogoFile, watchLogoUrl]);
 
   const onSubmit: SubmitHandler<QrSettingsFormValues> = async (data) => {
     console.log('[QrCodeSettingsPage] onSubmit started.', data);
@@ -91,7 +80,7 @@ export default function QrCodeSettingsPage() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={4}>
-            {/* Logo Upload and Preview */}
+            {/* Logo Upload and Preview - Temporarily Disabled
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>ロゴ画像 (1:1)</Typography>
               <ImageCropCompressor
@@ -103,6 +92,7 @@ export default function QrCodeSettingsPage() {
                 initialImageUrl={watchLogoUrl}
               />
             </Grid>
+            */}
 
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>最終プレビュー</Typography>
@@ -112,8 +102,8 @@ export default function QrCodeSettingsPage() {
                   size={256}
                   fgColor={watchColor}
                   level="H" // High error correction for logo
-                  imageSettings={finalPreviewUrl ? {
-                    src: finalPreviewUrl,
+                  imageSettings={watchLogoUrl ? {
+                    src: watchLogoUrl,
                     x: undefined,
                     y: undefined,
                     height: 80,

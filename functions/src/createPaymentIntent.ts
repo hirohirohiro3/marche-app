@@ -2,18 +2,22 @@ import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 import Stripe from "stripe";
 
-// Initialize Stripe with the secret key from environment variables
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY environment variable is not set.");
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-10-29.clover",
-});
-
 const db = admin.firestore();
 
 export const createPaymentIntent = functions.https.onCall(
   async (data: { orderId: string }, context: functions.https.CallableContext) => {
+    // Stripe initialization is moved inside the function handler.
+    // This ensures that environment variables are loaded before the Stripe SDK is initialized.
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new functions.https.HttpsError(
+        "internal",
+        "STRIPE_SECRET_KEY environment variable is not set."
+      );
+    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-10-29.clover",
+    });
+
     // 1. Check for authentication
     if (!context.auth) {
       throw new functions.https.HttpsError(
