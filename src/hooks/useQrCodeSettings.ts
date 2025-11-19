@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../firebase';
+import { db } from '../firebase';
 import { useAuth } from './useAuth';
 import { z } from 'zod';
 

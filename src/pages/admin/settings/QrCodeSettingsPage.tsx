@@ -24,7 +24,6 @@ export default function QrCodeSettingsPage() {
     handleSubmit,
     reset,
     watch,
-    setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<QrSettingsFormValues>({
     resolver: zodResolver(qrSettingsSchema),
