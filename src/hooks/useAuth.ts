@@ -16,9 +16,7 @@ export const useAuth = () => {
 
     // If the listener fires after the initial state is set,
     // and the user is still null, it means we are truly not logged in.
-    if (auth.currentUser === null) {
-        setLoading(false);
-    }
+    // Removed premature check for auth.currentUser === null to allow onAuthStateChanged to handle initial state restoration correctly.
 
 
     return () => unsubscribe();
