@@ -2,7 +2,6 @@ import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 import Stripe from "stripe";
 import { Request, Response } from "express";
-import { stripeSecretKey, stripeWebhookSecret } from "./config";
 
 const db = admin.firestore();
 
@@ -20,7 +19,14 @@ export const handleStripeWebhook = functions.https.onRequest(
 
     const sig = req.headers["stripe-signature"] as string;
 
-    const endpointSecret = stripeWebhookSecret.value();
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error("STRIPE_WEBHOOK_SECRET environment variable is not set.");
+      res
+        .status(500)
+        .send("Internal Server Error: Stripe webhook secret not configured.");
+      return;
+    }
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     let event: Stripe.Event;
 
