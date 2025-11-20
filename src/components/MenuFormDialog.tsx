@@ -206,8 +206,8 @@ export default function MenuFormDialog({
             <ImageCropCompressor
               aspect={16 / 9}
               onCropped={async (file) => {
-                setValue('imageFile', file, { shouldDirty: true });
-                await trigger('imageFile');
+                setValue('imageFile', file, { shouldValidate: true, shouldDirty: true });
+                await trigger();
               }}
               initialImageUrl={watchImageUrl}
             />
