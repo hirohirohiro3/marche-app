@@ -26,26 +26,98 @@
           "fieldPath": "storeId",
           "order": "ASCENDING"
         },
-        {
-          "fieldPath": "sortOrder",
-          "order": "ASCENDING"
+```
+{
+          "indexes": [
+            {
+              "collectionGroup": "menus",
+              "queryScope": "COLLECTION",
+              "fields": [
+                {
+                  "fieldPath": "isSoldOut",
+                  "order": "ASCENDING"
+                },
+                {
+                  "fieldPath": "manageStock",
+                  "order": "ASCENDING"
+                },
+                {
+                  "fieldPath": "sortOrder",
+                  "order": "ASCENDING"
+                }
+              ]
+            },
+            {
+              "collectionGroup": "menus",
+              "queryScope": "COLLECTION",
+              "fields": [
+                {
+                  "fieldPath": "storeId",
+                  "order": "ASCENDING"
+                },
+                {
+                  "fieldPath": "sortOrder",
+                  "order": "ASCENDING"
+                }
+              ]
+            },
+            {
+              "collectionGroup": "orders",
+              "queryScope": "COLLECTION",
+              "fields": [
+                {
+                  "fieldPath": "storeId",
+                  "order": "ASCENDING"
+                },
+                {
+                  "fieldPath": "createdAt",
+                  "order": "DESCENDING"
+                }
+              ]
+            },
+            {
+              "collectionGroup": "orders",
+              "queryScope": "COLLECTION",
+              "fields": [
+                {
+                  "fieldPath": "status",
+                  "order": "ASCENDING"
+                },
+                {
+                  "fieldPath": "createdAt",
+                  "order": "DESCENDING"
+                }
+              ]
+            },
+            {
+              "collectionGroup": "menus",
+              "queryScope": "COLLECTION",
+              "fields": [
+                {
+                  "fieldPath": "isSoldOut",
+                  "order": "ASCENDING"
+                },
+                {
+                  "fieldPath": "sortOrder",
+                  "order": "ASCENDING"
+                }
+              ]
+            },
+            {
+              "collectionGroup": "optionGroups",
+              "queryScope": "COLLECTION",
+              "fields": [
+                {
+                  "fieldPath": "storeId",
+                  "order": "ASCENDING"
+                },
+                {
+                  "fieldPath": "name",
+                  "order": "ASCENDING"
+                }
+              ]
+            }
+          ],
+          "fieldOverrides": []
         }
-      ]
-    },
-    {
-      "collectionGroup": "orders",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "storeId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    }
-  ],
-  "fieldOverrides": []
-}
+```
