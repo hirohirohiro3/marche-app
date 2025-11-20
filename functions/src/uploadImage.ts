@@ -71,8 +71,8 @@ export const uploadImage = functions
       const filePath = `${path}/${uid}/${fileName}`;
 
       // 6. Upload the file to Firebase Storage
-      // Explicitly specify the bucket to prevent resolution issues
-      const bucketName = `${process.env.GCLOUD_PROJECT}.firebasestorage.app`;
+      // Explicitly specify the bucket name (process.env.GCLOUD_PROJECT is not available in Cloud Functions)
+      const bucketName = "marche-order-app.firebasestorage.app";
       const bucket = storage.bucket(bucketName);
       const file = bucket.file(filePath);
 
