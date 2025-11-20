@@ -48,7 +48,8 @@ export default function MenuFormDialog({
     watch,
     setValue,
     trigger,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting, isValid, dirtyFields },
+    formState,
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
     mode: 'onChange', // enable validation on change
@@ -94,6 +95,10 @@ export default function MenuFormDialog({
       }
     }
   }, [open, editingMenuItem, reset]);
+
+  useEffect(() => {
+    console.log('Form State Changed:', { isValid, isSubmitting, errors, dirtyFields: formState.dirtyFields });
+  }, [isValid, isSubmitting, errors, formState.dirtyFields]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -206,8 +211,11 @@ export default function MenuFormDialog({
             <ImageCropCompressor
               aspect={16 / 9}
               onCropped={async (file) => {
+                console.log('onCropped called with file:', file);
                 setValue('imageFile', file, { shouldValidate: true, shouldDirty: true });
-                await trigger();
+                const result = await trigger();
+                console.log('Validation result after trigger:', result);
+                console.log('Current Errors:', errors);
               }}
               initialImageUrl={watchImageUrl}
             />
