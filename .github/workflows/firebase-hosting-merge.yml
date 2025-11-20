@@ -22,13 +22,13 @@ jobs:
         run: npm ci --prefix functions
       - name: Create .env.local for build
         run: |
-          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY_PROD }}" >> .env.local
-          echo "VITE_AUTH_DOMAIN=${{ secrets.VITE_AUTH_DOMAIN_PROD }}" >> .env.local
-          echo "VITE_PROJECT_ID=${{ secrets.VITE_PROJECT_ID_PROD }}" >> .env.local
-          echo "VITE_MESSAGING_SENDER_ID=${{ secrets.VITE_MESSAGING_SENDER_ID_PROD }}" >> .env.local
-          echo "VITE_APP_ID=${{ secrets.VITE_APP_ID_PROD }}" >> .env.local
-          echo "VITE_MEASUREMENT_ID=${{ secrets.VITE_MEASUREMENT_ID_PROD }}" >> .env.local
-          echo "VITE_RECAPTCHA_SITE_KEY=${{ secrets.VITE_RECAPTCHA_SITE_KEY_PROD }}" >> .env.local
+          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" >> .env.local
+          echo "VITE_AUTH_DOMAIN=${{ secrets.VITE_AUTH_DOMAIN }}" >> .env.local
+          echo "VITE_PROJECT_ID=${{ secrets.VITE_PROJECT_ID }}" >> .env.local
+          echo "VITE_MESSAGING_SENDER_ID=${{ secrets.VITE_MESSAGING_SENDER_ID }}" >> .env.local
+          echo "VITE_APP_ID=${{ secrets.VITE_APP_ID }}" >> .env.local
+          echo "VITE_MEASUREMENT_ID=${{ secrets.VITE_MEASUREMENT_ID }}" >> .env.local
+          echo "VITE_RECAPTCHA_SITE_KEY=${{ secrets.VITE_RECAPTCHA_SITE_KEY }}" >> .env.local
       - name: Build application
         run: npm run build
       - name: Build and Deploy Firebase Functions
@@ -39,8 +39,8 @@ jobs:
           cd ..
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MARCHE_ORDER_APP }}' > /tmp/serviceAccountKey.json
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/serviceAccountKey.json
-          export STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_PROD }}
-          export STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET_PROD }}
+          export STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          export STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
           npx firebase-tools@13.15.1 deploy --only functions --project marche-order-app --non-interactive --debug
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
