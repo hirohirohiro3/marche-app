@@ -48,7 +48,7 @@ export default function MenuFormDialog({
     watch,
     setValue,
     trigger,
-    formState: { errors, isSubmitting, isValid, dirtyFields },
+    formState: { errors, isSubmitting, isValid },
     formState,
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
