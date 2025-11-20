@@ -82,10 +82,9 @@ export const uploadImage = functions
         },
       });
 
-      // Make the file publicly readable
-      await file.makePublic();
-
-      // 7. Get the public URL. Note: `file.publicUrl()` is the correct method.
+      // Note: The bucket is configured with public access at the bucket level,
+      // so we don't need to call makePublic() on individual files.
+      // Get the public URL directly.
       const publicUrl = file.publicUrl();
 
       // 8. Return the URL to the client
