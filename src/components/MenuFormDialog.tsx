@@ -228,15 +228,30 @@ export default function MenuFormDialog({
           </Box>
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>キャンセル</Button>
-        <Button
-          onClick={handleSubmit(onSubmit)}
-          variant="contained"
-          disabled={!isValid || isSubmitting}
-        >
-          {isSubmitting ? '保存中...' : '保存'}
-        </Button>
+      <DialogActions sx={{ flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+        {Object.keys(errors).length > 0 && (
+          <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>
+            <Typography variant="caption" display="block">
+              入力エラーがあります:
+            </Typography>
+            {Object.entries(errors).map(([key, error]) => (
+              <Typography key={key} variant="caption" display="block">
+                {/* @ts-ignore */}
+                {key}: {error?.message?.toString() || 'Unknown error'}
+              </Typography>
+            ))}
+          </Box>
+        )}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button onClick={onClose}>キャンセル</Button>
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            variant="contained"
+            disabled={!isValid || isSubmitting}
+          >
+            {isSubmitting ? '保存中...' : '保存'}
+          </Button>
+        </Box>
       </DialogActions>
     </Dialog>
   );
