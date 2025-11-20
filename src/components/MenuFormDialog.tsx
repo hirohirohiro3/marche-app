@@ -50,7 +50,6 @@ export default function MenuFormDialog({
     trigger,
     getValues,
     formState: { errors, isSubmitting, isValid },
-    formState,
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
     mode: 'onChange', // enable validation on change
