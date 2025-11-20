@@ -76,16 +76,22 @@ export const uploadImage = functions
       const bucket = storage.bucket(bucketName);
       const file = bucket.file(filePath);
 
+      console.log(`Uploading file to bucket: ${bucketName}, path: ${filePath}`);
+
       await file.save(buffer, {
         metadata: {
           contentType: contentType,
         },
       });
 
+      console.log(`File saved successfully. Getting public URL...`);
+
       // Note: The bucket is configured with public access at the bucket level,
       // so we don't need to call makePublic() on individual files.
       // Get the public URL directly.
       const publicUrl = file.publicUrl();
+
+      console.log(`Public URL generated: ${publicUrl}`);
 
       // 8. Return the URL to the client
       return { imageUrl: publicUrl };
