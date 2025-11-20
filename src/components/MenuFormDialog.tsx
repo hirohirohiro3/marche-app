@@ -48,6 +48,7 @@ export default function MenuFormDialog({
     watch,
     setValue,
     trigger,
+    getValues,
     formState: { errors, isSubmitting, isValid },
     formState,
   } = useForm<MenuFormValues>({
@@ -97,8 +98,13 @@ export default function MenuFormDialog({
   }, [open, editingMenuItem, reset]);
 
   useEffect(() => {
-    console.log('Form State Changed:', { isValid, isSubmitting, errors, dirtyFields: formState.dirtyFields });
-  }, [isValid, isSubmitting, errors, formState.dirtyFields]);
+    console.log('Form State Changed:', {
+      isValid,
+      isSubmitting,
+      errors: JSON.stringify(errors, null, 2),
+      values: JSON.stringify(getValues(), null, 2)
+    });
+  }, [isValid, isSubmitting, errors, getValues]);
 
   return (
     <Dialog open={open} onClose={onClose}>
