@@ -52,9 +52,11 @@ export const useOrders = (storeId: string | undefined) => {
       }
       prevNewOrderCount.current = newOrderCount;
     },
-    (error) => {
-      console.error("[useOrders] Error listening to orders collection:", error);
-    });
+      (error) => {
+        console.error("[useOrders] Error listening to orders collection:", error);
+        console.error("[useOrders] Full Error Details:", JSON.stringify(error, null, 2));
+        console.error("[useOrders] Current storeId:", storeId);
+      });
 
     return unsubscribe;
   }, [storeId]);

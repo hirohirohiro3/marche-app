@@ -38,6 +38,9 @@ export const useQrCodeSettings = () => {
           }
         } catch (error) {
           console.error("Failed to fetch QR code settings:", error);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          console.error("Full Error Details:", JSON.stringify(error as any, null, 2));
+          console.error("Current storeId:", storeId);
           setSettings({ color: '#000000' }); // Fallback on error
         } finally {
           setLoading(false);
@@ -50,15 +53,15 @@ export const useQrCodeSettings = () => {
     fetchQrCodeSettings();
   }, [storeId]);
 
-// Reusable utility to convert File to Base64 Data URL
-// const fileToDataUrl = (file: File): Promise<string> => {
-//   return new Promise((resolve, reject) => {
-//     const reader = new FileReader();
-//     reader.onload = () => resolve(reader.result as string);
-//     reader.onerror = reject;
-//     reader.readAsDataURL(file);
-//   });
-// };
+  // Reusable utility to convert File to Base64 Data URL
+  // const fileToDataUrl = (file: File): Promise<string> => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.onload = () => resolve(reader.result as string);
+  //     reader.onerror = reject;
+  //     reader.readAsDataURL(file);
+  //   });
+  // };
 
   // const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
   //   if (!storeId) {
