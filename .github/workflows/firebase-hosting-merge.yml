@@ -41,7 +41,7 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/serviceAccountKey.json
           export STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
           export STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          npx firebase-tools@13.15.1 deploy --only functions --project marche-order-app --non-interactive --debug
+          npx firebase-tools@13.15.1 deploy --only functions,firestore --project marche-order-app --non-interactive --debug
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
