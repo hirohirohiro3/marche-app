@@ -39,7 +39,10 @@ export const menuFormSchema = z
     // For handling the uploaded file object
     imageFile: z.any().optional().nullable(),
     // For displaying the existing image URL
-    imageUrl: z.string().url().optional().nullable(),
+    imageUrl: z.preprocess(
+      (val) => (val === '' ? null : val),
+      z.string().url().optional().nullable()
+    ),
   })
   .refine(
     (data) => {
@@ -95,15 +98,15 @@ export const useMenu = (storeId?: string) => {
     return () => unsubscribe();
   }, [effectiveStoreId]);
 
-// Reusable utility to convert File to Base64 Data URL
-const fileToDataUrl = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
+  // Reusable utility to convert File to Base64 Data URL
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
 
   const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
     if (!user) {

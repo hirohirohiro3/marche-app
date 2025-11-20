@@ -48,7 +48,6 @@ export default function MenuFormDialog({
     watch,
     setValue,
     trigger,
-    getValues,
     formState: { errors, isSubmitting, isValid },
   } = useForm<MenuFormValues>({
     resolver: zodResolver(menuFormSchema),
@@ -95,15 +94,6 @@ export default function MenuFormDialog({
       }
     }
   }, [open, editingMenuItem, reset]);
-
-  useEffect(() => {
-    console.log('Form State Changed:', {
-      isValid,
-      isSubmitting,
-      errors: JSON.stringify(errors, null, 2),
-      values: JSON.stringify(getValues(), null, 2)
-    });
-  }, [isValid, isSubmitting, errors, getValues]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -216,41 +206,23 @@ export default function MenuFormDialog({
             <ImageCropCompressor
               aspect={16 / 9}
               onCropped={async (file) => {
-                console.log('onCropped called with file:', file);
                 setValue('imageFile', file, { shouldValidate: true, shouldDirty: true });
-                const result = await trigger();
-                console.log('Validation result after trigger:', result);
-                console.log('Current Errors:', errors);
+                await trigger();
               }}
               initialImageUrl={watchImageUrl}
             />
           </Box>
         </Box>
       </DialogContent>
-      <DialogActions sx={{ flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-        {Object.keys(errors).length > 0 && (
-          <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>
-            <Typography variant="caption" display="block">
-              入力エラーがあります:
-            </Typography>
-            {Object.entries(errors).map(([key, error]) => (
-              <Typography key={key} variant="caption" display="block">
-                {/* @ts-ignore */}
-                {key}: {error?.message?.toString() || 'Unknown error'}
-              </Typography>
-            ))}
-          </Box>
-        )}
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button onClick={onClose}>キャンセル</Button>
-          <Button
-            onClick={handleSubmit(onSubmit)}
-            variant="contained"
-            disabled={!isValid || isSubmitting}
-          >
-            {isSubmitting ? '保存中...' : '保存'}
-          </Button>
-        </Box>
+      <DialogActions>
+        <Button onClick={onClose}>キャンセル</Button>
+        <Button
+          onClick={handleSubmit(onSubmit)}
+          variant="contained"
+          disabled={!isValid || isSubmitting}
+        >
+          {isSubmitting ? '保存中...' : '保存'}
+        </Button>
       </DialogActions>
     </Dialog>
   );
