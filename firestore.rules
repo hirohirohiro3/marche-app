@@ -1,21 +1,6 @@
 rules_version = '2';
 
 service cloud.firestore {
-  match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    // Stores: Owner only
-    match /stores/{storeId} {
-      allow read, write: if request.auth != null && request.auth.uid == storeId;
-    }
-
-    // Menus: Public Read (for customers), Admin Write
-    match /menus/{menuId} {
-      allow read: if true;
-      allow write: if isAuthenticated();
     }
 
     // Orders: 
