@@ -80,8 +80,10 @@ export const uploadImage = functions
         metadata: {
           contentType: contentType,
         },
-        public: true, // Make the file publicly readable
       });
+
+      // Make the file publicly readable
+      await file.makePublic();
 
       // 7. Get the public URL. Note: `file.publicUrl()` is the correct method.
       const publicUrl = file.publicUrl();
