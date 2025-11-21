@@ -41,11 +41,11 @@ export type OrderItem = {
 };
 
 export type Order = {
-  id:string;
+  id: string;
   orderNumber: number;
   items: OrderItem[];
   totalPrice: number;
-  status: 'new' | 'paid' | 'completed' | 'cancelled';
+  status: 'new' | 'paid' | 'completed' | 'cancelled' | 'archived';
   orderType: 'qr' | 'manual';
   createdAt: { seconds: number; nanoseconds: number };
   uid: string;

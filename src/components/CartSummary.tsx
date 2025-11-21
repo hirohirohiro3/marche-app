@@ -1,9 +1,10 @@
 import { Paper, Typography, Button, Box } from '@mui/material';
 import { ShoppingCart } from '@mui/icons-material';
 import { useCartStore } from '../store/cartStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function CartSummary() {
+  const { storeId } = useParams<{ storeId: string }>();
   const { totalItems, totalPrice } = useCartStore();
   const navigate = useNavigate();
 
@@ -37,7 +38,7 @@ export default function CartSummary() {
         variant="contained"
         size="large"
         startIcon={<ShoppingCart />}
-        onClick={() => navigate('/checkout')} // Navigate to checkout page
+        onClick={() => navigate(`/checkout/${storeId}`)} // Navigate to checkout page with storeId
         data-testid="checkout-button"
       >
         注文へ進む

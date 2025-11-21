@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import { useQrCodeSettings } from '../hooks/useQrCodeSettings';
+import { useAuth } from '../hooks/useAuth';
 
 interface QrCodeModalProps {
   open: boolean;
@@ -21,13 +22,14 @@ interface QrCodeModalProps {
 }
 
 export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
+  const { user } = useAuth();
   const { settings, loading, saveQrCodeSettings } = useQrCodeSettings();
   const [color, setColor] = useState('#000000');
   // const [imageFile, setImageFile] = useState<File | null>(null); // Temporarily disabled
   const [isSaving, setIsSaving] = useState(false);
   // const fileInputRef = useRef<HTMLInputElement>(null); // Temporarily disabled
 
-  const customerMenuUrl = `${window.location.origin}/menu`; // This should be dynamic based on storeId in a real multi-tenant app
+  const customerMenuUrl = `${window.location.origin}/menu/${user?.uid}`;
 
   // Update local state when settings are fetched
   useEffect(() => {
@@ -115,11 +117,11 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
               imageSettings={
                 settings?.logoUrl
                   ? {
-                      src: settings.logoUrl,
-                      height: 48,
-                      width: 48,
-                      excavate: true,
-                    }
+                    src: settings.logoUrl,
+                    height: 48,
+                    width: 48,
+                    excavate: true,
+                  }
                   : undefined
               }
               style={{ height: 'auto', maxWidth: '100%', width: '100%' }}

@@ -35,13 +35,13 @@ export const useOrders = (storeId: string | undefined) => {
     const q = query(
       collection(db, 'orders'),
       where('storeId', '==', storeId),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'asc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ordersData = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() } as Order))
-        .filter((order) => order.status !== 'cancelled');
+        .filter((order) => order.status !== 'cancelled' && order.status !== 'archived');
       setOrders(ordersData);
 
       const newOrderCount = ordersData.filter((o) => o.status === 'new').length;
@@ -86,15 +86,15 @@ export const useOrders = (storeId: string | undefined) => {
       const activeOrdersQuery = query(
         collection(db, 'orders'),
         where('storeId', '==', storeId),
-        where('status', 'in', ['new', 'paid'])
+        where('status', 'in', ['new', 'paid', 'completed'])
       );
       const activeOrdersSnapshot = await getDocs(activeOrdersQuery);
       const settingsRef = doc(db, 'system_settings', 'orderNumbers');
 
       await runTransaction(db, async (transaction) => {
-        // Mark all active orders as completed
+        // Mark all active orders as archived (so they disappear from dashboard)
         activeOrdersSnapshot.forEach((orderDoc) => {
-          transaction.update(orderDoc.ref, { status: 'completed' });
+          transaction.update(orderDoc.ref, { status: 'archived' });
         });
 
         // Reset order numbers. Use set with merge option to create if not exists.

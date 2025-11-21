@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Container, Typography, List, ListItem, ListItemText, Button, Paper, Divider, CircularProgress } from '@mui/material';
 import { useCartStore } from '../store/cartStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { collection, serverTimestamp, doc, runTransaction } from "firebase/firestore";
 import { db } from '../firebase';
 import { uid } from 'uid'; // A library to generate unique IDs
 import { Alert } from '@mui/material';
 
 export default function CheckoutPage() {
+  const { storeId } = useParams<{ storeId: string }>();
   const { items, totalPrice, clearCart } = useCartStore();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +40,7 @@ export default function CheckoutPage() {
         const newOrderRef = doc(collection(db, "orders"));
         transaction.set(newOrderRef, {
           orderNumber: newOrderNumber,
+          storeId: storeId, // Add storeId so the order appears in the correct dashboard
           uid: localStorage.getItem('customerUid') || uid(16), // Get or create a customer UID
           items: items.map(i => ({ name: i.item.name, quantity: i.quantity, price: i.item.price })),
           totalPrice: totalPrice(),
