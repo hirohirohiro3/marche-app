@@ -72,7 +72,7 @@ export const uploadImage = functions
 
       // 6. Upload the file to Firebase Storage
       // Explicitly specify the bucket name (process.env.GCLOUD_PROJECT is not available in Cloud Functions)
-      const bucketName = "marche-order-app.firebasestorage.app";
+      const bucketName = "marche-order-app.appspot.com";
       console.log(`[uploadImage] Target bucket: ${bucketName}`);
 
       try {
@@ -110,10 +110,16 @@ export const uploadImage = functions
       return { url: publicUrl };
     } catch (error: any) {
       console.error("[uploadImage] Error uploading image:", error);
+      // Log detailed error properties if available
+      if (error.code) console.error("Error code:", error.code);
+      if (error.message) console.error("Error message:", error.message);
+      if (error.stack) console.error("Error stack:", error.stack);
+
       // Ensure we throw an HttpsError so the client receives a structured error
       if (error instanceof functions.https.HttpsError) {
         throw error;
       }
+      // Return the actual error message for debugging
       throw new functions.https.HttpsError("internal", `Upload failed: ${error.message}`);
     }
   });
