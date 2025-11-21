@@ -3,6 +3,7 @@ import {
   Container, Typography, Paper, Button, Box, TextField,
   Grid, CircularProgress, Alert,
 } from '@mui/material';
+import ImageCropCompressor from '../../../components/ImageCropCompressor';
 import {
   useQrCodeSettings,
   qrSettingsSchema,
@@ -24,27 +25,27 @@ export default function QrCodeSettingsPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
+    trigger,
     formState: { errors, isSubmitting, isValid },
   } = useForm<QrSettingsFormValues>({
     resolver: zodResolver(qrSettingsSchema),
     mode: 'onChange',
     defaultValues: {
       color: '#000000',
-      // logoFile: null, // Temporarily disabled
-      // logoUrl: null, // Temporarily disabled
+      logoFile: null,
     },
   });
 
   const watchColor = watch('color');
-  // const watchLogoUrl = watch('logoUrl');
+  const watchLogoFile = watch('logoFile');
 
 
   useEffect(() => {
     if (settings) {
       reset({
         color: settings.color || '#000000',
-        // logoUrl: settings.logoUrl || null, // Temporarily disabled
-        // logoFile: null, // Temporarily disabled
+        logoFile: null,
       });
     }
   }, [settings, reset]);
@@ -58,8 +59,8 @@ export default function QrCodeSettingsPage() {
       await saveQrCodeSettings(data);
       console.log('[QrCodeSettingsPage] saveQrCodeSettings finished.');
       setPageSuccess('設定を保存しました。');
-      // After successful save, reset the file input in the form state
-      // setValue('logoFile', null, { shouldValidate: true }); // Temporarily disabled
+      // Reset logo file after successful save
+      setValue('logoFile', null, { shouldValidate: true });
     } catch (err) {
       console.error('[QrCodeSettingsPage] Failed to save settings:', err);
       setPageError('設定の保存に失敗しました。');
@@ -79,7 +80,6 @@ export default function QrCodeSettingsPage() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={4}>
-            {/* Logo Upload and Preview - Temporarily Disabled
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>ロゴ画像 (1:1)</Typography>
               <ImageCropCompressor
@@ -88,27 +88,26 @@ export default function QrCodeSettingsPage() {
                   setValue('logoFile', file, { shouldDirty: true });
                   await trigger('logoFile');
                 }}
-                initialImageUrl={watchLogoUrl}
+                initialImageUrl={settings?.logoUrl}
               />
             </Grid>
-            */}
 
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>最終プレビュー</Typography>
               <Box sx={{ position: 'relative', width: 256, height: 256, border: '1px solid #ccc' }}>
                 <QRCode
-                  value={`https://yourapp.com/menu/${settings ? 'your-store-id' : 'preview'}`} // Use a real URL structure
+                  value={`https://yourapp.com/menu/${settings ? 'your-store-id' : 'preview'}`}
                   size={256}
                   fgColor={watchColor}
-                  level="H" // High error correction for logo
-                  // imageSettings={watchLogoUrl ? { // Temporarily disabled
-                  //   src: watchLogoUrl,
-                  //   x: undefined,
-                  //   y: undefined,
-                  //   height: 80,
-                  //   width: 80,
-                  //   excavate: true,
-                  // } : undefined}
+                  level="H"
+                  imageSettings={settings?.logoUrl ? {
+                    src: settings.logoUrl,
+                    x: undefined,
+                    y: undefined,
+                    height: 80,
+                    width: 80,
+                    excavate: true,
+                  } : undefined}
                 />
               </Box>
             </Grid>
@@ -143,27 +142,27 @@ export default function QrCodeSettingsPage() {
                 name="color"
                 control={control}
                 render={({ field }) => (
-                    <TextField
-                        {...field}
-                        variant="outlined"
-                        size="small"
-                        sx={{ mt: 2, width: 120 }}
-                        error={!!errors.color}
-                        helperText={errors.color?.message}
-                    />
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    size="small"
+                    sx={{ mt: 2, width: 120 }}
+                    error={!!errors.color}
+                    helperText={errors.color?.message}
+                  />
                 )}
               />
             </Grid>
 
             <Grid item xs={12}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={!isValid || isSubmitting}
-                >
-                  {isSubmitting ? <CircularProgress size={24} /> : '保存する'}
-                </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={!isValid || isSubmitting}
+              >
+                {isSubmitting ? <CircularProgress size={24} /> : '保存する'}
+              </Button>
             </Grid>
           </Grid>
         </form>

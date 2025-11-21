@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -9,8 +9,6 @@ import {
   Link,
   Typography,
   CircularProgress,
-  TextField,
-  Grid,
 } from '@mui/material';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import { useQrCodeSettings } from '../hooks/useQrCodeSettings';
@@ -23,11 +21,8 @@ interface QrCodeModalProps {
 
 export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
   const { user } = useAuth();
-  const { settings, loading, saveQrCodeSettings } = useQrCodeSettings();
+  const { settings, loading } = useQrCodeSettings();
   const [color, setColor] = useState('#000000');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const customerMenuUrl = `${window.location.origin}/menu/${user?.uid}`;
 
@@ -78,27 +73,7 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
     img.src = dataUrl;
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setImageFile(event.target.files[0]);
-    }
-  };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await saveQrCodeSettings({
-        color,
-        logoFile: imageFile,
-      });
-      setImageFile(null);
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-      // Add user-facing error notification here
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -133,40 +108,9 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
         <Link href={customerMenuUrl} target="_blank" rel="noopener noreferrer" sx={{ display: 'block', textAlign: 'center', mb: 3 }}>
           {customerMenuUrl}
         </Link>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="QRコードの色"
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-              fullWidth
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Button variant="outlined" component="label" fullWidth>
-              ロゴ画像を選択
-              <input
-                type="file"
-                hidden
-                accept="image/png, image/jpeg"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-              />
-            </Button>
-            {imageFile && (
-              <Typography variant="caption" display="block" sx={{ mt: 1, textAlign: 'center' }}>
-                選択中: {imageFile.name}
-              </Typography>
-            )}
-          </Grid>
-        </Grid>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleDownload}>PNGダウンロード</Button>
-        <Button onClick={handleSave} variant="contained" disabled={isSaving}>
-          {isSaving ? <CircularProgress size={24} /> : '設定を保存'}
-        </Button>
         <Button onClick={onClose}>閉じる</Button>
       </DialogActions>
     </Dialog>
