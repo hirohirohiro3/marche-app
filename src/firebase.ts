@@ -14,7 +14,7 @@ const firebaseConfig = {
   projectId: projectId,
   // NOTE: 環境変数 VITE_STORAGE_BUCKET が意図せず設定されている可能性があるため、
   // projectId から動的に生成したデフォルト値を強制的に使用する。
-  storageBucket: `${import.meta.env.VITE_PROJECT_ID}.appspot.com`,
+  storageBucket: `${import.meta.env.VITE_PROJECT_ID}.firebasestorage.app`,
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID,
   measurementId: import.meta.env.VITE_MEASUREMENT_ID,
@@ -72,7 +72,7 @@ if (import.meta.env.DEV) {
 
 // NOTE: SDKの内部的な挙動によりstorageBucketが無視されるケースに対応するため、
 // バケットのURLを第2引数で明示的に指定して強制する。
-const storageBucketUrl = `gs://${firebaseConfig.projectId}.appspot.com`;
+const storageBucketUrl = `gs://${firebaseConfig.projectId}.firebasestorage.app`;
 export const storage = getStorage(app, storageBucketUrl);
 export const functions = getFunctions(app, 'asia-northeast1');
 

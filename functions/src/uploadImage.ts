@@ -71,15 +71,15 @@ export const uploadImage = functions
       const filePath = `${path}/${uid}/${fileName}`;
 
       // 6. Upload the file to Firebase Storage
-      // Explicitly specify the bucket name (process.env.GCLOUD_PROJECT is not available in Cloud Functions)
-      const bucketName = "marche-order-app.appspot.com";
-      console.log(`[uploadImage] Target bucket: ${bucketName}`);
+      console.log(`[uploadImage] Starting upload for file: ${filePath}`);
+
+      // Use the default bucket
+      const bucket = storage.bucket();
 
       try {
-        const bucket = storage.bucket(bucketName);
         const file = bucket.file(filePath);
 
-        console.log(`[uploadImage] Saving file to: ${filePath}`);
+        console.log(`[uploadImage] Saving file to: ${filePath} in bucket ${bucket.name}`);
         await file.save(buffer, {
           metadata: {
             contentType: mimeType,
@@ -92,22 +92,12 @@ export const uploadImage = functions
       }
 
       // 7. Get the public URL
-      // Since we are using a private bucket with public access allowed via IAM,
-      // we can construct the URL manually or use getSignedUrl (but we want a permanent public URL).
-      // For Firebase Storage, the download URL format is:
-      // https://firebasestorage.googleapis.com/v0/b/<bucket>/o/<path>?alt=media&token=<token>
-      // However, generating a token requires the uuid package or similar.
-      // Alternatively, since we made the bucket public (or at least the objects), we can use the public link.
-      // But file.publicUrl() returns the storage.googleapis.com URL which might not work with CORS easily.
-
-      // Let's try to construct the Firebase Storage URL manually.
-      // Note: This assumes the object is publicly readable.
       const encodedPath = encodeURIComponent(filePath).replace(/\//g, "%2F");
-      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media`;
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`;
 
       console.log("[uploadImage] Generated public URL:", publicUrl);
 
-      return { url: publicUrl };
+      return { imageUrl: publicUrl };
     } catch (error: any) {
       console.error("[uploadImage] Error uploading image:", error);
       // Log detailed error properties if available

@@ -10,8 +10,8 @@ import {
   doc,
   where,
 } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
 import { MenuItem } from '../types';
 import * as z from 'zod';
 import { useAuth } from './useAuth';
@@ -98,16 +98,6 @@ export const useMenu = (storeId?: string) => {
     return () => unsubscribe();
   }, [effectiveStoreId]);
 
-  // Reusable utility to convert File to Base64 Data URL
-  const fileToDataUrl = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
   const uploadImage = useCallback(async (imageFile: File): Promise<string> => {
     if (!user) {
       throw new Error("ユーザー情報が取得できません。");
@@ -115,25 +105,26 @@ export const useMenu = (storeId?: string) => {
 
     try {
       console.log(`[useMenu:uploadImage] Starting upload for file: ${imageFile.name}`);
-      const imageDataUrl = await fileToDataUrl(imageFile);
 
-      const uploadImageFunction = httpsCallable(functions, 'uploadImage');
-      const result = await uploadImageFunction({
-        imageDataUrl,
-        path: 'menu-images',
-      });
+      // Generate a unique file name
+      const fileExtension = imageFile.name.split('.').pop() || 'jpg';
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExtension}`;
+      // Path must match storage.rules: /menu-images/{userId}/{fileName}
+      const filePath = `menu-images/${user.uid}/${fileName}`;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = result.data as { imageUrl: string };
+      const storageRef = ref(storage, filePath);
 
-      if (!data.imageUrl) {
-        throw new Error('Function returned an invalid image URL.');
-      }
+      // Upload the file directly
+      const snapshot = await uploadBytes(storageRef, imageFile);
+      console.log('[useMenu:uploadImage] Upload successful:', snapshot);
 
-      console.log(`[useMenu:uploadImage] Upload successful. URL: ${data.imageUrl}`);
-      return data.imageUrl;
+      // Get the public URL
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log(`[useMenu:uploadImage] Got download URL: ${downloadURL}`);
+
+      return downloadURL;
     } catch (error) {
-      console.error('[useMenu:uploadImage] Image upload via function failed:', error);
+      console.error('[useMenu:uploadImage] Image upload failed:', error);
       throw new Error('画像のアップロードに失敗しました。');
     }
   }, [user]);
