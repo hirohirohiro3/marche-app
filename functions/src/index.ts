@@ -21,4 +21,3 @@ admin.initializeApp();
  */
 export { createPaymentIntent } from "./createPaymentIntent";
 export { handleStripeWebhook } from "./handleStripeWebhook";
-export { uploadImage } from "./uploadImage";

@@ -36,3 +36,6 @@ test-results/
 
 # TypeScript build info
 tsconfig.tsbuildinfo
+
+# Storage CORS configuration (applied via gsutil)
+cors.json

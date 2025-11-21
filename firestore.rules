@@ -31,6 +31,12 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && resource.data.storeId == request.auth.uid;
     }
 
+    // Option Groups: Public Read (for customers), Admin Write
+    match /optionGroups/{optionGroupId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
     // System Settings (Order Numbers):
     // Public Read/Write required for client-side transaction in CheckoutPage
     match /system_settings/{settingId} {
