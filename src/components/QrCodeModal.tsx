@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -25,9 +25,9 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
   const { user } = useAuth();
   const { settings, loading, saveQrCodeSettings } = useQrCodeSettings();
   const [color, setColor] = useState('#000000');
-  // const [imageFile, setImageFile] = useState<File | null>(null); // Temporarily disabled
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  // const fileInputRef = useRef<HTMLInputElement>(null); // Temporarily disabled
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const customerMenuUrl = `${window.location.origin}/menu/${user?.uid}`;
 
@@ -78,21 +78,20 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
     img.src = dataUrl;
   };
 
-  // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => { // Temporarily disabled
-  //   if (event.target.files && event.target.files[0]) {
-  //     setImageFile(event.target.files[0]);
-  //   }
-  // };
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setImageFile(event.target.files[0]);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Adapt to the new hook signature which expects a single object
       await saveQrCodeSettings({
         color,
+        logoFile: imageFile,
       });
-      // Optionally reset image file state after successful upload
-      // setImageFile(null); // Temporarily disabled
+      setImageFile(null);
     } catch (error) {
       console.error("Failed to save settings:", error);
       // Add user-facing error notification here
@@ -144,7 +143,7 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
               fullWidth
             />
           </Grid>
-          {/* <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6}>
             <Button variant="outlined" component="label" fullWidth>
               ロゴ画像を選択
               <input
@@ -160,7 +159,7 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
                 選択中: {imageFile.name}
               </Typography>
             )}
-          </Grid> */}
+          </Grid>
         </Grid>
       </DialogContent>
       <DialogActions>

@@ -47,7 +47,10 @@ export const useOrders = (storeId: string | undefined) => {
       const newOrderCount = ordersData.filter((o) => o.status === 'new').length;
       if (newOrderCount > prevNewOrderCount.current) {
         setIsNewOrder(true);
-        audioRef.current?.play();
+        // Try to play sound, but don't fail if browser blocks autoplay
+        audioRef.current?.play().catch((error) => {
+          console.log('[useOrders] Audio playback blocked by browser:', error.message);
+        });
         setTimeout(() => setIsNewOrder(false), 2000); // Animation duration
       }
       prevNewOrderCount.current = newOrderCount;
