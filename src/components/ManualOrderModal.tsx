@@ -8,7 +8,6 @@ import {
   Paper,
   IconButton,
   CircularProgress,
-  Chip,
 } from '@mui/material';
 import Close from '@mui/icons-material/Close';
 import {
@@ -67,19 +66,6 @@ export default function ManualOrderModal({
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cart]);
 
-  const handleAddToCart = (item: MenuItem) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
-      if (existingItem) {
-        return prevCart.map((cartItem) =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
-            : cartItem
-        );
-      }
-      return [...prevCart, { id: item.id, name: item.name, price: item.price, quantity: 1 }];
-    });
-  };
 
   const handleOpenAddToCartModal = (item: MenuItem) => {
     setSelectedMenuItem(item);
