@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Container, Typography, List, ListItem, ListItemText, Button, Paper, Divider, CircularProgress, Box } from '@mui/material';
+import { Container, Typography, List, ListItem, ListItemText, Button, Paper, Divider, CircularProgress, Box, Alert } from '@mui/material';
 import { useCartStore } from '../store/cartStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { collection, serverTimestamp, doc, runTransaction } from "firebase/firestore";
 import { db } from '../firebase';
 import { uid } from 'uid'; // A library to generate unique IDs
-import { Alert } from '@mui/material';
 
 export default function CheckoutPage() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -18,40 +17,40 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     setError(null);
     try {
-      console.log("[CheckoutPage] Starting handleConfirmOrder...");
+      console.log('[CheckoutPage] Starting handleConfirmOrder...');
+      if (!storeId) {
+        throw new Error('storeId is missing from URL parameters.');
+      }
       const settingsRef = doc(db, "system_settings", "orderNumbers");
 
-      // Use a transaction to atomically get and increment the order number
       const newOrderId = await runTransaction(db, async (transaction) => {
-        console.log("[CheckoutPage] Inside runTransaction. Getting settings doc...");
         const settingsDoc = await transaction.get(settingsRef);
-        let newOrderNumber;
+        let newOrderNumber: number;
         if (settingsDoc.exists()) {
           newOrderNumber = settingsDoc.data().nextQrOrderNumber;
           transaction.update(settingsRef, { nextQrOrderNumber: newOrderNumber + 1 });
         } else {
-          newOrderNumber = 101; // Start from 101 if document doesn't exist
+          newOrderNumber = 101;
           transaction.set(settingsRef, {
             nextQrOrderNumber: newOrderNumber + 1,
-            nextManualOrderNumber: 1, // Also initialize the manual order number
+            nextManualOrderNumber: 1,
           });
         }
 
         const newOrderRef = doc(collection(db, "orders"));
         transaction.set(newOrderRef, {
           orderNumber: newOrderNumber,
-          storeId: storeId, // Add storeId so the order appears in the correct dashboard
-          uid: localStorage.getItem('customerUid') || uid(16), // Get or create a customer UID
+          storeId: storeId,
+          uid: localStorage.getItem('customerUid') || uid(16),
           items: items.map(i => {
             const orderItem: any = {
               name: i.item.name,
               quantity: i.quantity,
-              price: i.itemPriceWithOptions,
+              price: i.itemPriceWithOptions ?? i.item.price,
             };
-
             if (i.selectedOptions) {
               const options = Object.values(i.selectedOptions).flat().map(choice => ({
-                groupName: '', // We don't have group name in cart, will need to enhance later
+                groupName: '',
                 choiceName: choice.name,
                 priceModifier: choice.priceModifier,
               }));
@@ -59,7 +58,6 @@ export default function CheckoutPage() {
                 orderItem.selectedOptions = options;
               }
             }
-
             return orderItem;
           }),
           totalPrice: totalPrice(),
@@ -67,20 +65,18 @@ export default function CheckoutPage() {
           orderType: "qr",
           createdAt: serverTimestamp(),
         });
-
         return newOrderRef.id;
       });
 
-      // After successful order creation
+      // Persist a customer UID for future orders
       if (!localStorage.getItem('customerUid')) {
         localStorage.setItem('customerUid', uid(16));
       }
       clearCart();
       navigate(`/order/${newOrderId}`);
-
-    } catch (error) {
-      console.error("Order confirmation failed:", error);
-      setError("注文の作成に失敗しました。時間をおいて再度お試しください。");
+    } catch (e: any) {
+      console.error('Order confirmation failed:', e);
+      setError('注文の作成に失敗しました。時間をおいて再度お試しください。');
     } finally {
       setIsSubmitting(false);
     }
