@@ -77,6 +77,37 @@ export default function ManualOrderModal({
     setSelectedMenuItem(null);
   };
 
+  const handleManualAddToCart = (
+    menuItem: MenuItem,
+    quantity: number,
+    totalPrice: number,
+    selectedOptions?: any
+  ) => {
+    // Convert SelectedOptions to SelectedOptionInfo[]
+    const optionInfoArray: SelectedOptionInfo[] = [];
+    if (selectedOptions) {
+      Object.values(selectedOptions).flat().forEach((choice: any) => {
+        optionInfoArray.push({
+          groupName: '', // TODO: Add group name
+          choiceName: choice.name,
+          priceModifier: choice.priceModifier,
+        });
+      });
+    }
+
+    // Add to manual order cart
+    setCart((prevCart) => [
+      ...prevCart,
+      {
+        id: `${menuItem.id}-${Date.now()}`,
+        name: menuItem.name,
+        price: totalPrice / quantity, // Price per item including options
+        quantity,
+        selectedOptions: optionInfoArray.length > 0 ? optionInfoArray : undefined,
+      },
+    ]);
+  };
+
   const handleRemoveFromCart = (itemId: string) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((cartItem) => cartItem.id === itemId);
@@ -291,6 +322,7 @@ export default function ManualOrderModal({
         onClose={handleCloseAddToCartModal}
         menuItem={selectedMenuItem}
         optionGroups={[]} // TODO: Fetch option groups
+        onAddToCart={handleManualAddToCart}
       />
     </>
   );

@@ -21,6 +21,7 @@ interface AddToCartModalProps {
     onClose: () => void;
     menuItem: MenuItem | null;
     optionGroups: OptionGroup[];
+    onAddToCart?: (menuItem: MenuItem, quantity: number, totalPrice: number, selectedOptions: SelectedOptions | undefined) => void;
 }
 
 const style = {
@@ -45,6 +46,7 @@ export default function AddToCartModal({
     onClose,
     menuItem,
     optionGroups,
+    onAddToCart: customOnAddToCart,
 }: AddToCartModalProps) {
     const [quantity, setQuantity] = useState(1);
     const [selectedOptions, setSelectedOptions] = useState<Record<string, string | string[]>>({});
@@ -123,9 +125,16 @@ export default function AddToCartModal({
             }
         });
 
-        // Add to cart with the specified quantity
-        for (let i = 0; i < quantity; i++) {
-            addItem(menuItem, Object.keys(mappedOptions).length > 0 ? mappedOptions : undefined);
+        const finalOptions = Object.keys(mappedOptions).length > 0 ? mappedOptions : undefined;
+
+        // Use custom callback if provided, otherwise use default cart store
+        if (customOnAddToCart) {
+            customOnAddToCart(menuItem, quantity, totalPrice, finalOptions);
+        } else {
+            // Add to cart with the specified quantity
+            for (let i = 0; i < quantity; i++) {
+                addItem(menuItem, finalOptions);
+            }
         }
 
         onClose();
