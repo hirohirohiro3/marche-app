@@ -42,16 +42,26 @@ export default function CheckoutPage() {
           orderNumber: newOrderNumber,
           storeId: storeId, // Add storeId so the order appears in the correct dashboard
           uid: localStorage.getItem('customerUid') || uid(16), // Get or create a customer UID
-          items: items.map(i => ({
-            name: i.item.name,
-            quantity: i.quantity,
-            price: i.itemPriceWithOptions,
-            selectedOptions: i.selectedOptions ? Object.values(i.selectedOptions).flat().map(choice => ({
-              groupName: '', // We don't have group name in cart, will need to enhance later
-              choiceName: choice.name,
-              priceModifier: choice.priceModifier,
-            })) : undefined,
-          })),
+          items: items.map(i => {
+            const orderItem: any = {
+              name: i.item.name,
+              quantity: i.quantity,
+              price: i.itemPriceWithOptions,
+            };
+
+            if (i.selectedOptions) {
+              const options = Object.values(i.selectedOptions).flat().map(choice => ({
+                groupName: '', // We don't have group name in cart, will need to enhance later
+                choiceName: choice.name,
+                priceModifier: choice.priceModifier,
+              }));
+              if (options.length > 0) {
+                orderItem.selectedOptions = options;
+              }
+            }
+
+            return orderItem;
+          }),
           totalPrice: totalPrice(),
           status: "new",
           orderType: "qr",

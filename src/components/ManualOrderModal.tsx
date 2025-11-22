@@ -8,6 +8,7 @@ import {
   Paper,
   IconButton,
   CircularProgress,
+  Chip,
 } from '@mui/material';
 import Close from '@mui/icons-material/Close';
 import {
@@ -18,13 +19,15 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../hooks/useAuth';
-import { MenuItem } from '../types';
+import { MenuItem, SelectedOptionInfo } from '../types';
+import AddToCartModal from './AddToCartModal';
 
 type CartItem = {
   id: string;
   name: string;
   quantity: number;
   price: number;
+  selectedOptions?: SelectedOptionInfo[];
 };
 
 interface ManualOrderModalProps {
@@ -57,6 +60,8 @@ export default function ManualOrderModal({
   const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
 
   const totalPrice = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -76,8 +81,18 @@ export default function ManualOrderModal({
     });
   };
 
+  const handleOpenAddToCartModal = (item: MenuItem) => {
+    setSelectedMenuItem(item);
+    setIsAddToCartModalOpen(true);
+  };
+
+  const handleCloseAddToCartModal = () => {
+    setIsAddToCartModalOpen(false);
+    setSelectedMenuItem(null);
+  };
+
   const handleRemoveFromCart = (itemId: string) => {
-     setCart((prevCart) => {
+    setCart((prevCart) => {
       const existingItem = prevCart.find((cartItem) => cartItem.id === itemId);
       if (existingItem && existingItem.quantity > 1) {
         return prevCart.map((cartItem) =>
@@ -175,114 +190,122 @@ export default function ManualOrderModal({
   }, [open]);
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      <Box sx={style} data-testid="manual-order-modal">
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2,
-          }}
-        >
-          <Typography variant="h6">手動注文 (POS)</Typography>
-          <IconButton onClick={handleClose} data-testid="close-modal-button">
-            <Close />
-          </IconButton>
-        </Box>
-
-        <Grid container spacing={2} sx={{ flexGrow: 1, overflow: 'hidden' }}>
-          {/* Menu Items */}
-          <Grid
-            item
-            xs={12}
-            md={7}
-            sx={{ overflowY: 'auto', maxHeight: 'calc(90vh - 200px)' }}
-          >
-            <Typography variant="h6" gutterBottom>メニュー</Typography>
-            <Grid container spacing={1}>
-              {menuItems.map((item) => (
-                <Grid item xs={6} sm={4} md={3} key={item.id}>
-                  <Button
-                    variant="contained"
-                    onClick={() => handleAddToCart(item)}
-                    sx={{ width: '100%', height: '100px', textTransform: 'none' }}
-                    data-testid={`menu-item-${item.id}`}
-                  >
-                    {item.name}
-                  </Button>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-
-          {/* Cart */}
-          <Grid
-            item
-            xs={12}
-            md={5}
+    <>
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={style} data-testid="manual-order-modal">
+          <Box
             sx={{
               display: 'flex',
-              flexDirection: 'column',
-              maxHeight: 'calc(90vh - 150px)',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
             }}
           >
-            <Paper sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }} data-testid="cart-section">
-              <Typography variant="h6" gutterBottom>
-                現在の注文
-              </Typography>
-              {cart.length === 0 ? (
-                <Typography>商品が追加されていません。</Typography>
-              ) : (
-                cart.map((item) => (
-                  <Box
-                    key={item.id}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      mb: 1,
-                    }}
-                    data-testid={`cart-item-${item.id}`}
-                  >
-                    <Typography>
-                      {item.name} x {item.quantity}
-                    </Typography>
+            <Typography variant="h6">手動注文 (POS)</Typography>
+            <IconButton onClick={handleClose} data-testid="close-modal-button">
+              <Close />
+            </IconButton>
+          </Box>
+
+          <Grid container spacing={2} sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            {/* Menu Items */}
+            <Grid
+              item
+              xs={12}
+              md={7}
+              sx={{ overflowY: 'auto', maxHeight: 'calc(90vh - 200px)' }}
+            >
+              <Typography variant="h6" gutterBottom>メニュー</Typography>
+              <Grid container spacing={1}>
+                {menuItems.map((item) => (
+                  <Grid item xs={6} sm={4} md={3} key={item.id}>
                     <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleRemoveFromCart(item.id)}
-                      data-testid={`remove-from-cart-${item.id}`}
+                      variant="contained"
+                      onClick={() => handleOpenAddToCartModal(item)}
+                      sx={{ width: '100%', height: '100px', textTransform: 'none' }}
+                      data-testid={`menu-item-${item.id}`}
                     >
-                      削除
+                      {item.name}
                     </Button>
-                  </Box>
-                ))
-              )}
-            </Paper>
-            <Box sx={{ mt: 'auto', pt: 2 }}>
-              <Typography variant="h5" align="right" gutterBottom data-testid="total-price">
-                合計: ¥{totalPrice}
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={handleCreateOrder}
-                disabled={cart.length === 0 || isLoading}
-                data-testid="create-order-button"
-              >
-                {isLoading ? (
-                  <CircularProgress size={24} color="inherit" />
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+
+            {/* Cart */}
+            <Grid
+              item
+              xs={12}
+              md={5}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                maxHeight: 'calc(90vh - 150px)',
+              }}
+            >
+              <Paper sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }} data-testid="cart-section">
+                <Typography variant="h6" gutterBottom>
+                  現在の注文
+                </Typography>
+                {cart.length === 0 ? (
+                  <Typography>商品が追加されていません。</Typography>
                 ) : (
-                  '支払い済みとして注文を作成'
+                  cart.map((item) => (
+                    <Box
+                      key={item.id}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 1,
+                      }}
+                      data-testid={`cart-item-${item.id}`}
+                    >
+                      <Typography>
+                        {item.name} x {item.quantity}
+                      </Typography>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleRemoveFromCart(item.id)}
+                        data-testid={`remove-from-cart-${item.id}`}
+                      >
+                        削除
+                      </Button>
+                    </Box>
+                  ))
                 )}
-              </Button>
-            </Box>
+              </Paper>
+              <Box sx={{ mt: 'auto', pt: 2 }}>
+                <Typography variant="h5" align="right" gutterBottom data-testid="total-price">
+                  合計: ¥{totalPrice}
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={handleCreateOrder}
+                  disabled={cart.length === 0 || isLoading}
+                  data-testid="create-order-button"
+                >
+                  {isLoading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    '支払い済みとして注文を作成'
+                  )}
+                </Button>
+              </Box>
+            </Grid>
           </Grid>
-        </Grid>
-      </Box>
-    </Modal>
+        </Box>
+      </Modal>
+      <AddToCartModal
+        open={isAddToCartModalOpen}
+        onClose={handleCloseAddToCartModal}
+        menuItem={selectedMenuItem}
+        optionGroups={[]} // TODO: Fetch option groups
+      />
+    </>
   );
 }
