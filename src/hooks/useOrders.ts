@@ -9,6 +9,7 @@ import {
   getDocs,
   runTransaction,
   where,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Order } from '../types';
@@ -65,7 +66,18 @@ export const useOrders = (storeId: string | undefined) => {
   }, [storeId]);
 
   const filterOrdersByStatus = useCallback(
-    (status: Order['status']) => orders.filter((order) => order.status === status),
+    (status: Order['status']) => {
+      const filtered = orders.filter((order) => order.status === status);
+      // Sort paid orders by paidAt (ascending: oldest first, newest last)
+      if (status === 'paid') {
+        return filtered.sort((a, b) => {
+          const aTime = a.paidAt?.seconds || a.createdAt.seconds;
+          const bTime = b.paidAt?.seconds || b.createdAt.seconds;
+          return aTime - bTime;
+        });
+      }
+      return filtered;
+    },
     [orders]
   );
 
@@ -75,7 +87,11 @@ export const useOrders = (storeId: string | undefined) => {
   ) => {
     const orderRef = doc(db, 'orders', orderId);
     try {
-      await updateDoc(orderRef, { status: newStatus });
+      const updateData: { status: Order['status']; paidAt?: ReturnType<typeof serverTimestamp> } = { status: newStatus };
+      if (newStatus === 'paid') {
+        updateData.paidAt = serverTimestamp();
+      }
+      await updateDoc(orderRef, updateData);
       console.log(`Order ${orderId} status updated to ${newStatus}`);
     } catch (error) {
       console.error('Failed to update order status:', error);

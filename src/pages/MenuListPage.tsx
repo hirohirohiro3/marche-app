@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions, Button, Box, CircularProgress, Alert, IconButton } from "@mui/material";
-import { AddCircleOutline, RemoveCircleOutline } from '@mui/icons-material';
+import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions, Button, Box, CircularProgress, Alert } from "@mui/material";
 import { MenuItem, OptionGroup } from '../types';
-import { useCartStore } from '../store/cartStore';
 import { useMenu } from '../hooks/useMenu';
-import OptionSelectModal from '../components/OptionSelectModal';
+import AddToCartModal from '../components/AddToCartModal';
 
 // Dummy data - will be replaced with data fetching later
 const dummyOptionGroups: OptionGroup[] = [
@@ -32,62 +30,19 @@ const dummyOptionGroups: OptionGroup[] = [
   },
 ];
 
-// Component to control item quantity in cart
-const ItemQuantityControl = ({ item, onOpenOptions }: { item: MenuItem; onOpenOptions: (item: MenuItem) => void; }) => {
-  const { items, addItem, updateQuantity } = useCartStore();
-  const cartItem = items.find(ci => ci.item.id === item.id);
-  const quantity = cartItem ? cartItem.quantity : 0;
-
-  const hasOptions = item.optionGroupIds && item.optionGroupIds.length > 0;
-
-  if (quantity === 0) {
-    return (
-      <Button
-        variant="contained"
-        onClick={() => hasOptions ? onOpenOptions(item) : addItem(item)}
-        fullWidth
-        data-testid={`add-to-cart-button-${item.id}`}
-      >
-        {hasOptions ? 'オプションを選択' : 'カートに追加'}
-      </Button>
-    );
-  }
-
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-      <IconButton
-        onClick={() => updateQuantity(item.id, quantity - 1)}
-        color="primary"
-        data-testid={`remove-one-button-${item.id}`}
-      >
-        <RemoveCircleOutline />
-      </IconButton>
-      <Typography variant="h6" data-testid={`quantity-display-${item.id}`}>{quantity}</Typography>
-      <IconButton
-        onClick={() => updateQuantity(item.id, quantity + 1)}
-        color="primary"
-        data-testid={`add-one-button-${item.id}`}
-      >
-        <AddCircleOutline />
-      </IconButton>
-    </Box>
-  );
-};
-
-
 export default function MenuListPage() {
   const { storeId } = useParams<{ storeId: string }>();
   const { menus, loading, error } = useMenu(storeId);
-  const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
 
-  const handleOpenOptions = (item: MenuItem) => {
+  const handleOpenModal = (item: MenuItem) => {
     setSelectedMenuItem(item);
-    setIsOptionModalOpen(true);
+    setIsModalOpen(true);
   };
 
-  const handleCloseOptions = () => {
-    setIsOptionModalOpen(false);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
     setSelectedMenuItem(null);
   };
 
@@ -144,7 +99,14 @@ export default function MenuListPage() {
                       </Typography>
                     </CardContent>
                     <CardActions>
-                      <ItemQuantityControl item={menu} onOpenOptions={handleOpenOptions} />
+                      <Button
+                        variant="contained"
+                        onClick={() => handleOpenModal(menu)}
+                        fullWidth
+                        data-testid={`add-to-cart-button-${menu.id}`}
+                      >
+                        カートに追加
+                      </Button>
                     </CardActions>
                   </Card>
                 </Grid>
@@ -153,9 +115,9 @@ export default function MenuListPage() {
           </div>
         ))}
       </Container>
-      <OptionSelectModal
-        open={isOptionModalOpen}
-        onClose={handleCloseOptions}
+      <AddToCartModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
         menuItem={selectedMenuItem}
         optionGroups={dummyOptionGroups.filter(
           (og) => selectedMenuItem?.optionGroupIds?.includes(og.id)

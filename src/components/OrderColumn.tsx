@@ -6,6 +6,7 @@ import {
   CardActions,
   Button,
   Box,
+  Chip,
 } from '@mui/material';
 import { Order } from '../types';
 
@@ -80,9 +81,38 @@ export default function OrderColumn({ title, orders, onUpdateStatus, animation }
           <CardContent>
             <Typography variant="h5">#{order.orderNumber}</Typography>
             {order.items.map((item, index) => (
-              <Typography key={index}>
-                {item.name} x {item.quantity}
-              </Typography>
+              <Box key={index} sx={{ mb: 1.5 }}>
+                <Typography variant="body1" fontWeight="bold">
+                  {item.name} x {item.quantity}
+                </Typography>
+                {item.selectedOptions && item.selectedOptions.length > 0 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.75,
+                      mt: 0.75,
+                      pl: 2,
+                      py: 0.5,
+                      backgroundColor: 'rgba(255, 152, 0, 0.12)',
+                      borderRadius: 1,
+                    }}
+                  >
+                    {item.selectedOptions.map((opt, optIndex) => (
+                      <Chip
+                        key={optIndex}
+                        label={opt.choiceName}
+                        size="small"
+                        color="warning"
+                        sx={{
+                          fontWeight: 'medium',
+                          fontSize: '0.8rem',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </Box>
             ))}
             <Box sx={{ mt: 1 }}>
               <Typography variant="body2" color="text.secondary">

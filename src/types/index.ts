@@ -48,5 +48,6 @@ export type Order = {
   status: 'new' | 'paid' | 'completed' | 'cancelled' | 'archived';
   orderType: 'qr' | 'manual';
   createdAt: { seconds: number; nanoseconds: number };
+  paidAt?: { seconds: number; nanoseconds: number };
   uid: string;
 };
