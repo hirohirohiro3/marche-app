@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Typography, List, ListItem, ListItemText, Button, Paper, Divider, CircularProgress } from '@mui/material';
+import { Container, Typography, List, ListItem, ListItemText, Button, Paper, Divider, CircularProgress, Box } from '@mui/material';
 import { useCartStore } from '../store/cartStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { collection, serverTimestamp, doc, runTransaction } from "firebase/firestore";
@@ -116,17 +116,27 @@ export default function CheckoutPage() {
           {error}
         </Alert>
       )}
-      <Button
-        variant="contained"
-        size="large"
-        fullWidth
-        sx={{ mt: 4 }}
-        onClick={handleConfirmOrder}
-        disabled={isSubmitting}
-        data-testid="confirm-order-button"
-      >
-        {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "注文を確定する"}
-      </Button>
+      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
+        <Button
+          variant="outlined"
+          size="large"
+          fullWidth
+          onClick={() => navigate(`/menu/${storeId}`)}
+          disabled={isSubmitting}
+        >
+          戻る
+        </Button>
+        <Button
+          variant="contained"
+          size="large"
+          fullWidth
+          onClick={handleConfirmOrder}
+          disabled={isSubmitting}
+          data-testid="confirm-order-button"
+        >
+          {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "注文を確定する"}
+        </Button>
+      </Box>
     </Container>
   );
 }
