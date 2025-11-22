@@ -1,17 +1,44 @@
-import { useState } from 'react';
-import { Container, Typography, List, ListItem, ListItemText, Button, Paper, Divider, CircularProgress, Box, Alert } from '@mui/material';
-import { useCartStore } from '../store/cartStore';
-import { useNavigate, useParams } from 'react-router-dom';
 import { collection, serverTimestamp, doc, runTransaction } from "firebase/firestore";
 import { db } from '../firebase';
 import { uid } from 'uid'; // A library to generate unique IDs
+import {
+  Container, Typography, Button, Box, Paper, List, ListItem, ListItemText,
+  IconButton, Divider, Stack, Alert, Dialog, DialogActions, DialogContent,
+  DialogContentText, DialogTitle, CircularProgress
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useCartStore } from '../store/cartStore';
 
 export default function CheckoutPage() {
   const { storeId } = useParams<{ storeId: string }>();
-  const { items, totalPrice, clearCart } = useCartStore();
+  const { items, totalPrice, clearCart, updateQuantity, removeItem } = useCartStore();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+
+  const handleDeleteClick = (cartItemId: string) => {
+    setItemToDelete(cartItemId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (itemToDelete) {
+      removeItem(itemToDelete);
+    }
+    setDeleteConfirmOpen(false);
+    setItemToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setItemToDelete(null);
+  };
 
   const handleConfirmOrder = async () => {
     setIsSubmitting(true);
@@ -94,7 +121,7 @@ export default function CheckoutPage() {
       console.error('Order confirmation failed:', e);
       // Detailed error logging for undefined values
       if (e.message && e.message.includes('undefined')) {
-         console.error('Undefined value detected in transaction payload. See previous logs for payload details.');
+        console.error('Undefined value detected in transaction payload. See previous logs for payload details.');
       }
       setError('注文の作成に失敗しました。時間をおいて再度お試しください。');
     } finally {
@@ -110,11 +137,45 @@ export default function CheckoutPage() {
       <Paper elevation={3}>
         <List data-testid="order-items-list">
           {items.map(cartItem => (
-            <ListItem key={cartItem.item.id}>
+            <ListItem
+              key={cartItem.cartItemId}
+              secondaryAction={
+                <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteClick(cartItem.cartItemId)}>
+                  <DeleteIcon />
+                </IconButton>
+              }
+            >
               <ListItemText
-                primary={`${cartItem.item.name} x ${cartItem.quantity}`}
-                secondary={`¥${(cartItem.item.price * cartItem.quantity).toLocaleString()}`}
+                primary={cartItem.item.name}
+                secondary={
+                  <>
+                    <Typography component="span" variant="body2" color="text.primary">
+                      ¥{(cartItem.itemPriceWithOptions).toLocaleString()}
+                    </Typography>
+                    {cartItem.selectedOptions && Object.values(cartItem.selectedOptions).flat().map((opt, idx) => (
+                      <Typography key={idx} variant="caption" display="block" color="text.secondary">
+                        + {opt.name} (¥{opt.priceModifier})
+                      </Typography>
+                    ))}
+                  </>
+                }
               />
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mr: 2 }}>
+                <IconButton
+                  size="small"
+                  onClick={() => updateQuantity(cartItem.cartItemId, cartItem.quantity - 1)}
+                  disabled={cartItem.quantity <= 1}
+                >
+                  <RemoveIcon fontSize="small" />
+                </IconButton>
+                <Typography>{cartItem.quantity}</Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => updateQuantity(cartItem.cartItemId, cartItem.quantity + 1)}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Stack>
             </ListItem>
           ))}
           <Divider />
@@ -153,6 +214,29 @@ export default function CheckoutPage() {
           {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "注文を確定する"}
         </Button>
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleCancelDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"商品を削除しますか？"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            この商品をカートから削除してもよろしいですか？
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>キャンセル</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            削除する
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

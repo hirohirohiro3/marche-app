@@ -4,6 +4,7 @@ import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions,
 import { MenuItem, OptionGroup } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import AddToCartModal from '../components/AddToCartModal';
+import CartSummary from '../components/CartSummary';
 
 // Dummy data - will be replaced with data fetching later
 const dummyOptionGroups: OptionGroup[] = [
@@ -123,6 +124,7 @@ export default function MenuListPage() {
           (og) => selectedMenuItem?.optionGroupIds?.includes(og.id)
         )}
       />
+      <CartSummary />
     </Box>
   );
 }
