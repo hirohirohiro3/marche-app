@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ImageCropCompressor from './ImageCropCompressor';
@@ -40,22 +40,22 @@ describe('ImageCropCompressor Component', () => {
 
     // Mock canvas logic for getCroppedImg
     HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-        drawImage: vi.fn(),
-        setTransform: vi.fn(),
+      drawImage: vi.fn(),
+      setTransform: vi.fn(),
     })) as any;
     HTMLCanvasElement.prototype.toBlob = vi.fn((callback) => {
-        callback(new Blob(['cropped'], { type: 'image/jpeg' }));
+      callback(new Blob(['cropped'], { type: 'image/jpeg' }));
     });
   });
 
   it('renders the select file button initially', () => {
-    render(<ImageCropCompressor aspect={16 / 9} onCropped={() => {}} />);
+    render(<ImageCropCompressor aspect={16 / 9} onCropped={() => { }} />);
     expect(screen.getByRole('button', { name: /画像を選択/i })).toBeInTheDocument();
   });
 
   it('shows cropper UI when a file is selected', async () => {
     const user = userEvent.setup();
-    const { container } = render(<ImageCropCompressor aspect={16 / 9} onCropped={() => {}} />);
+    const { container } = render(<ImageCropCompressor aspect={16 / 9} onCropped={() => { }} />);
 
     const input = container.querySelector('input[type="file"]')!;
     expect(input).toBeInTheDocument();
@@ -88,8 +88,8 @@ describe('ImageCropCompressor Component', () => {
     });
 
     await waitFor(() => {
-        // Check that the parent component receives the final, compressed file
-        expect(onCroppedMock).toHaveBeenCalledWith(mockCompressedFile);
+      // Check that the parent component receives the final, compressed file
+      expect(onCroppedMock).toHaveBeenCalledWith(mockCompressedFile);
     });
 
     // 5. Final preview is shown

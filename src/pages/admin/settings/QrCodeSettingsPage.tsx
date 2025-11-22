@@ -38,8 +38,6 @@ export default function QrCodeSettingsPage() {
   });
 
   const watchColor = watch('color');
-  const watchLogoFile = watch('logoFile');
-
 
   useEffect(() => {
     if (settings) {

@@ -30,6 +30,8 @@ jobs:
         echo "VITE_APP_ID=${{ secrets.VITE_APP_ID_TEST }}" >> .env.local
         echo "VITE_MEASUREMENT_ID=${{ secrets.VITE_MEASUREMENT_ID_TEST }}" >> .env.local
         echo "VITE_RECAPTCHA_SITE_KEY=${{ secrets.VITE_RECAPTCHA_SITE_KEY_TEST }}" >> .env.local
+    - name: Run Unit Tests
+      run: npm test
     - run: npm run build
     - name: Seed test database
       run: npm run seed
