@@ -27,7 +27,9 @@ export default function CheckoutPage() {
         const settingsDoc = await transaction.get(settingsRef);
         let newOrderNumber: number;
         if (settingsDoc.exists()) {
-          newOrderNumber = settingsDoc.data().nextQrOrderNumber;
+          const data = settingsDoc.data();
+          // Defensive check for nextQrOrderNumber
+          newOrderNumber = data.nextQrOrderNumber !== undefined ? data.nextQrOrderNumber : 101;
           transaction.update(settingsRef, { nextQrOrderNumber: newOrderNumber + 1 });
         } else {
           newOrderNumber = 101;
@@ -37,34 +39,48 @@ export default function CheckoutPage() {
           });
         }
 
-        const newOrderRef = doc(collection(db, "orders"));
-        transaction.set(newOrderRef, {
+        // Prepare items with defensive checks
+        const orderItems = items.map(i => {
+          // Defensive coding: Ensure no field is undefined
+          const name = i.item.name || '不明な商品';
+          const quantity = i.quantity || 1;
+          const price = (i.itemPriceWithOptions ?? i.item.price) || 0;
+
+          const orderItem: any = {
+            name,
+            quantity,
+            price,
+          };
+
+          if (i.selectedOptions) {
+            const options = Object.values(i.selectedOptions).flat().map(choice => ({
+              groupName: '', // Assuming empty string is acceptable if not available
+              choiceName: choice.name || '不明なオプション',
+              priceModifier: choice.priceModifier || 0,
+            }));
+            if (options.length > 0) {
+              orderItem.selectedOptions = options;
+            }
+          }
+          return orderItem;
+        });
+
+        const orderData = {
           orderNumber: newOrderNumber,
           storeId: storeId,
           uid: localStorage.getItem('customerUid') || uid(16),
-          items: items.map(i => {
-            const orderItem: any = {
-              name: i.item.name,
-              quantity: i.quantity,
-              price: i.itemPriceWithOptions ?? i.item.price,
-            };
-            if (i.selectedOptions) {
-              const options = Object.values(i.selectedOptions).flat().map(choice => ({
-                groupName: '',
-                choiceName: choice.name,
-                priceModifier: choice.priceModifier,
-              }));
-              if (options.length > 0) {
-                orderItem.selectedOptions = options;
-              }
-            }
-            return orderItem;
-          }),
-          totalPrice: totalPrice(),
+          items: orderItems,
+          totalPrice: totalPrice() || 0,
           status: "new",
           orderType: "qr",
           createdAt: serverTimestamp(),
-        });
+        };
+
+        // Log the exact data being sent to Firestore for debugging
+        console.log('[CheckoutPage] Attempting to set order with data:', JSON.stringify(orderData, null, 2));
+
+        const newOrderRef = doc(collection(db, "orders"));
+        transaction.set(newOrderRef, orderData);
         return newOrderRef.id;
       });
 
@@ -76,6 +92,10 @@ export default function CheckoutPage() {
       navigate(`/order/${newOrderId}`);
     } catch (e: any) {
       console.error('Order confirmation failed:', e);
+      // Detailed error logging for undefined values
+      if (e.message && e.message.includes('undefined')) {
+         console.error('Undefined value detected in transaction payload. See previous logs for payload details.');
+      }
       setError('注文の作成に失敗しました。時間をおいて再度お試しください。');
     } finally {
       setIsSubmitting(false);
