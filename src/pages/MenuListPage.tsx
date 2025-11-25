@@ -1,41 +1,21 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions, Button, Box, CircularProgress, Alert } from "@mui/material";
-import { MenuItem, OptionGroup } from '../types';
+import { MenuItem } from '../types';
 import { useMenu } from '../hooks/useMenu';
+import { useOptionGroups } from '../hooks/useOptionGroups';
 import AddToCartModal from '../components/AddToCartModal';
 import CartSummary from '../components/CartSummary';
 
-// Dummy data - will be replaced with data fetching later
-const dummyOptionGroups: OptionGroup[] = [
-  {
-    id: '1',
-    storeId: 'dummy-store-id',
-    name: 'サイズ',
-    selectionType: 'single',
-    choices: [
-      { id: 's', name: 'S', priceModifier: 0 },
-      { id: 'm', name: 'M', priceModifier: 50 },
-      { id: 'l', name: 'L', priceModifier: 100 },
-    ],
-  },
-  {
-    id: '2',
-    storeId: 'dummy-store-id',
-    name: 'トッピング',
-    selectionType: 'multiple',
-    choices: [
-      { id: 'cheese', name: 'チーズ', priceModifier: 100 },
-      { id: 'bacon', name: 'ベーコン', priceModifier: 150 },
-    ],
-  },
-];
-
 export default function MenuListPage() {
   const { storeId } = useParams<{ storeId: string }>();
-  const { menus, loading, error } = useMenu(storeId);
+  const { menus, loading: menuLoading, error: menuError } = useMenu(storeId);
+  const { optionGroups, loading: optionsLoading, error: optionsError } = useOptionGroups(storeId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
+
+  const loading = menuLoading || optionsLoading;
+  const error = menuError || optionsError;
 
   const handleOpenModal = (item: MenuItem) => {
     setSelectedMenuItem(item);
@@ -120,7 +100,7 @@ export default function MenuListPage() {
         open={isModalOpen}
         onClose={handleCloseModal}
         menuItem={selectedMenuItem}
-        optionGroups={dummyOptionGroups.filter(
+        optionGroups={optionGroups.filter(
           (og) => selectedMenuItem?.optionGroupIds?.includes(og.id)
         )}
       />

@@ -36,30 +36,30 @@ export default function AdminLayout() {
             <Button color="inherit" component={Link} to="/admin/dashboard">
               ダッシュボード
             </Button>
-          <Button color="inherit" component={Link} to="/admin/menu">
-            メニュー管理
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/analytics">
-            売上分析
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/options">
-            オプション管理
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/settings/payment">
-            決済設定
-          </Button>
-          <Button color="inherit" component={Link} to="/admin/settings/qrcode">
-            QRコード設定
-          </Button>
-          <Button
-            color="inherit"
-            component={Link}
-            to="/menu"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            顧客画面を確認
-          </Button>
+            <Button color="inherit" component={Link} to="/admin/menu">
+              メニュー管理
+            </Button>
+            <Button color="inherit" component={Link} to="/admin/analytics">
+              売上分析
+            </Button>
+            <Button color="inherit" component={Link} to="/admin/options">
+              オプション管理
+            </Button>
+            <Button color="inherit" component={Link} to="/admin/settings/payment">
+              決済設定（未実装）
+            </Button>
+            <Button color="inherit" component={Link} to="/admin/settings/qrcode">
+              QRコード設定
+            </Button>
+            <Button
+              color="inherit"
+              component={Link}
+              to={`/menu/${user?.uid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              顧客画面を確認
+            </Button>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
             <IconButton

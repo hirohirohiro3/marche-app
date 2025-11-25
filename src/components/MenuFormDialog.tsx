@@ -54,10 +54,10 @@ export default function MenuFormDialog({
     mode: 'onChange', // enable validation on change
     defaultValues: {
       name: '',
-      price: 0,
+      price: '' as any,
       category: '',
       description: '',
-      sortOrder: 0,
+      sortOrder: '' as any,
       manageStock: false,
       stock: null,
       optionGroupIds: [],
@@ -81,10 +81,10 @@ export default function MenuFormDialog({
       } else {
         reset({
           name: '',
-          price: 0,
+          price: '' as any,
           category: '',
           description: '',
-          sortOrder: 0,
+          sortOrder: '' as any,
           manageStock: false,
           stock: null,
           optionGroupIds: [],

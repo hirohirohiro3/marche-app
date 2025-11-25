@@ -21,41 +21,20 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { useMenu, MenuFormValues } from "../../../hooks/useMenu";
-import { MenuItem, OptionGroup } from "../../../types";
+import { useOptionGroups } from "../../../hooks/useOptionGroups";
+import { MenuItem } from "../../../types";
 import MenuFormDialog from "../../../components/MenuFormDialog";
 
-// Dummy data for initial layout - to be replaced with a hook
-const dummyOptionGroups: OptionGroup[] = [
-  {
-    id: '1',
-    storeId: 'dummy-store-id',
-    name: 'サイズ',
-    selectionType: 'single',
-    choices: [
-      { id: 's', name: 'S', priceModifier: 0 },
-      { id: 'm', name: 'M', priceModifier: 50 },
-      { id: 'l', name: 'L', priceModifier: 100 },
-    ],
-  },
-  {
-    id: '2',
-    storeId: 'dummy-store-id',
-    name: 'トッピング',
-    selectionType: 'multiple',
-    choices: [
-      { id: 'cheese', name: 'チーズ', priceModifier: 100 },
-      { id: 'bacon', name: 'ベーコン', priceModifier: 150 },
-    ],
-  },
-];
-
 export default function MenuAdminPage() {
-  const { menus, loading, saveMenuItem, deleteMenuItem, toggleSoldOut } = useMenu();
+  const { menus, loading: menuLoading, saveMenuItem, deleteMenuItem, toggleSoldOut } = useMenu();
+  const { optionGroups, loading: optionsLoading } = useOptionGroups();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [deletingMenuItem, setDeletingMenuItem] = useState<MenuItem | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const loading = menuLoading || optionsLoading;
 
   const handleOpenForm = (menuItem: MenuItem | null) => {
     setEditingMenuItem(menuItem);
@@ -154,7 +133,7 @@ export default function MenuAdminPage() {
         onClose={handleCloseForm}
         onSubmit={handleFormSubmit}
         editingMenuItem={editingMenuItem}
-        optionGroups={dummyOptionGroups}
+        optionGroups={optionGroups}
         error={formError}
       />
 

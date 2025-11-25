@@ -92,6 +92,11 @@ export default function CheckoutPage() {
           return orderItem;
         });
 
+        // Fetch current event name
+        const storeRef = doc(db, 'stores', storeId);
+        const storeDoc = await transaction.get(storeRef);
+        const eventName = storeDoc.exists() ? storeDoc.data().currentEventName : null;
+
         const orderData = {
           orderNumber: newOrderNumber,
           storeId: storeId,
@@ -101,6 +106,7 @@ export default function CheckoutPage() {
           status: "new",
           orderType: "qr",
           createdAt: serverTimestamp(),
+          eventName: eventName,
         };
 
         // Log the exact data being sent to Firestore for debugging

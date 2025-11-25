@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
@@ -20,6 +20,10 @@ import {
   TableBody,
   ButtonGroup,
   Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   BarChart,
@@ -49,16 +53,15 @@ type TimeRange = 'today' | 'this_month' | 'all_time';
 
 export default function AnalyticsPage() {
   const { user, loading: authLoading } = useAuth();
-  const [summary, setSummary] = useState<SalesSummary | null>(null);
-  const [topProducts, setTopProducts] = useState<ProductSales[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('all_time');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string>('all');
 
   useEffect(() => {
     const fetchSalesData = async () => {
       if (!user) {
-        // ユーザーがまだ読み込まれていない、またはログインしていない
         setLoading(false);
         return;
       }
@@ -71,7 +74,7 @@ export default function AnalyticsPage() {
 
         let q = query(
           collection(db, 'orders'),
-          where('status', '==', 'completed'),
+          where('status', 'in', ['completed', 'archived']),
           where('storeId', '==', user.uid)
         );
 
@@ -84,35 +87,8 @@ export default function AnalyticsPage() {
         q = query(q, orderBy('createdAt', 'desc'));
 
         const querySnapshot = await getDocs(q);
-        const orders = querySnapshot.docs.map(doc => doc.data() as Order);
-
-        if (orders.length === 0) {
-          setSummary({ totalRevenue: 0, totalOrders: 0, averageOrderValue: 0, qrOrdersCount: 0, manualOrdersCount: 0 });
-          setTopProducts([]);
-          setLoading(false);
-          return;
-        }
-
-        const totalRevenue = orders.reduce((acc, order) => acc + order.totalPrice, 0);
-        const totalOrders = orders.length;
-        const averageOrderValue = totalRevenue / totalOrders;
-        const qrOrdersCount = orders.filter(o => o.orderType === 'qr').length;
-        const manualOrdersCount = orders.filter(o => o.orderType === 'manual').length;
-
-        const productCounts: { [key: string]: number } = {};
-        orders.forEach(order => {
-          order.items.forEach(item => {
-            productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity;
-          });
-        });
-
-        const sortedProducts = Object.entries(productCounts)
-          .map(([name, quantity]) => ({ name, quantity }))
-          .sort((a, b) => b.quantity - a.quantity)
-          .slice(0, 10); // Top 10 products
-
-        setSummary({ totalRevenue, totalOrders, averageOrderValue, qrOrdersCount, manualOrdersCount });
-        setTopProducts(sortedProducts);
+        const fetchedOrders = querySnapshot.docs.map(doc => doc.data() as Order);
+        setOrders(fetchedOrders);
       } catch (err) {
         console.error("Error fetching sales data: ", err);
         setError('売上データの取得に失敗しました。');
@@ -123,6 +99,53 @@ export default function AnalyticsPage() {
 
     fetchSalesData();
   }, [timeRange, user]);
+
+  // Filter orders based on selected event
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      if (selectedEvent === 'all') return true;
+      if (selectedEvent === 'none') return !order.eventName;
+      return order.eventName === selectedEvent;
+    });
+  }, [orders, selectedEvent]);
+
+  // Extract unique event names
+  const eventNames = useMemo(() => {
+    return Array.from(new Set(orders.map(o => o.eventName).filter(Boolean))) as string[];
+  }, [orders]);
+
+  // Calculate summary and top products using useMemo
+  const { summary, topProducts } = useMemo(() => {
+    if (filteredOrders.length === 0) {
+      return {
+        summary: { totalRevenue: 0, totalOrders: 0, averageOrderValue: 0, qrOrdersCount: 0, manualOrdersCount: 0 },
+        topProducts: []
+      };
+    }
+
+    const totalRevenue = filteredOrders.reduce((acc, order) => acc + order.totalPrice, 0);
+    const totalOrders = filteredOrders.length;
+    const averageOrderValue = totalRevenue / totalOrders;
+    const qrOrdersCount = filteredOrders.filter(o => o.orderType === 'qr').length;
+    const manualOrdersCount = filteredOrders.filter(o => o.orderType === 'manual').length;
+
+    const productCounts: { [key: string]: number } = {};
+    filteredOrders.forEach(order => {
+      order.items.forEach(item => {
+        productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity;
+      });
+    });
+
+    const sortedProducts = Object.entries(productCounts)
+      .map(([name, quantity]) => ({ name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
+
+    return {
+      summary: { totalRevenue, totalOrders, averageOrderValue, qrOrdersCount, manualOrdersCount },
+      topProducts: sortedProducts
+    };
+  }, [filteredOrders]);
 
   if (loading || authLoading) {
     return (
@@ -142,11 +165,28 @@ export default function AnalyticsPage() {
         <Typography variant="h4" component="h1" gutterBottom>
           売上分析
         </Typography>
-        <ButtonGroup variant="outlined" aria-label="time range button group">
-          <Button onClick={() => setTimeRange('today')} variant={timeRange === 'today' ? 'contained' : 'outlined'}>今日</Button>
-          <Button onClick={() => setTimeRange('this_month')} variant={timeRange === 'this_month' ? 'contained' : 'outlined'}>今月</Button>
-          <Button onClick={() => setTimeRange('all_time')} variant={timeRange === 'all_time' ? 'contained' : 'outlined'}>全期間</Button>
-        </ButtonGroup>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel id="event-select-label">イベント</InputLabel>
+            <Select
+              labelId="event-select-label"
+              value={selectedEvent}
+              label="イベント"
+              onChange={(e) => setSelectedEvent(e.target.value)}
+            >
+              <MenuItem value="all">全てのイベント</MenuItem>
+              <MenuItem value="none">イベントなし</MenuItem>
+              {eventNames.map(name => (
+                <MenuItem key={name} value={name}>{name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <ButtonGroup variant="outlined" aria-label="time range button group">
+            <Button onClick={() => setTimeRange('today')} variant={timeRange === 'today' ? 'contained' : 'outlined'}>今日</Button>
+            <Button onClick={() => setTimeRange('this_month')} variant={timeRange === 'this_month' ? 'contained' : 'outlined'}>今月</Button>
+            <Button onClick={() => setTimeRange('all_time')} variant={timeRange === 'all_time' ? 'contained' : 'outlined'}>全期間</Button>
+          </ButtonGroup>
+        </Box>
       </Box>
 
       {summary && (
