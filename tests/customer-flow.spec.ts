@@ -60,6 +60,9 @@ test('Customer Order Flow', async ({ page }) => {
   await expect(page).toHaveURL(/.*\/checkout\/.+/);
   await expect(page.getByTestId('checkout-container')).toBeVisible();
 
+  // Verify CartSummary is NOT visible on checkout page
+  await expect(page.getByTestId('cart-summary')).not.toBeVisible();
+
   await page.getByTestId('confirm-order-button').click();
 
   // 9. Verify the order summary page.

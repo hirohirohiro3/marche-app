@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Container, Typography, Box } from "@mui/material";
 import theme from '../theme';
@@ -6,6 +6,7 @@ import CartSummary from "../components/CartSummary";
 import Footer from '../components/Footer';
 
 export default function RootLayout() {
+  const location = useLocation();
   // Check if the essential Firebase config is missing.
   // Vite exposes env variables under `import.meta.env`.
   const isFirebaseConfigMissing = !import.meta.env.VITE_API_KEY;
@@ -35,7 +36,7 @@ export default function RootLayout() {
         </Box>
         <Footer />
       </Box>
-      <CartSummary />
+      {location.pathname.startsWith('/menu/') && <CartSummary />}
     </ThemeProvider>
   );
 }

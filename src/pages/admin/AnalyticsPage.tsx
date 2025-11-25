@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useMemo } from 'react';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -35,19 +34,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-
-interface SalesSummary {
-  totalRevenue: number;
-  totalOrders: number;
-  averageOrderValue: number;
-  qrOrdersCount: number;
-  manualOrdersCount: number;
-}
-
-interface ProductSales {
-  name: string;
-  quantity: number;
-}
 
 type TimeRange = 'today' | 'this_month' | 'all_time';
 
