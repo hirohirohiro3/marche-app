@@ -11,6 +11,10 @@ vi.mock('../hooks/useAuth', () => ({
   useAuth: () => ({ user: { uid: 'test-user' } }),
 }));
 
+vi.mock('../hooks/useOptionGroups', () => ({
+  useOptionGroups: () => ({ optionGroups: [] }),
+}));
+
 const mockMenuItems: MenuItem[] = [
   { id: '1', name: 'Coffee', price: 500, category: 'Drinks', description: 'Hot coffee', imageUrl: '', isSoldOut: false, sortOrder: 1, storeId: 'test', manageStock: false },
   { id: '2', name: 'Tea', price: 450, category: 'Drinks', description: 'Hot tea', imageUrl: '', isSoldOut: false, sortOrder: 2, storeId: 'test', manageStock: false },
@@ -19,7 +23,7 @@ const mockMenuItems: MenuItem[] = [
 describe('ManualOrderModal', () => {
   it('should render menu items and add to cart on click', async () => {
     const user = userEvent.setup();
-    render(<ManualOrderModal open={true} onClose={() => {}} menuItems={mockMenuItems} />);
+    render(<ManualOrderModal open={true} onClose={() => { }} menuItems={mockMenuItems} />);
 
     // Check if modal title and menu items are rendered
     expect(screen.getByText('手動注文 (POS)')).toBeInTheDocument();
@@ -46,7 +50,7 @@ describe('ManualOrderModal', () => {
 
   it('should remove items from cart correctly', async () => {
     const user = userEvent.setup();
-    render(<ManualOrderModal open={true} onClose={() => {}} menuItems={mockMenuItems} />);
+    render(<ManualOrderModal open={true} onClose={() => { }} menuItems={mockMenuItems} />);
 
     const coffeeButton = screen.getByText('Coffee');
     await user.click(coffeeButton); // quantity: 1
