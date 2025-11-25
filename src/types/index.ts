@@ -50,4 +50,5 @@ export type Order = {
   createdAt: { seconds: number; nanoseconds: number };
   paidAt?: { seconds: number; nanoseconds: number };
   uid: string;
+  eventName?: string;
 };
