@@ -1,11 +1,22 @@
 import { test, expect } from '@playwright/test';
+import { auth } from './test-utils';
 
 test('Customer Order Flow', async ({ page }) => {
+  // 0. Get the store ID (UID) for the test user
+  let storeId = 'gOCluucPI5hzje5lVgLXj7BJQAu1'; // Fallback
+  try {
+    const userRecord = await auth.getUserByEmail('test.test@test.test');
+    storeId = userRecord.uid;
+  } catch (e) {
+    console.warn('Could not fetch test user UID, using default.');
+  }
+
   // 1. Navigate to the menu page
-  await page.goto('/menu');
+  await page.goto(`/menu/${storeId}`);
 
   // 2. Define locators for both the main content and the potential error message.
-  const menuContainer = page.locator('main');
+  // The menu page uses a Container, not a main tag. We look for the "メニュー" heading.
+  const menuContainer = page.getByRole('heading', { name: 'メニュー' });
   const missingConfigError = page.getByText('Firebase configuration is missing.');
 
   // 3. Wait for either the main content OR the error message to become visible.
@@ -32,6 +43,12 @@ test('Customer Order Flow', async ({ page }) => {
   await expect(firstButton).toBeVisible();
   await firstButton.click();
 
+  // Handle AddToCartModal
+  const addToCartButtonInModal = page.getByRole('button', { name: 'カートに入れる' });
+  await expect(addToCartButtonInModal).toBeVisible();
+  await addToCartButtonInModal.click();
+  await expect(addToCartButtonInModal).not.toBeVisible();
+
   // 7. Verify cart summary and proceed to checkout.
   const cartSummary = page.getByTestId('cart-summary');
   await expect(cartSummary).toBeVisible();
@@ -40,7 +57,7 @@ test('Customer Order Flow', async ({ page }) => {
   await page.getByTestId('checkout-button').click();
 
   // 8. Confirm the order on the checkout page.
-  await expect(page).toHaveURL('/checkout');
+  await expect(page).toHaveURL(/.*\/checkout\/.+/);
   await expect(page.getByTestId('checkout-container')).toBeVisible();
 
   await page.getByTestId('confirm-order-button').click();

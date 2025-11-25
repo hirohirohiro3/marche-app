@@ -123,6 +123,7 @@ export default function DashboardPage() {
       setIsConfirmOpen(false);
     } catch (error) {
       console.error("Error ending event:", error);
+      alert('イベントの終了に失敗しました。もう一度お試しください。');
     }
   };
 

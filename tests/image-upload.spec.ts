@@ -38,7 +38,9 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     const dialog = page.getByRole('dialog');
 
     // Check that the cropper component is there
-    const imageSelectButton = dialog.getByRole('button', { name: '画像を選択' });
+    // The button is implemented as a label with a hidden input, which can cause strict mode violations
+    // if not targeted carefully. We target the label that acts as the button.
+    const imageSelectButton = dialog.locator('label[role="button"]').filter({ hasText: '画像を選択' });
     await expect(imageSelectButton).toBeVisible();
 
     // Use setInputFiles for robustness, bypassing the file chooser dialog.
@@ -57,9 +59,10 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     await expect(dialog.getByAltText('Final preview')).toBeVisible();
 
     // Fill in other required fields
-    await dialog.fill('input[name="name"]', 'テスト商品');
-    await dialog.fill('input[name="price"]', '100');
-    await dialog.fill('input[name="category"]', 'テスト');
+    // Fill in other required fields
+    await dialog.locator('input[name="name"]').fill('テスト商品');
+    await dialog.locator('input[name="price"]').fill('100');
+    await dialog.locator('input[name="category"]').fill('テスト');
 
     // Save
     await dialog.getByRole('button', { name: '保存' }).click();
@@ -78,7 +81,7 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     // Now, wait for the page-specific content to load by checking for the page title
     await expect(page.getByRole('heading', { name: 'QRコード設定' })).toBeVisible();
 
-    const imageSelectButton = page.getByRole('button', { name: '画像を選択' });
+    const imageSelectButton = page.locator('label[role="button"]').filter({ hasText: '画像を選択' });
     await expect(imageSelectButton).toBeVisible();
 
     // Use setInputFiles for robustness, bypassing the file chooser dialog.
@@ -91,8 +94,9 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
 
     // The final preview inside the dummy QR code should be visible.
     // The QR code component might render as a canvas or SVG.
-    // Let's check for the container holding our preview image.
-    const qrPreviewImage = page.locator('div[role="img"] image'); // A bit fragile, but works for qrcode.react's SVG output
+    // The final preview inside the dummy QR code should be visible.
+    // The QR code component renders as an SVG.
+    const qrPreviewImage = page.locator('svg image');
     await expect(qrPreviewImage).toBeVisible();
     await expect(qrPreviewImage).toHaveAttribute('href', /blob:/);
 

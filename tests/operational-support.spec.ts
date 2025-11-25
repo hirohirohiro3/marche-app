@@ -109,6 +109,9 @@ test.describe('Operational Support Features', () => {
     // Wait for the paid column to clear, ensuring the order moved to "completed"
     await expect(paidColumn.locator('[data-testid^="order-card-"]')).toHaveCount(0, { timeout: 15000 });
 
+    // Hard wait to ensure Firestore transaction propagates
+    await page.waitForTimeout(5000);
+
     // 3. Start a new event to verify reset
     await page.getByTestId('start-event-button').click();
     await page.getByLabel('イベント名').fill('Next Event');

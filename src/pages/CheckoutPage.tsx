@@ -45,12 +45,19 @@ export default function CheckoutPage() {
     setError(null);
     try {
       console.log('[CheckoutPage] Starting handleConfirmOrder...');
+      console.log('[CheckoutPage] storeId:', storeId);
+      console.log('[CheckoutPage] items:', items);
       if (!storeId) {
         throw new Error('storeId is missing from URL parameters.');
       }
       const settingsRef = doc(db, "system_settings", "orderNumbers");
 
       const newOrderId = await runTransaction(db, async (transaction) => {
+        // Fetch current event name (Read first)
+        const storeRef = doc(db, 'stores', storeId);
+        const storeDoc = await transaction.get(storeRef);
+        const eventName = storeDoc.exists() ? (storeDoc.data().currentEventName || null) : null;
+
         const settingsDoc = await transaction.get(settingsRef);
         let newOrderNumber: number;
         if (settingsDoc.exists()) {
@@ -92,11 +99,6 @@ export default function CheckoutPage() {
           return orderItem;
         });
 
-        // Fetch current event name
-        const storeRef = doc(db, 'stores', storeId);
-        const storeDoc = await transaction.get(storeRef);
-        const eventName = storeDoc.exists() ? storeDoc.data().currentEventName : null;
-
         const orderData = {
           orderNumber: newOrderNumber,
           storeId: storeId,
@@ -108,9 +110,6 @@ export default function CheckoutPage() {
           createdAt: serverTimestamp(),
           eventName: eventName,
         };
-
-        // Log the exact data being sent to Firestore for debugging
-        console.log('[CheckoutPage] Attempting to set order with data:', JSON.stringify(orderData, null, 2));
 
         const newOrderRef = doc(collection(db, "orders"));
         transaction.set(newOrderRef, orderData);
@@ -129,7 +128,7 @@ export default function CheckoutPage() {
       if (e.message && e.message.includes('undefined')) {
         console.error('Undefined value detected in transaction payload. See previous logs for payload details.');
       }
-      setError('注文の作成に失敗しました。時間をおいて再度お試しください。');
+      setError(`注文の作成に失敗しました: ${e.message}`);
     } finally {
       setIsSubmitting(false);
     }

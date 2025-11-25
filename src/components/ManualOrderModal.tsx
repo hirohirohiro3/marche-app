@@ -138,7 +138,6 @@ export default function ManualOrderModal({
     setIsLoading(true);
 
     try {
-      console.log("[ManualOrderModal] Starting handleCreateOrder...");
       await runTransaction(db, async (transaction) => {
         // 1. Perform ALL reads first
         const settingsRef = doc(db, 'system_settings', 'orderNumbers');

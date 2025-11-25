@@ -100,7 +100,6 @@ export const useOrders = (storeId: string | undefined) => {
 
   const handleEndOfDay = useCallback(async () => {
     if (!storeId) return;
-    console.log("[useOrders] Starting handleEndOfDay...");
     try {
       const activeOrdersQuery = query(
         collection(db, 'orders'),
@@ -116,15 +115,16 @@ export const useOrders = (storeId: string | undefined) => {
           transaction.update(orderDoc.ref, { status: 'archived' });
         });
 
-        // Reset order numbers. Use set with merge option to create if not exists.
+        // Reset order numbers. Overwrite to ensure clean state.
         transaction.set(settingsRef, {
           nextQrOrderNumber: 101,
           nextManualOrderNumber: 1,
-        }, { merge: true });
+        });
       });
       console.log('End of day process completed successfully.');
     } catch (error) {
       console.error('Failed to process end of day:', error);
+      throw error;
     }
   }, [storeId]);
 

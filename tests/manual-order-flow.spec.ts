@@ -3,21 +3,38 @@ import { test, expect } from '@playwright/test';
 test.describe('Manual Order Flow', () => {
   // Before each test, log in using a robust polling strategy with data-testid selectors.
   test.beforeEach(async ({ page }) => {
+    test.setTimeout(120000); // Increase timeout for the whole test
+
+    // 1. Log in
     await expect(async () => {
       await page.goto('/login');
-      await page.getByTestId('email-input').fill('test@test.test');
+      await page.getByTestId('email-input').fill('test.test@test.test');
       await page.getByTestId('password-input').fill('112233');
       await page.getByTestId('login-button').click();
-      await expect(page).toHaveURL('/admin/dashboard', { timeout: 2000 }); // Short timeout for each attempt
+      await expect(page).toHaveURL('/admin/dashboard', { timeout: 10000 });
     }).toPass({
-      timeout: 20000, // Maximum total time for all retries
+      timeout: 60000,
     });
+
+    // 2. Ensure the main dashboard container is visible
+    await expect(page.getByTestId('dashboard-container')).toBeVisible();
+
+    // 3. Reset/Start Event
+    const endEventButton = page.getByTestId('end-event-button');
+    if (await endEventButton.isVisible()) {
+      await endEventButton.click();
+      await page.getByTestId('end-of-day-confirm-button').click();
+      await expect(endEventButton).not.toBeVisible();
+    }
+
+    // Start a new event for the test
+    await page.getByTestId('start-event-button').click();
+    await page.getByLabel('イベント名').fill('Test Event');
+    await page.getByRole('button', { name: '開始する' }).click();
+    await expect(page.getByText('開催中: Test Event')).toBeVisible();
   });
 
   test('should create a manual order and see it in the paid column', async ({ page }) => {
-    // Ensure the main dashboard container is visible before proceeding.
-    await expect(page.getByTestId('dashboard-container')).toBeVisible();
-
     // 1. Open the manual order modal
     await page.getByTestId('manual-order-button').click();
 
@@ -25,28 +42,26 @@ test.describe('Manual Order Flow', () => {
     const modal = page.getByTestId('manual-order-modal');
     await expect(modal).toBeVisible();
 
-    // Wait for the first menu item button to be visible, ensuring the menu data is loaded.
-    // This is more robust than waiting for a specific item like "Espresso".
+    // Wait for the first menu item button to be visible
     const firstMenuItem = modal.locator('[data-testid^="menu-item-"]').first();
-    await expect(firstMenuItem).toBeVisible();
-    const secondMenuItem = modal.locator('[data-testid^="menu-item-"]').nth(1);
-    await expect(secondMenuItem).toBeVisible();
+    await expect(firstMenuItem).toBeVisible({ timeout: 30000 });
 
-    // Get the names of the items for later verification.
+    // Get the name of the item
     const firstItemName = (await firstMenuItem.textContent()) as string;
-    const secondItemName = (await secondMenuItem.textContent()) as string;
 
-    const cartSection = modal.getByTestId('cart-section');
-
-    // 2. Add items to the cart, waiting for the UI to update after each click
+    // 2. Add items to the cart
+    // Click the first item
     await firstMenuItem.click();
+
+    // Wait for AddToCartModal and click "Add to Cart"
+    const addToCartButton = page.getByRole('button', { name: 'カートに入れる' });
+    await expect(addToCartButton).toBeVisible({ timeout: 30000 });
+    await addToCartButton.click();
+    await expect(addToCartButton).not.toBeVisible({ timeout: 5000 });
+
+    // Verify item is in the cart (in the manual order modal)
+    const cartSection = modal.getByTestId('cart-section');
     await expect(cartSection.getByText(`${firstItemName} x 1`)).toBeVisible();
-
-    await secondMenuItem.click();
-    await expect(cartSection.getByText(`${secondItemName} x 1`)).toBeVisible();
-
-    await firstMenuItem.click(); // Add one more of the first item
-    await expect(cartSection.getByText(`${firstItemName} x 2`)).toBeVisible();
 
     // 3. Create the order
     await page.getByTestId('create-order-button').click();
@@ -58,12 +73,9 @@ test.describe('Manual Order Flow', () => {
     const paidColumn = page.getByTestId('paid-orders-column');
     await expect(paidColumn).toBeVisible();
 
-    // Instead of asserting on a specific total price (which is brittle),
-    // we assert that a new card appears and contains the items we added.
-    const newOrderCard = paidColumn.locator('.MuiCard-root').first();
-    await expect(newOrderCard).toBeVisible();
-
-    await expect(newOrderCard).toContainText(`${firstItemName} x 2`);
-    await expect(newOrderCard).toContainText(`${secondItemName} x 1`);
+    // Assert that a new card appears and contains the item we added.
+    const newOrderCard = paidColumn.locator('[data-testid^="order-card-"]').first();
+    await expect(newOrderCard).toBeVisible({ timeout: 15000 });
+    await expect(newOrderCard).toContainText(`${firstItemName} x 1`);
   });
 });

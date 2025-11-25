@@ -19,6 +19,7 @@ export default function QrCodeSettingsPage() {
   const { settings, loading: hookLoading, saveQrCodeSettings } = useQrCodeSettings();
   const [pageError, setPageError] = useState<string | null>(null);
   const [pageSuccess, setPageSuccess] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const {
     control,
@@ -38,6 +39,17 @@ export default function QrCodeSettingsPage() {
   });
 
   const watchColor = watch('color');
+  const watchLogoFile = watch('logoFile');
+
+  useEffect(() => {
+    if (watchLogoFile) {
+      const url = URL.createObjectURL(watchLogoFile);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [watchLogoFile]);
 
   useEffect(() => {
     if (settings) {
@@ -98,8 +110,8 @@ export default function QrCodeSettingsPage() {
                   size={256}
                   fgColor={watchColor}
                   level="H"
-                  imageSettings={settings?.logoUrl ? {
-                    src: settings.logoUrl,
+                  imageSettings={(previewUrl || settings?.logoUrl) ? {
+                    src: previewUrl || settings?.logoUrl || '',
                     x: undefined,
                     y: undefined,
                     height: 80,

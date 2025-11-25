@@ -5,7 +5,7 @@ import { MenuItem } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import { useOptionGroups } from '../hooks/useOptionGroups';
 import AddToCartModal from '../components/AddToCartModal';
-import CartSummary from '../components/CartSummary';
+
 
 export default function MenuListPage() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -104,7 +104,6 @@ export default function MenuListPage() {
           (og) => selectedMenuItem?.optionGroupIds?.includes(og.id)
         )}
       />
-      <CartSummary />
     </Box>
   );
 }
