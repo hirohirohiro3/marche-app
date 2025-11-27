@@ -4,102 +4,133 @@ import Stripe from "stripe";
 
 const db = admin.firestore();
 
-export const createPaymentIntent = functions.https.onCall(
-  async (data: { orderId: string }, context: functions.https.CallableContext) => {
-    // Stripe initialization is moved inside the function handler.
-    // This ensures that environment variables are loaded before the Stripe SDK is initialized.
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new functions.https.HttpsError(
-        "internal",
-        "STRIPE_SECRET_KEY environment variable is not set."
-      );
-    }
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-10-29.clover",
-    });
-
-    // 1. Check for authentication
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "The function must be called while authenticated."
-      );
-    }
-
-    const { orderId } = data;
-    if (!orderId) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        'The function must be called with an "orderId".'
-      );
-    }
-
+// Explicitly set region to asia-northeast1 to match Firestore
+export const createPaymentIntent = functions.region('asia-northeast1').https.onCall(
+  async (data, context) => {
     try {
-      // 2. Get order details from Firestore
+      // Check for authentication
+      if (!context.auth) {
+        functions.logger.warn("Unauthenticated call to createPaymentIntent");
+        throw new functions.https.HttpsError(
+          'unauthenticated',
+          'The function must be called while authenticated.'
+        );
+      }
+
+      const { orderId } = data;
+
+      functions.logger.info("Processing createPaymentIntent", { orderId, uid: context.auth.uid });
+
+      if (!orderId) {
+        functions.logger.error("Missing orderId");
+        throw new functions.https.HttpsError(
+          'invalid-argument',
+          'The function must be called with an "orderId".'
+        );
+      }
+
+      // Stripe initialization
+      const stripeKey = functions.config().stripe?.secret_key || process.env.STRIPE_SECRET_KEY;
+      functions.logger.info("Stripe Key configured:", { configured: !!stripeKey });
+
+      if (!stripeKey) {
+        functions.logger.error("Stripe secret key missing");
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'Stripe secret key is not configured.'
+        );
+      }
+
+      const stripe = new Stripe(stripeKey, {});
+
+      // Get order details from Firestore
       const orderRef = db.collection("orders").doc(orderId);
       const orderDoc = await orderRef.get();
 
       if (!orderDoc.exists) {
-        throw new functions.https.HttpsError("not-found", "Order not found.");
+        functions.logger.error("Order not found", { orderId });
+        throw new functions.https.HttpsError(
+          'not-found',
+          'Order not found.'
+        );
       }
 
       const orderData = orderDoc.data();
       if (!orderData) {
+        functions.logger.error("Order data missing", { orderId });
         throw new functions.https.HttpsError(
-          "internal",
-          "Order data is missing."
+          'internal',
+          'Order data is missing.'
         );
       }
       const totalPrice = orderData.totalPrice;
 
-      // 3. Get the store's Stripe Account ID
+      // Get the store's Stripe Account ID
       const storeId = orderData.storeId;
+      functions.logger.info("Store ID retrieved", { storeId });
+
       if (!storeId) {
+        functions.logger.error("Store ID missing in order", { orderId });
         throw new functions.https.HttpsError(
-          "failed-precondition",
-          "The order is not associated with a store."
+          'failed-precondition',
+          'The order is not associated with a store.'
         );
       }
+
       const storeRef = db.collection("stores").doc(storeId);
       const storeDoc = await storeRef.get();
       const stripeAccountId = storeDoc.data()?.stripeAccountId;
+      functions.logger.info("Stripe Account ID retrieved", { stripeAccountId });
 
       if (!stripeAccountId) {
+        functions.logger.error("Stripe Account ID missing for store", { storeId });
         throw new functions.https.HttpsError(
-          "failed-precondition",
-          "The store is not connected to Stripe."
+          'failed-precondition',
+          'The store is not connected to Stripe.'
         );
       }
 
-      // 4. Create a Payment Intent with Stripe
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: totalPrice,
-        currency: "jpy",
-        automatic_payment_methods: {
-          enabled: true,
-        },
-        application_fee_amount: Math.round(totalPrice * 0.05),
-        transfer_data: {
-          destination: stripeAccountId,
-        },
-        metadata: {
-          orderId: orderId,
-        },
-      });
+      // Create a Payment Intent with Stripe
+      try {
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: totalPrice,
+          currency: "jpy",
+          automatic_payment_methods: {
+            enabled: true,
+          },
+          application_fee_amount: Math.round(totalPrice * 0.05),
+          transfer_data: {
+            destination: stripeAccountId,
+          },
+          metadata: {
+            orderId: orderId,
+          },
+        });
 
-      // 5. Return the client secret to the client
-      return {
-        clientSecret: paymentIntent.client_secret,
-      };
-    } catch (error) {
-      console.error("Error creating Payment Intent:", error);
-      if (error instanceof functions.https.HttpsError) {
-        throw error;
+        functions.logger.info("Payment Intent created successfully", { paymentIntentId: paymentIntent.id });
+
+        // Return the client secret to the client
+        return {
+          clientSecret: paymentIntent.client_secret,
+        };
+      } catch (stripeError: any) {
+        functions.logger.error("Stripe API Error", { error: stripeError });
+        // Return error details to client for debugging
+        return {
+          error: stripeError.message || "Stripe API Error",
+          details: stripeError,
+          step: "stripe.paymentIntents.create"
+        };
       }
-      throw new functions.https.HttpsError(
-        "internal",
-        "Unable to create payment intent."
-      );
+    } catch (error: any) {
+      functions.logger.error("Error creating Payment Intent", { error });
+
+      // Return error details to client for debugging
+      return {
+        error: error.message || "Unknown error",
+        details: error,
+        step: "createPaymentIntent execution"
+      };
     }
   }
 );

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStripe } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import {
   Container,
   Typography,
@@ -8,7 +10,9 @@ import {
   Paper,
 } from '@mui/material';
 
-export default function PaymentCompletePage() {
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+
+function PaymentCompleteContent() {
   const stripe = useStripe();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState<string | null>(null);
@@ -65,5 +69,25 @@ export default function PaymentCompletePage() {
       )}
       {status === 'error' && <Alert severity="error">{message}</Alert>}
     </Container>
+  );
+}
+
+export default function PaymentCompletePage() {
+  const clientSecret = new URLSearchParams(window.location.search).get(
+    'payment_intent_client_secret'
+  );
+
+  if (!clientSecret) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4 }}>
+        <Alert severity="error">決済情報が見つかりません。</Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <Elements stripe={stripePromise} options={{ clientSecret }}>
+      <PaymentCompleteContent />
+    </Elements>
   );
 }

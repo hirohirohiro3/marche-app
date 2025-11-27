@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Container, Typography, Paper, CircularProgress, Alert } from '@mui/material';
-import { doc, onSnapshot } from "firebase/firestore";
+import { Container, Typography, Paper, CircularProgress, Alert, Button, Box } from '@mui/material';
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 // A simplified order type for this page
@@ -10,6 +10,7 @@ type Order = {
   totalPrice: number;
   status: 'new' | 'paid' | 'completed' | 'cancelled';
   items: { name: string; quantity: number }[];
+  storeId?: string;
 };
 
 export default function OrderSummaryPage() {
@@ -17,6 +18,8 @@ export default function OrderSummaryPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cash_only' | 'cash_and_online' | 'online_only'>('cash_only');
+  const [storeId, setStoreId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orderId) {
@@ -29,7 +32,11 @@ export default function OrderSummaryPage() {
     const unsubscribe = onSnapshot(docRef,
       (docSnap) => {
         if (docSnap.exists()) {
-          setOrder(docSnap.data() as Order);
+          const data = docSnap.data() as Order;
+          setOrder(data);
+          if (data.storeId) {
+            setStoreId(data.storeId);
+          }
         } else {
           setError("注文が見つかりません。");
         }
@@ -44,6 +51,25 @@ export default function OrderSummaryPage() {
 
     return () => unsubscribe();
   }, [orderId]);
+
+  useEffect(() => {
+    const fetchStoreSettings = async () => {
+      if (!storeId) return;
+      try {
+        const storeRef = doc(db, 'stores', storeId);
+        const storeDoc = await getDoc(storeRef);
+        if (storeDoc.exists()) {
+          const data = storeDoc.data();
+          if (data.paymentMethod) {
+            setPaymentMethod(data.paymentMethod as any);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching store settings:", err);
+      }
+    };
+    fetchStoreSettings();
+  }, [storeId]);
 
   if (loading) {
     return <Container sx={{ py: 4, textAlign: 'center' }}><CircularProgress /></Container>;
@@ -75,6 +101,7 @@ export default function OrderSummaryPage() {
   };
 
   const { title, message } = renderContentByStatus();
+  const showOnlinePayment = order?.status === 'new' && (paymentMethod === 'online_only' || paymentMethod === 'cash_and_online');
 
   return (
     <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
@@ -92,11 +119,30 @@ export default function OrderSummaryPage() {
           {order?.orderNumber}
         </Typography>
         {order?.status === 'new' && (
-           <Typography variant="h6">
+          <Typography variant="h6">
             合計金額: ¥{order?.totalPrice.toLocaleString()}
           </Typography>
         )}
       </Paper>
+
+      {showOnlinePayment && (
+        <Box sx={{ mt: 4 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            href={`/payment/${orderId}`}
+          >
+            オンラインで支払う
+          </Button>
+          {paymentMethod === 'cash_and_online' && (
+            <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+              または、レジで現金でお支払いください。
+            </Typography>
+          )}
+        </Box>
+      )}
     </Container>
   );
 }

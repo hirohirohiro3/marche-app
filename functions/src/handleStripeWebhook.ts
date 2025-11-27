@@ -8,25 +8,27 @@ const db = admin.firestore();
 export const handleStripeWebhook = functions.https.onRequest(
   async (req: Request, res: Response) => {
     // Stripe initialization is moved inside the function handler.
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.error("STRIPE_SECRET_KEY environment variable is not set.");
+    // Stripe initialization is moved inside the function handler.
+    const stripeKey = functions.config().stripe?.secret_key || process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      console.error("Stripe secret key is not configured.");
       res.status(500).send("Internal Server Error: Stripe secret key not configured.");
       return;
     }
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-10-29.clover",
+    const stripe = new Stripe(stripeKey, {
+      // apiVersion: "2025-10-29.clover", // Removed invalid version
     });
 
     const sig = req.headers["stripe-signature"] as string;
 
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      console.error("STRIPE_WEBHOOK_SECRET environment variable is not set.");
+    const endpointSecret = functions.config().stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET;
+    if (!endpointSecret) {
+      console.error("Stripe webhook secret is not configured.");
       res
         .status(500)
         .send("Internal Server Error: Stripe webhook secret not configured.");
       return;
     }
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     let event: Stripe.Event;
 

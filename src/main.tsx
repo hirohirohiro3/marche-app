@@ -69,7 +69,8 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
+  // Temporarily disabled StrictMode for Stripe compatibility testing
+  // <StrictMode>
+  <RouterProvider router={router} />
+  // </StrictMode>
 );
