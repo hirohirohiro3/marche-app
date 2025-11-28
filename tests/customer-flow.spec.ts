@@ -74,4 +74,22 @@ test('Customer Order Flow', async ({ page }) => {
 
   // Check for the "注文番号" text, indicating success.
   await expect(page.getByText(/注文番号/)).toBeVisible();
+
+  // 10. Verify Payment Method Selection UI
+  // Check for the new subtext
+  await expect(page.getByText('現金、PayPayでのお支払いはこちら')).toBeVisible();
+
+  // Check for total price visibility (rough check for presence)
+  await expect(page.getByText('お支払い金額')).toBeVisible();
+
+  // 11. Select "Pay in Person"
+  await page.getByText('対面で支払う').click();
+
+  // 12. Verify Payment Complete Page
+  await expect(page).toHaveURL(/\/payment-complete\?orderId=.+&method=in_person/);
+  await expect(page.getByText('ご注文ありがとうございます！')).toBeVisible();
+
+  // Verify order number is displayed on completion page
+  // Use exact match to avoid matching instruction text containing "注文番号"
+  await expect(page.getByText('注文番号', { exact: true })).toBeVisible({ timeout: 10000 });
 });

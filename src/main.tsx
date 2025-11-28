@@ -1,5 +1,5 @@
 console.log("JULES_BUILD_V6_ROBUST_ORDERING_LOGS");
-import { StrictMode, useEffect } from 'react';
+import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, useNavigate, Navigate } from 'react-router-dom';
 import './index.css';
@@ -22,6 +22,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import SignupPage from './pages/SignupPage';
 import PaymentPage from './pages/PaymentPage';
 import PaymentCompletePage from './pages/PaymentCompletePage';
+import BusinessPage from './pages/BusinessPage';
 
 // A component to handle the root redirect using useEffect for robustness in tests.
 function RedirectToIndex() {
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
       { path: 'payment-complete', element: <PaymentCompletePage /> },
       { path: 'terms', element: <TermsPage /> },
       { path: 'privacy', element: <PrivacyPage /> },
+      { path: 'about', element: <BusinessPage /> },
     ],
   },
   {

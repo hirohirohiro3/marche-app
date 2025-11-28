@@ -116,11 +116,14 @@ export default function CheckoutPage() {
         return newOrderRef.id;
       });
 
+      console.log('[CheckoutPage] Order created successfully. New Order ID:', newOrderId);
+
       // Persist a customer UID for future orders
       if (!localStorage.getItem('customerUid')) {
         localStorage.setItem('customerUid', uid(16));
       }
       clearCart();
+      console.log('[CheckoutPage] Navigating to:', `/order/${newOrderId}`);
       navigate(`/order/${newOrderId}`);
     } catch (e: any) {
       console.error('Order confirmation failed:', e);

@@ -6,7 +6,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { Button, CircularProgress, Alert } from '@mui/material';
 
-export default function CheckoutForm() {
+export default function CheckoutForm({ orderId }: { orderId: string }) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -28,7 +28,7 @@ export default function CheckoutForm() {
       elements,
       confirmParams: {
         // Make sure to change this to your payment completion page
-        return_url: `${window.location.origin}/payment-complete`,
+        return_url: `${window.location.origin}/payment-complete?orderId=${orderId}`,
       },
     });
 

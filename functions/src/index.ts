@@ -22,3 +22,4 @@ admin.initializeApp();
 export { createPaymentIntent } from "./createPaymentIntent";
 export { handleStripeWebhook } from "./handleStripeWebhook";
 export { createStripeAccountLink } from "./createStripeAccountLink";
+export { sendReceipt } from "./sendReceipt";

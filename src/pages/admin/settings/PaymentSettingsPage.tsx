@@ -1,23 +1,47 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../firebase';
 import { useAuth } from '../../../hooks/useAuth';
+import { doc, getDoc, updateDoc, deleteField } from 'firebase/firestore';
+import { db } from '../../../firebase';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import {
-  Button,
   Container,
   Typography,
-  Box,
   Paper,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
+  Box,
+  Button,
   FormControl,
-  FormLabel,
+  FormControlLabel,
+  RadioGroup,
+  Radio,
   CircularProgress,
   Alert,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  Stack,
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Switch,
+  Grid,
+  Stepper,
+  Step,
+  StepLabel
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import SmartphoneIcon from '@mui/icons-material/Smartphone';
+import AppleIcon from '@mui/icons-material/Apple';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import SaveIcon from '@mui/icons-material/Save';
+import InfoIcon from '@mui/icons-material/Info';
+import PaymentIcon from '@mui/icons-material/Payment';
 
 // Define the type for payment settings
 type PaymentMethod = 'cash_only' | 'cash_and_online' | 'online_only';
@@ -27,8 +51,29 @@ export default function PaymentSettingsPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash_only');
   const [stripeConnected, setStripeConnected] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
+
+  // New Settings State
+  const [otherPaymentMethods, setOtherPaymentMethods] = useState({
+    enabled: true, // Default to true for "Pay in Person" concept
+    message: ''
+  });
+
+  // Guidance Message State (formerly Other Payment Methods)
+  const [guidanceMessage, setGuidanceMessage] = useState({
+    enabled: false,
+    message: ''
+  });
+
+  // Receipt Settings State
+  const [emailReceipt, setEmailReceipt] = useState({ enabled: true });
+  const [storeName, setStoreName] = useState('');
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
 
   useEffect(() => {
     const checkStripeConnection = async () => {
@@ -48,6 +93,25 @@ export default function PaymentSettingsPage() {
           if (data.paymentMethod) {
             setPaymentMethod(data.paymentMethod as PaymentMethod);
           }
+          // Load other payment methods settings (now used for Pay in Person subtext)
+          if (data.otherPaymentMethods) {
+            setOtherPaymentMethods(data.otherPaymentMethods);
+          }
+          // Load guidance message settings
+          if (data.guidanceMessage) {
+            setGuidanceMessage(data.guidanceMessage);
+          }
+          // Load email receipt settings
+          if (data.emailReceipt) {
+            setEmailReceipt(data.emailReceipt);
+          }
+          // Load store profile info
+          if (data.storeName) {
+            setStoreName(data.storeName);
+          }
+          if (data.invoiceNumber) {
+            setInvoiceNumber(data.invoiceNumber);
+          }
         }
       } catch (err) {
         console.error("Error checking Stripe connection:", err);
@@ -60,25 +124,35 @@ export default function PaymentSettingsPage() {
   // Handle return from Stripe
   useEffect(() => {
     if (searchParams.get('success')) {
-      // Ideally, we should verify the account status with another cloud function here
-      // For now, we assume success if the param is present and we have an ID
       setStripeConnected(true);
     }
   }, [searchParams]);
 
-  const handlePaymentMethodChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newMethod = event.target.value as PaymentMethod;
-    setPaymentMethod(newMethod);
-
-    if (user) {
-      try {
-        const storeRef = doc(db, 'stores', user.uid);
-        await updateDoc(storeRef, { paymentMethod: newMethod });
-      } catch (err) {
-        console.error("Error updating payment method:", err);
-        setError("支払い方法の保存に失敗しました。");
-      }
+  const handleSave = async () => {
+    if (!user) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const storeRef = doc(db, 'stores', user.uid);
+      await updateDoc(storeRef, {
+        paymentMethod,
+        otherPaymentMethods,
+        guidanceMessage,
+        emailReceipt,
+        storeName,
+        invoiceNumber
+      });
+      alert('設定を保存しました');
+    } catch (err) {
+      console.error("Error updating settings:", err);
+      setError("設定の保存に失敗しました。");
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const handlePaymentMethodChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPaymentMethod(event.target.value as PaymentMethod);
   };
 
   const handleStripeConnect = async () => {
@@ -87,14 +161,9 @@ export default function PaymentSettingsPage() {
     try {
       const functions = getFunctions();
       const createStripeAccountLink = httpsCallable(functions, 'createStripeAccountLink');
-
-      // Pass the current window location origin as the base URL
       const baseUrl = window.location.origin;
-
       const result = await createStripeAccountLink({ baseUrl });
       const { url } = result.data as { url: string };
-
-      // Redirect to Stripe
       window.location.href = url;
     } catch (err) {
       console.error("Error connecting to Stripe:", err);
@@ -104,67 +173,563 @@ export default function PaymentSettingsPage() {
   };
 
   return (
-    <Container maxWidth="md">
-      <Typography variant="h4" component="h1" gutterBottom>
-        決済設定
-      </Typography>
+    <Container maxWidth="md" sx={{ pb: 8 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          決済・レシート設定
+        </Typography>
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<SaveIcon />}
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? '保存中...' : '設定を保存'}
+        </Button>
+      </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <Paper sx={{ p: 3, mt: 2 }}>
-        <Box component="form">
-          <FormControl component="fieldset">
-            <FormLabel component="legend">支払い方法の選択</FormLabel>
-            <RadioGroup
-              aria-label="payment-method"
-              name="payment-method"
-              value={paymentMethod}
-              onChange={handlePaymentMethodChange}
-            >
-              <FormControlLabel value="cash_only" control={<Radio />} label="レジでの支払いのみ" />
-              <FormControlLabel value="cash_and_online" control={<Radio />} label="アプリ内決済 と レジでの支払いの両方" />
-              <FormControlLabel value="online_only" control={<Radio />} label="アプリ内決済のみ" />
-            </RadioGroup>
-          </FormControl>
+      {/* ==================================================================================
+          SECTION 1: 決済画面の設定
+      ================================================================================== */}
+      <Typography variant="h5" sx={{ mt: 4, mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 'bold', color: 'primary.main' }}>
+        <PaymentIcon /> 決済画面の設定
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
+
+      {/* 1. 基本設定 */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>基本設定</Typography>
+        <FormControl component="fieldset">
+          <RadioGroup
+            value={paymentMethod}
+            onChange={handlePaymentMethodChange}
+          >
+            <FormControlLabel value="cash_only" control={<Radio />} label="対面支払いのみ" />
+            <FormControlLabel value="online_only" control={<Radio />} label="アプリ内決済のみ" />
+            <FormControlLabel value="cash_and_online" control={<Radio />} label="両方対応（推奨）" />
+          </RadioGroup>
+        </FormControl>
+
+        {(paymentMethod !== 'cash_only') && (
+          <Box sx={{ mt: 2, bgcolor: '#f8f9fa', p: 2, borderRadius: 1 }}>
+            <Typography variant="subtitle2" gutterBottom>📱 アプリ内決済で対応する支払い方法：</Typography>
+            <List dense>
+              <ListItem>
+                <ListItemIcon><AppleIcon /></ListItemIcon>
+                <ListItemText primary="Apple Pay" secondary="iPhone/Macのお客様に自動表示" />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon><SmartphoneIcon /></ListItemIcon>
+                <ListItemText primary="Google Pay" secondary="Android/Chromeのお客様に自動表示" />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon><CreditCardIcon /></ListItemIcon>
+                <ListItemText primary="クレジットカード" secondary="Visa, Mastercard, Amex, JCBなど" />
+              </ListItem>
+            </List>
+            <Alert severity="info" sx={{ mt: 1 }}>
+              これらの支払い方法は、お客様のデバイス環境に応じて自動的に表示/非表示が切り替わります。設定は不要です。
+            </Alert>
+          </Box>
+        )}
+      </Paper>
+
+      {/* 対面支払い設定 */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <StorefrontIcon /> 対面支払い（現金・その他）の設定
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+
+        <Alert severity="info" sx={{ mb: 3 }}>
+          「対面で支払う」ボタンのサブテキスト（補足説明）を設定できます。<br />
+          お店で対応している決済方法（PayPay、LINE Payなど）を入力してください。
+        </Alert>
+
+        <Box sx={{ mb: 3 }}>
+          <TextField
+            fullWidth
+            label="サブテキスト（支払い方法の案内）"
+            placeholder="例：現金、PayPayでのお支払いはこちら"
+            value={otherPaymentMethods.message}
+            onChange={(e) => setOtherPaymentMethods(prev => ({ ...prev, message: e.target.value }))}
+            helperText="ボタンの下に表示されます。空欄の場合は「現金、PayPayでのお支払いはこちら」と表示されます。"
+          />
         </Box>
       </Paper>
 
-      <Paper sx={{ p: 3, mt: 4 }}>
+      {/* お客様へのメッセージ設定 */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <InfoIcon /> お客様へのメッセージ設定
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+
+        <Alert severity="info" sx={{ mb: 3 }}>
+          支払い選択画面の一番下に表示するメッセージを設定できます。<br />
+          「操作が分からない場合はスタッフにお声がけください」などの案内にご利用ください。
+        </Alert>
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={guidanceMessage.enabled}
+              onChange={(e) => setGuidanceMessage(prev => ({ ...prev, enabled: e.target.checked }))}
+            />
+          }
+          label="メッセージを表示する"
+        />
+
+        {guidanceMessage.enabled && (
+          <Box sx={{ mt: 2, ml: 4 }}>
+            <TextField
+              fullWidth
+              label="メッセージ内容"
+              placeholder="例：操作が分からない場合は、遠慮なくスタッフにお声がけください！"
+              value={guidanceMessage.message}
+              onChange={(e) => setGuidanceMessage(prev => ({ ...prev, message: e.target.value }))}
+              multiline
+              rows={2}
+            />
+          </Box>
+        )}
+      </Paper>
+
+      {/* 決済画面プレビューボタン */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 6 }}>
+        <Button
+          variant="outlined"
+          size="large"
+          startIcon={<SmartphoneIcon />}
+          onClick={() => setPreviewOpen(true)}
+          sx={{ px: 4, py: 1.5 }}
+        >
+          決済画面のプレビューを確認
+        </Button>
+      </Box>
+
+
+      {/* ==================================================================================
+          SECTION 2: レシートの設定
+      ================================================================================== */}
+      <Typography variant="h5" sx={{ mt: 6, mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 'bold', color: 'primary.main' }}>
+        <ReceiptIcon /> レシートの設定
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
+
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          レシート機能
+        </Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={emailReceipt.enabled}
+              onChange={(e) => setEmailReceipt(prev => ({ ...prev, enabled: e.target.checked }))}
+            />
+          }
+          label="レシート機能を有効にする"
+        />
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 4, mt: 1 }}>
+          有効にすると、お客様が支払い完了後にレシート画像の保存やメール送信ができるようになります。
+        </Typography>
+      </Paper>
+
+      {emailReceipt.enabled && (
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            店舗情報・インボイス設定
+          </Typography>
+          <Divider sx={{ my: 2 }} />
+          <Alert severity="info" sx={{ mb: 3 }}>
+            レシートメールに記載される情報を設定します。<br />
+            インボイス制度に対応した「適格簡易請求書」として発行する場合は、登録番号を入力してください。
+          </Alert>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="店舗名（レシート表示用）"
+                placeholder="例：Marche Coffee"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                helperText="空欄の場合は「Marche App」と表示されます。"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="インボイス登録番号"
+                placeholder="例：T1234567890123"
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.target.value)}
+                helperText="Tから始まる13桁の番号を入力してください。空欄の場合は表示されません。"
+              />
+            </Grid>
+          </Grid>
+        </Paper>
+      )}
+
+      {/* レシートプレビューボタン */}
+      {emailReceipt.enabled && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 6 }}>
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<ReceiptIcon />}
+            onClick={() => setReceiptPreviewOpen(true)}
+            sx={{ px: 4, py: 1.5 }}
+          >
+            レシートのプレビューを確認
+          </Button>
+        </Box>
+      )}
+
+
+      {/* ==================================================================================
+          SECTION 3: Stripe連携 (システム設定)
+      ================================================================================== */}
+      <Typography variant="h5" sx={{ mt: 6, mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 'bold', color: 'text.secondary' }}>
+        システム設定
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
+
+      <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" gutterBottom>
           Stripeアカウント連携
         </Typography>
+
         {stripeConnected ? (
           <Box>
             <Typography color="green" gutterBottom sx={{ fontWeight: 'bold' }}>
               ✓ Stripeアカウントと連携済みです
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              アプリ内決済を利用できます。
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              アプリ内決済（クレジットカード、Apple Pay、Google Pay）が利用可能です。
             </Typography>
-            {/* 
-            <Button variant="outlined" color="secondary" sx={{ mt: 1 }}>
-              連携を解除する
-            </Button> 
-            */}
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={async () => {
+                if (!window.confirm('本当に連携を解除しますか？\n解除すると、アプリ内決済が利用できなくなります。')) return;
+                setLoading(true);
+                try {
+                  const storeRef = doc(db, 'stores', user!.uid);
+                  await updateDoc(storeRef, {
+                    stripeAccountId: deleteField()
+                  });
+                  setStripeConnected(false);
+                } catch (err) {
+                  console.error(err);
+                  alert('解除に失敗しました');
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+            >
+              連携を解除
+            </Button>
           </Box>
         ) : (
           <Box>
-            <Typography gutterBottom>
-              アプリ内決済を利用するには、Stripeアカウントを連携する必要があります。
-            </Typography>
-            <Typography variant="caption" display="block" sx={{ mb: 2, color: 'text.secondary' }}>
-              ※現在はテストモードです。実際の登録は行われません。
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={handleStripeConnect}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : 'Stripeアカウントを連携'}
-            </Button>
+            <Alert severity="info" sx={{ mb: 3 }}>
+              アプリ内決済を利用するには、Stripeアカウントの連携が必要です。<br />
+              以下の手順で設定を行います。
+            </Alert>
+
+            <Box sx={{ width: '100%', mb: 4 }}>
+              <Stepper activeStep={0} alternativeLabel>
+                <Step>
+                  <StepLabel>連携ボタンを押す</StepLabel>
+                </Step>
+                <Step>
+                  <StepLabel>Stripeの画面で<br />口座情報などを入力</StepLabel>
+                </Step>
+                <Step>
+                  <StepLabel>アプリに戻って<br />連携完了！</StepLabel>
+                </Step>
+              </Stepper>
+            </Box>
+
+            <Box sx={{ textAlign: 'center' }}>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleStripeConnect}
+                disabled={loading}
+                sx={{ px: 4, py: 1.5, fontWeight: 'bold' }}
+              >
+                {loading ? <CircularProgress size={24} color="inherit" /> : 'Stripeアカウントを連携する'}
+              </Button>
+              <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 1 }}>
+                ※ Stripeのサイトへ移動します
+              </Typography>
+            </Box>
           </Box>
         )}
       </Paper>
+
+      {/* 画面下部の保存ボタン（念のため） */}
+      <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<SaveIcon />}
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? '保存中...' : '設定を保存'}
+        </Button>
+      </Box>
+
+      {/* ==================================================================================
+          DIALOGS
+      ================================================================================== */}
+
+      {/* 1. 決済画面プレビューダイアログ */}
+      <Dialog
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            bgcolor: '#f5f5f5',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <DialogTitle sx={{ bgcolor: 'white', borderBottom: '1px solid #eee' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="subtitle1" fontWeight="bold">決済画面プレビュー</Typography>
+            <IconButton onClick={() => setPreviewOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 2, bgcolor: '#f5f5f5' }}>
+          {/* 実際の画面構成を模したプレビュー */}
+          <Container maxWidth="xs" sx={{ p: 0 }}>
+            <Typography variant="h6" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold', mb: 3, mt: 2 }}>
+              お支払い方法の選択
+            </Typography>
+
+            {/* 注文概要（ダミー） */}
+            <Paper sx={{ p: 4, mb: 3, borderRadius: 3, textAlign: 'center', bgcolor: '#f8f9fa' }}>
+              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                お支払い金額
+              </Typography>
+              <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', color: 'primary.main', my: 1 }}>
+                ¥1,500
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                注文番号: #123
+              </Typography>
+            </Paper>
+
+            <Stack spacing={2}>
+              {/* 対面支払いボタン（プレビュー） */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  border: '2px solid',
+                  borderColor: 'primary.main', // 選択されている想定
+                  borderRadius: 3,
+                  bgcolor: 'grey.50',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <Box sx={{
+                  width: 48, height: 48,
+                  borderRadius: '50%',
+                  bgcolor: 'grey.200',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  mr: 2,
+                  flexShrink: 0
+                }}>
+                  <StorefrontIcon color="action" fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>対面で支払う</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>
+                    {otherPaymentMethods.message || '現金、PayPayでのお支払いはこちら'}
+                  </Typography>
+                </Box>
+              </Paper>
+
+              {/* Apple Pay (プレビュー) */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  border: '2px solid',
+                  borderColor: 'grey.300',
+                  borderRadius: 3,
+                  display: 'flex', alignItems: 'center',
+                  bgcolor: 'white'
+                }}
+              >
+                <Box sx={{
+                  width: 48, height: 48,
+                  borderRadius: '50%',
+                  bgcolor: 'grey.200',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  mr: 2,
+                  flexShrink: 0
+                }}>
+                  <AppleIcon fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Apple Pay</Typography>
+                </Box>
+              </Paper>
+
+              {/* Google Pay (プレビュー) */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  border: '2px solid',
+                  borderColor: 'grey.300',
+                  borderRadius: 3,
+                  display: 'flex', alignItems: 'center',
+                  bgcolor: 'white'
+                }}
+              >
+                <Box sx={{
+                  width: 48, height: 48,
+                  borderRadius: '50%',
+                  bgcolor: 'grey.200',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  mr: 2,
+                  flexShrink: 0
+                }}>
+                  <SmartphoneIcon fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Google Pay</Typography>
+                </Box>
+              </Paper>
+
+              {/* クレジットカード（プレビュー用ダミー） */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  border: '2px solid',
+                  borderColor: 'grey.300',
+                  borderRadius: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  bgcolor: 'white'
+                }}
+              >
+                <Box sx={{
+                  width: 48, height: 48,
+                  borderRadius: '50%',
+                  bgcolor: '#e0e6ff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  mr: 2
+                }}>
+                  <CreditCardIcon sx={{ color: '#6772e5' }} fontSize="large" />
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>クレジットカード</Typography>
+                  <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>Visa, Master, Amex, JCB</Typography>
+                </Box>
+              </Paper>
+            </Stack>
+
+            {/* メッセージプレビュー */}
+            {guidanceMessage.enabled && (
+              <Box sx={{ mt: 4 }}>
+                <Alert
+                  severity="info"
+                  icon={false}
+                  sx={{
+                    borderRadius: 2,
+                    bgcolor: 'info.lighter',
+                    color: 'info.dark'
+                  }}
+                >
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontWeight: 500 }}>
+                    {guidanceMessage.message || 'メッセージ内容'}
+                  </Typography>
+                </Alert>
+              </Box>
+            )}
+          </Container>
+        </DialogContent>
+      </Dialog>
+
+      {/* 2. レシートプレビューダイアログ */}
+      <Dialog
+        open={receiptPreviewOpen}
+        onClose={() => setReceiptPreviewOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
+      >
+        <DialogTitle sx={{ borderBottom: '1px solid #eee' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="subtitle1" fontWeight="bold">レシートメール（プレビュー）</Typography>
+            <IconButton onClick={() => setReceiptPreviewOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 4, bgcolor: '#fff' }}>
+          {/* メール本文のプレビュー */}
+          <Box sx={{ fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto', color: '#333' }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>ご注文ありがとうございます</Typography>
+            <Typography variant="body2" paragraph>以下の内容でご注文を承りました。</Typography>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>店舗名: {storeName || 'Marche App'}</Typography>
+            {invoiceNumber && (
+              <Typography variant="body2">登録番号: {invoiceNumber}</Typography>
+            )}
+            <Typography variant="body2">発行日: 2023/10/01</Typography>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle2" gutterBottom>注文番号: #123</Typography>
+            <List disablePadding>
+              <ListItem sx={{ px: 0, py: 1, display: 'block' }}>
+                <Typography variant="body1">カフェラテ x 1 - ¥550</Typography>
+                <Box component="ul" sx={{ m: 0, pl: 2, fontSize: '0.9em', color: '#666' }}>
+                  <li>サイズ: L (+¥50)</li>
+                  <li>トッピング: ホイップ (+¥0)</li>
+                </Box>
+              </ListItem>
+              <ListItem sx={{ px: 0, py: 1, display: 'block' }}>
+                <Typography variant="body1">ドリップバッグ x 1 - ¥600</Typography>
+              </ListItem>
+            </List>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="h6" align="right" sx={{ fontWeight: 'bold' }}>合計金額: ¥1,150 (税込)</Typography>
+            <Typography variant="caption" display="block" align="right" color="text.secondary">
+              (内消費税等(10%): ¥104)
+            </Typography>
+
+            <Typography variant="body2" sx={{ mt: 3 }}>またのご利用をお待ちしております。</Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 }

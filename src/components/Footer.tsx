@@ -1,4 +1,3 @@
-
 import { Box, Typography, Link, Container } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -16,17 +15,30 @@ export default function Footer() {
             : theme.palette.grey[800],
       }}
     >
-      <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-        <Typography variant="body2" color="text.secondary">
-          <Link color="inherit" component={RouterLink} to="/terms">
-            利用規約
-          </Link>
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          <Link color="inherit" component={RouterLink} to="/privacy">
-            プライバシーポリシー
-          </Link>
-        </Typography>
+      <Container maxWidth="sm" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Typography variant="body2" color="text.secondary">
+            <Link color="inherit" component={RouterLink} to="/terms">
+              利用規約
+            </Link>
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            |
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            <Link color="inherit" component={RouterLink} to="/privacy">
+              プライバシーポリシー
+            </Link>
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            |
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            <Link color="inherit" component={RouterLink} to="/about">
+              特定商取引法に基づく表記
+            </Link>
+          </Typography>
+        </Box>
         <Typography variant="body2" color="text.secondary">
           <Link color="inherit" href="https://docs.google.com/forms/d/e/1FAIpQLSdnG4UzAHJamOHofSIvkcd7nmOJAHadO2aEupUOiDW6YwdELQ/viewform?usp=sharing&ouid=104613107059535548763" target="_blank" rel="noopener noreferrer">
             お問い合わせ
@@ -36,5 +48,3 @@ export default function Footer() {
     </Box>
   );
 }
-
-// Re-trigger CI/CD

@@ -95,7 +95,7 @@ export default function PaymentPage() {
         お支払い
       </Typography>
       <Elements options={options} stripe={stripePromise}>
-        <CheckoutForm />
+        <CheckoutForm orderId={orderId!} />
       </Elements>
     </Container>
   );
