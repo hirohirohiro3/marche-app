@@ -90,6 +90,15 @@ export default function AdminLayout() {
               onClose={handleClose}
             >
               <MenuItem disabled>{user?.email}</MenuItem>
+              <MenuItem
+                component="a"
+                href="https://docs.google.com/forms/d/e/1FAIpQLSdnG4UzAHJamOHofSIvkcd7nmOJAHadO2aEupUOiDW6YwdELQ/viewform"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleClose}
+              >
+                バグ報告・改善要望
+              </MenuItem>
               <MenuItem onClick={handleLogout}>ログアウト</MenuItem>
             </Menu>
           </Box>

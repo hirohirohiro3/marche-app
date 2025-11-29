@@ -14,6 +14,7 @@ import {
   Paper,
   Snackbar,
 } from '@mui/material';
+import HelpSection from '../../components/HelpSection';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import QrCodeIcon from '@mui/icons-material/QrCode';
@@ -188,6 +189,14 @@ export default function DashboardPage() {
       </Dialog>
 
       <Container data-testid="dashboard-container" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <HelpSection title="ダッシュボードの機能">
+          <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+            <li><strong>イベントを開始</strong>: 新しいイベントを開始し、注文番号を1番にリセットします。</li>
+            <li><strong>手動注文</strong>: 店頭で受けた注文をスタッフが直接入力するための画面を開きます（注文番号は1〜100番を使用）。</li>
+            <li><strong>QRコード</strong>: お客さまに読み取ってもらうための注文用QRコードを表示・印刷できます（注文番号は101番〜を使用）。</li>
+          </ul>
+        </HelpSection>
+
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2, flexWrap: 'wrap' }}>
           <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
             注文ダッシュボード

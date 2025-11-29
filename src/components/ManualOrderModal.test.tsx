@@ -1,5 +1,5 @@
 // src/components/ManualOrderModal.test.tsx
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import ManualOrderModal from './ManualOrderModal';
@@ -15,6 +15,23 @@ vi.mock('../hooks/useOptionGroups', () => ({
   useOptionGroups: () => ({ optionGroups: [] }),
 }));
 
+// Mock AddToCartModal
+vi.mock('./AddToCartModal', () => ({
+  default: ({ open, onAddToCart, menuItem }: any) => {
+    if (!open) return null;
+    return (
+      <div data-testid="mock-add-to-cart-modal">
+        <button
+          onClick={() => onAddToCart(menuItem, 1, menuItem.price, {})}
+          data-testid="mock-add-button"
+        >
+          Add {menuItem?.name}
+        </button>
+      </div>
+    );
+  },
+}));
+
 const mockMenuItems: MenuItem[] = [
   { id: '1', name: 'Coffee', price: 500, category: 'Drinks', description: 'Hot coffee', imageUrl: '', isSoldOut: false, sortOrder: 1, storeId: 'test', manageStock: false },
   { id: '2', name: 'Tea', price: 450, category: 'Drinks', description: 'Hot tea', imageUrl: '', isSoldOut: false, sortOrder: 2, storeId: 'test', manageStock: false },
@@ -22,7 +39,7 @@ const mockMenuItems: MenuItem[] = [
 
 describe('ManualOrderModal', () => {
   it('should render menu items and add to cart on click', async () => {
-    const user = userEvent.setup();
+    // const user = userEvent.setup();
     render(<ManualOrderModal open={true} onClose={() => { }} menuItems={mockMenuItems} />);
 
     // Check if modal title and menu items are rendered
@@ -34,47 +51,65 @@ describe('ManualOrderModal', () => {
     expect(screen.getByText('商品が追加されていません。')).toBeInTheDocument();
     expect(screen.getByTestId('total-price')).toHaveTextContent('合計: ¥0');
 
-    // Click on a menu item
+    // Click on a menu item to open the modal
     const coffeeButton = screen.getByText('Coffee');
-    await user.click(coffeeButton);
+    fireEvent.click(coffeeButton);
+
+    // Click the mock add button (wait for it to appear)
+    const addButton = await screen.findByTestId('mock-add-button');
+    fireEvent.click(addButton);
 
     // Verify item is added to the cart
-    expect(screen.getByText('Coffee x 1')).toBeInTheDocument();
+    const cartItem = await screen.findByTestId(/cart-item-/);
+    expect(cartItem).toHaveTextContent(/Coffee.*x.*1/);
     expect(screen.getByTestId('total-price')).toHaveTextContent('合計: ¥500');
 
-    // Click again to increase quantity
-    await user.click(coffeeButton);
-    expect(screen.getByText('Coffee x 2')).toBeInTheDocument();
+    // Add another one
+    fireEvent.click(coffeeButton);
+    const addButton2 = await screen.findByTestId('mock-add-button');
+    fireEvent.click(addButton2);
+
+    expect(cartItem).toHaveTextContent(/Coffee.*x.*2/);
     expect(screen.getByTestId('total-price')).toHaveTextContent('合計: ¥1000');
   });
 
   it('should remove items from cart correctly', async () => {
-    const user = userEvent.setup();
+    // const user = userEvent.setup();
     render(<ManualOrderModal open={true} onClose={() => { }} menuItems={mockMenuItems} />);
 
     const coffeeButton = screen.getByText('Coffee');
-    await user.click(coffeeButton); // quantity: 1
-    await user.click(coffeeButton); // quantity: 2
 
-    expect(screen.getByText('Coffee x 2')).toBeInTheDocument();
+    // Add 2 items
+    fireEvent.click(coffeeButton);
+    let addButton = await screen.findByTestId('mock-add-button');
+    fireEvent.click(addButton);
 
-    const removeButton = screen.getByTestId('remove-from-cart-1');
-    await user.click(removeButton); // quantity: 1
-    expect(screen.getByText('Coffee x 1')).toBeInTheDocument();
+    fireEvent.click(coffeeButton);
+    addButton = await screen.findByTestId('mock-add-button');
+    fireEvent.click(addButton);
+
+    const cartItem = await screen.findByTestId(/cart-item-/);
+    expect(cartItem).toHaveTextContent(/Coffee.*x.*2/);
+
+    // Find remove button
+    const removeButtons = screen.getAllByText('削除');
+    fireEvent.click(removeButtons[0]); // quantity: 1
+
+    expect(cartItem).toHaveTextContent(/Coffee.*x.*1/);
     expect(screen.getByTestId('total-price')).toHaveTextContent('合計: ¥500');
 
-    await user.click(removeButton); // remove completely
-    expect(screen.queryByText('Coffee x 1')).not.toBeInTheDocument();
+    fireEvent.click(removeButtons[0]); // remove completely
+    expect(screen.queryByTestId(/cart-item-/)).not.toBeInTheDocument();
     expect(screen.getByText('商品が追加されていません。')).toBeInTheDocument();
   });
 
   it('should call onClose when the close button is clicked', async () => {
-    const user = userEvent.setup();
+    // const user = userEvent.setup();
     const handleClose = vi.fn();
     render(<ManualOrderModal open={true} onClose={handleClose} menuItems={mockMenuItems} />);
 
     const closeButton = screen.getByTestId('close-modal-button');
-    await user.click(closeButton);
+    fireEvent.click(closeButton);
 
     expect(handleClose).toHaveBeenCalledTimes(1);
   });

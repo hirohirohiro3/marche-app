@@ -25,6 +25,8 @@ import { useOptionGroups } from "../../../hooks/useOptionGroups";
 import { MenuItem } from "../../../types";
 import MenuFormDialog from "../../../components/MenuFormDialog";
 
+import HelpSection from "../../../components/HelpSection";
+
 export default function MenuAdminPage() {
   const { menus, loading: menuLoading, saveMenuItem, deleteMenuItem, toggleSoldOut } = useMenu();
   const { optionGroups, loading: optionsLoading } = useOptionGroups();
@@ -82,6 +84,15 @@ export default function MenuAdminPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <HelpSection title="メニュー管理について">
+        <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+          <li>右上の「商品を追加」ボタンから商品を登録できます。</li>
+          <li>商品をクリックすると編集・削除が可能です。</li>
+          <li><strong>オプション設定</strong>: 商品編集画面で、作成したオプショングループ（サイズやトッピングなど）を紐付けることができます。</li>
+          <li>「在庫管理」を有効にすると、在庫が0になった際に自動で「売り切れ」になります。</li>
+        </ul>
+      </HelpSection>
+
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h4" component="h1">
           メニュー管理

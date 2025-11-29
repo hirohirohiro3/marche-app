@@ -102,9 +102,10 @@ export default function MenuListPage() {
                 />
               ))}
             </Grid>
-          </div>
-        ))}
-      </Container>
+          </div >
+        ))
+        }
+      </Container >
       <AddToCartModal
         open={isModalOpen}
         onClose={handleCloseModal}
@@ -113,6 +114,6 @@ export default function MenuListPage() {
           (og) => selectedMenuItem?.optionGroupIds?.includes(og.id)
         )}
       />
-    </Box>
+    </Box >
   );
 }

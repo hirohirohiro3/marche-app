@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import HelpSection from '../../../components/HelpSection';
 import { Edit, Delete } from '@mui/icons-material';
 import { useOptionGroups, OptionGroupFormValues } from '../../../hooks/useOptionGroups';
 import { OptionGroup } from '../../../types';
@@ -66,6 +67,19 @@ export default function OptionsAdminPage() {
 
   return (
     <Container maxWidth="lg">
+      <HelpSection title="オプション管理について">
+        <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+          <li>商品のカスタマイズ項目を作成できます。</li>
+          <li><strong>利用例</strong>:
+            <ul style={{ marginTop: '0.25rem' }}>
+              <li><strong>サイズ変更</strong>: Sサイズ (+0円), Mサイズ (+50円), Lサイズ (+100円)</li>
+              <li><strong>トッピング</strong>: ホイップ追加 (+50円), チョコソース (+30円)</li>
+            </ul>
+          </li>
+          <li>作成したオプションは、<strong>メニュー管理画面で各商品に紐付ける</strong>ことで有効になります。</li>
+        </ul>
+      </HelpSection>
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4" component="h1">
           オプション管理

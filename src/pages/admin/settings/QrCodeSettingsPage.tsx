@@ -12,6 +12,7 @@ import {
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
+import HelpSection from '../../../components/HelpSection';
 
 const colorPalette = ['#000000', '#4a4a4a', '#003366', '#b30000', '#006400', '#4b0082'];
 
@@ -83,6 +84,14 @@ export default function QrCodeSettingsPage() {
 
   return (
     <Container maxWidth="md">
+      <HelpSection title="QRコード設定について">
+        <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+          <li>お客さまが読み取る注文用QRコードのデザインをカスタマイズできます。</li>
+          <li><strong>色設定</strong>: ブランドカラーに合わせてQRコードの色を変更できます。</li>
+          <li><strong>ロゴ設定</strong>: QRコードの中央にお店のロゴ画像などを配置できます。</li>
+        </ul>
+      </HelpSection>
+
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           QRコード設定
