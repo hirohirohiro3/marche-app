@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# Marche App (モバイルオーダープラットフォーム)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## コンセプト
+**「行列をなくそう。もっと会話を楽しもう。」**
+イベントや店舗での注文・決済をスマホひとつで完結させる、次世代モバイルオーダープラットフォーム。
 
-Currently, two official plugins are available:
+## アプリの概要
+Marche Appは、お客様自身のスマートフォンを使って「注文」から「決済」までを完了できるモバイルオーダーシステムです。
+専用アプリのダウンロードは不要。QRコードを読み取るだけで、誰でもすぐに利用できます。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 主な特徴
 
-## React Compiler
+### 1. アプリ不要！0秒で注文開始（ゲスト購入）
+- **特徴**: 会員登録やアプリのインストールが一切不要です。
+- **メリット**: QRコードを読み取るだけでメニューが開き、その場ですぐに注文できます。お客様の手間を極限まで減らし、機会損失を防ぎます。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. 多彩な決済手段に対応（Stripe連携）
+- **特徴**: クレジットカードはもちろん、Apple Pay、Google Payに対応。
+- **メリット**: スマホに登録済みのカードで、ワンタップで支払いが完了します。
+- **ハイブリッド対応**: 「現金」や「PayPay」などの対面支払いも選択可能。お店の運用に合わせて柔軟に使えます。
 
-## Expanding the ESLint configuration
+### 3. インボイス対応のデジタルレシート
+- **特徴**: 紙のレシートは不要。メールでデジタルレシートを発行できます。
+- **メリット**: インボイス制度（適格請求書）に対応した形式で発行可能。店舗名や登録番号も自由に設定でき、経費精算が必要なお客様にも喜ばれます。
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 4. リアルタイム注文管理
+- **特徴**: 注文が入ると店舗側の管理画面に即座に反映されます。
+- **メリット**: 「調理待ち」「提供済み」などのステータス管理も簡単。混雑時のオーダーミスや提供漏れを防ぎます。
+- **推奨環境**: 店舗管理画面は情報量が多いため、タブレット端末（iPadなど）での利用を推奨します。スマホでも利用可能ですが、タブレットならより快適に一覧性を確保できます。
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 5. シンプルで美しいUI
+- **特徴**: 誰でも迷わず使える、直感的でモダンなデザイン。
+- **メリット**: 商品画像が映えるレイアウトで、メニューの魅力を最大限に伝えます。
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 利用シーン
+- **マルシェ・イベント出店**: 電源やレジスターがなくても、スマホ1つで本格的なレジシステムが導入できます。
+- **キッチンカー**: 限られたスペースでも、お客様自身のスマホがレジ代わりになります。
+- **カフェ・飲食店**: テーブルオーダーとして導入し、ホールスタッフの負担を軽減します。
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 技術スタック
+- **Frontend**: React, TypeScript, Vite, Material UI
+- **Backend / Infrastructure**: Firebase (Hosting, Functions, Firestore, Storage)
+- **Payment**: Stripe Connect (Express Accounts)
+
+## Getting Started (開発者向け)
+
+### 1. リポジトリのクローン
+```bash
+git clone <repository-url>
+cd marche-app
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. 依存関係のインストール
+```bash
+npm install
+```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 3. 環境変数の設定
+ルートディレクトリに `.env` ファイルを作成し、以下の変数を設定してください。
+```env
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Stripe Configuration
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_... (または pk_live_...)
+```
+
+### 4. 開発サーバーの起動
+```bash
+npm run dev
+```
+ブラウザで `http://localhost:3000` にアクセスするとアプリが起動します。
+
+### 5. デプロイ (Firebase)
+```bash
+# ビルド
+npm run build
+
+# Firebaseへのデプロイ
+firebase deploy
 ```
