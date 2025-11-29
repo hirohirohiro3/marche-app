@@ -17,11 +17,6 @@ import {
   CircularProgress,
   Alert,
   TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
-  Stack,
   Divider,
   List,
   ListItem,
@@ -33,7 +28,6 @@ import {
   Step,
   StepLabel
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import AppleIcon from '@mui/icons-material/Apple';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
@@ -42,6 +36,9 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import SaveIcon from '@mui/icons-material/Save';
 import InfoIcon from '@mui/icons-material/Info';
 import PaymentIcon from '@mui/icons-material/Payment';
+
+import PaymentPreviewDialog from './components/PaymentPreviewDialog';
+import ReceiptPreviewDialog from './components/ReceiptPreviewDialog';
 
 // Define the type for payment settings
 type PaymentMethod = 'cash_only' | 'cash_and_online' | 'online_only';
@@ -492,244 +489,20 @@ export default function PaymentSettingsPage() {
           DIALOGS
       ================================================================================== */}
 
-      {/* 1. 決済画面プレビューダイアログ */}
-      <Dialog
+      <PaymentPreviewDialog
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            bgcolor: '#f5f5f5',
-            overflow: 'hidden'
-          }
-        }}
-      >
-        <DialogTitle sx={{ bgcolor: 'white', borderBottom: '1px solid #eee' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="subtitle1" fontWeight="bold">決済画面プレビュー</Typography>
-            <IconButton onClick={() => setPreviewOpen(false)} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent sx={{ p: 2, bgcolor: '#f5f5f5' }}>
-          {/* 実際の画面構成を模したプレビュー */}
-          <Container maxWidth="xs" sx={{ p: 0 }}>
-            <Typography variant="h6" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold', mb: 3, mt: 2 }}>
-              お支払い方法の選択
-            </Typography>
+        otherPaymentMethods={otherPaymentMethods}
+        guidanceMessage={guidanceMessage}
+      />
 
-            {/* 注文概要（ダミー） */}
-            <Paper sx={{ p: 4, mb: 3, borderRadius: 3, textAlign: 'center', bgcolor: '#f8f9fa' }}>
-              <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                お支払い金額
-              </Typography>
-              <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', color: 'primary.main', my: 1 }}>
-                ¥1,500
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                注文番号: #123
-              </Typography>
-            </Paper>
-
-            <Stack spacing={2}>
-              {/* 対面支払いボタン（プレビュー） */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  border: '2px solid',
-                  borderColor: 'primary.main', // 選択されている想定
-                  borderRadius: 3,
-                  bgcolor: 'grey.50',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-              >
-                <Box sx={{
-                  width: 48, height: 48,
-                  borderRadius: '50%',
-                  bgcolor: 'grey.200',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  mr: 2,
-                  flexShrink: 0
-                }}>
-                  <StorefrontIcon color="action" fontSize="large" />
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>対面で支払う</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>
-                    {otherPaymentMethods.message || '現金、PayPayでのお支払いはこちら'}
-                  </Typography>
-                </Box>
-              </Paper>
-
-              {/* Apple Pay (プレビュー) */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  border: '2px solid',
-                  borderColor: 'grey.300',
-                  borderRadius: 3,
-                  display: 'flex', alignItems: 'center',
-                  bgcolor: 'white'
-                }}
-              >
-                <Box sx={{
-                  width: 48, height: 48,
-                  borderRadius: '50%',
-                  bgcolor: 'grey.200',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  mr: 2,
-                  flexShrink: 0
-                }}>
-                  <AppleIcon fontSize="large" />
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Apple Pay</Typography>
-                </Box>
-              </Paper>
-
-              {/* Google Pay (プレビュー) */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  border: '2px solid',
-                  borderColor: 'grey.300',
-                  borderRadius: 3,
-                  display: 'flex', alignItems: 'center',
-                  bgcolor: 'white'
-                }}
-              >
-                <Box sx={{
-                  width: 48, height: 48,
-                  borderRadius: '50%',
-                  bgcolor: 'grey.200',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  mr: 2,
-                  flexShrink: 0
-                }}>
-                  <SmartphoneIcon fontSize="large" />
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Google Pay</Typography>
-                </Box>
-              </Paper>
-
-              {/* クレジットカード（プレビュー用ダミー） */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2,
-                  border: '2px solid',
-                  borderColor: 'grey.300',
-                  borderRadius: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  bgcolor: 'white'
-                }}
-              >
-                <Box sx={{
-                  width: 48, height: 48,
-                  borderRadius: '50%',
-                  bgcolor: '#e0e6ff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  mr: 2
-                }}>
-                  <CreditCardIcon sx={{ color: '#6772e5' }} fontSize="large" />
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>クレジットカード</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>Visa, Master, Amex, JCB</Typography>
-                </Box>
-              </Paper>
-            </Stack>
-
-            {/* メッセージプレビュー */}
-            {guidanceMessage.enabled && (
-              <Box sx={{ mt: 4 }}>
-                <Alert
-                  severity="info"
-                  icon={false}
-                  sx={{
-                    borderRadius: 2,
-                    bgcolor: 'info.lighter',
-                    color: 'info.dark'
-                  }}
-                >
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontWeight: 500 }}>
-                    {guidanceMessage.message || 'メッセージ内容'}
-                  </Typography>
-                </Alert>
-              </Box>
-            )}
-          </Container>
-        </DialogContent>
-      </Dialog>
-
-      {/* 2. レシートプレビューダイアログ */}
-      <Dialog
+      <ReceiptPreviewDialog
         open={receiptPreviewOpen}
         onClose={() => setReceiptPreviewOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: 2 }
-        }}
-      >
-        <DialogTitle sx={{ borderBottom: '1px solid #eee' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="subtitle1" fontWeight="bold">レシートメール（プレビュー）</Typography>
-            <IconButton onClick={() => setReceiptPreviewOpen(false)} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent sx={{ p: 4, bgcolor: '#fff' }}>
-          {/* メール本文のプレビュー */}
-          <Box sx={{ fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto', color: '#333' }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>ご注文ありがとうございます</Typography>
-            <Typography variant="body2" paragraph>以下の内容でご注文を承りました。</Typography>
+        storeName={storeName}
+        invoiceNumber={invoiceNumber}
+      />
 
-            <Divider sx={{ my: 2 }} />
-
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>店舗名: {storeName || 'Marche App'}</Typography>
-            {invoiceNumber && (
-              <Typography variant="body2">登録番号: {invoiceNumber}</Typography>
-            )}
-            <Typography variant="body2">発行日: 2023/10/01</Typography>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography variant="subtitle2" gutterBottom>注文番号: #123</Typography>
-            <List disablePadding>
-              <ListItem sx={{ px: 0, py: 1, display: 'block' }}>
-                <Typography variant="body1">カフェラテ x 1 - ¥550</Typography>
-                <Box component="ul" sx={{ m: 0, pl: 2, fontSize: '0.9em', color: '#666' }}>
-                  <li>サイズ: L (+¥50)</li>
-                  <li>トッピング: ホイップ (+¥0)</li>
-                </Box>
-              </ListItem>
-              <ListItem sx={{ px: 0, py: 1, display: 'block' }}>
-                <Typography variant="body1">ドリップバッグ x 1 - ¥600</Typography>
-              </ListItem>
-            </List>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Typography variant="h6" align="right" sx={{ fontWeight: 'bold' }}>合計金額: ¥1,150 (税込)</Typography>
-            <Typography variant="caption" display="block" align="right" color="text.secondary">
-              (内消費税等(10%): ¥104)
-            </Typography>
-
-            <Typography variant="body2" sx={{ mt: 3 }}>またのご利用をお待ちしております。</Typography>
-          </Box>
-        </DialogContent>
-      </Dialog>
     </Container>
   );
 }
