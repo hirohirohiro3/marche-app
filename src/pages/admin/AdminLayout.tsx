@@ -6,6 +6,9 @@ import { useAuth } from '../../hooks/useAuth';
 import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import ThemeToggle from '../../components/ThemeToggle';
+import WakeLockToggle from '../../components/WakeLockToggle';
+import PrefetchLink from '../../components/PrefetchLink';
 
 export default function AdminLayout() {
   const { user } = useAuth();
@@ -33,22 +36,22 @@ export default function AdminLayout() {
             マルシェ管理画面
           </Typography>
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <Button color="inherit" component={Link} to="/admin/dashboard">
+            <Button color="inherit" component={PrefetchLink} to="/admin/dashboard">
               ダッシュボード
             </Button>
-            <Button color="inherit" component={Link} to="/admin/menu">
+            <Button color="inherit" component={PrefetchLink} to="/admin/menu">
               メニュー管理
             </Button>
-            <Button color="inherit" component={Link} to="/admin/analytics">
+            <Button color="inherit" component={PrefetchLink} to="/admin/analytics">
               売上分析
             </Button>
-            <Button color="inherit" component={Link} to="/admin/options">
+            <Button color="inherit" component={PrefetchLink} to="/admin/options">
               オプション管理
             </Button>
-            <Button color="inherit" component={Link} to="/admin/settings/payment">
+            <Button color="inherit" component={PrefetchLink} to="/admin/settings/payment">
               決済設定
             </Button>
-            <Button color="inherit" component={Link} to="/admin/settings/qrcode">
+            <Button color="inherit" component={PrefetchLink} to="/admin/settings/qrcode">
               QRコード設定
             </Button>
             <Button
@@ -62,6 +65,8 @@ export default function AdminLayout() {
             </Button>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
+            <WakeLockToggle />
+            <ThemeToggle />
             <IconButton
               size="large"
               aria-label="account of current user"

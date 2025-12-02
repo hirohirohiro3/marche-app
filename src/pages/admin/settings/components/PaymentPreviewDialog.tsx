@@ -43,12 +43,12 @@ export default function PaymentPreviewDialog({
             PaperProps={{
                 sx: {
                     borderRadius: 4,
-                    bgcolor: '#f5f5f5',
+                    bgcolor: 'background.default',
                     overflow: 'hidden'
                 }
             }}
         >
-            <DialogTitle sx={{ bgcolor: 'white', borderBottom: '1px solid #eee' }}>
+            <DialogTitle sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Typography variant="subtitle1" fontWeight="bold">決済画面プレビュー</Typography>
                     <IconButton onClick={onClose} size="small">
@@ -56,7 +56,7 @@ export default function PaymentPreviewDialog({
                     </IconButton>
                 </Box>
             </DialogTitle>
-            <DialogContent sx={{ p: 2, bgcolor: '#f5f5f5' }}>
+            <DialogContent sx={{ p: 2, bgcolor: 'background.default' }}>
                 {/* 実際の画面構成を模したプレビュー */}
                 <Container maxWidth="xs" sx={{ p: 0 }}>
                     <Typography variant="h6" component="h1" gutterBottom align="center" sx={{ fontWeight: 'bold', mb: 3, mt: 2 }}>
@@ -64,7 +64,7 @@ export default function PaymentPreviewDialog({
                     </Typography>
 
                     {/* 注文概要（ダミー） */}
-                    <Paper sx={{ p: 4, mb: 3, borderRadius: 3, textAlign: 'center', bgcolor: '#f8f9fa' }}>
+                    <Paper sx={{ p: 4, mb: 3, borderRadius: 3, textAlign: 'center', bgcolor: 'action.hover' }}>
                         <Typography variant="subtitle1" color="text.secondary" gutterBottom>
                             お支払い金額
                         </Typography>
@@ -85,7 +85,7 @@ export default function PaymentPreviewDialog({
                                 border: '2px solid',
                                 borderColor: 'primary.main', // 選択されている想定
                                 borderRadius: 3,
-                                bgcolor: 'grey.50',
+                                bgcolor: 'action.hover',
                                 display: 'flex',
                                 alignItems: 'center'
                             }}
@@ -93,7 +93,7 @@ export default function PaymentPreviewDialog({
                             <Box sx={{
                                 width: 48, height: 48,
                                 borderRadius: '50%',
-                                bgcolor: 'grey.200',
+                                bgcolor: 'action.selected',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 mr: 2,
                                 flexShrink: 0
@@ -114,16 +114,16 @@ export default function PaymentPreviewDialog({
                             sx={{
                                 p: 2,
                                 border: '2px solid',
-                                borderColor: 'grey.300',
+                                borderColor: 'divider',
                                 borderRadius: 3,
                                 display: 'flex', alignItems: 'center',
-                                bgcolor: 'white'
+                                bgcolor: 'background.paper'
                             }}
                         >
                             <Box sx={{
                                 width: 48, height: 48,
                                 borderRadius: '50%',
-                                bgcolor: 'grey.200',
+                                bgcolor: 'action.selected',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 mr: 2,
                                 flexShrink: 0
@@ -141,16 +141,16 @@ export default function PaymentPreviewDialog({
                             sx={{
                                 p: 2,
                                 border: '2px solid',
-                                borderColor: 'grey.300',
+                                borderColor: 'divider',
                                 borderRadius: 3,
                                 display: 'flex', alignItems: 'center',
-                                bgcolor: 'white'
+                                bgcolor: 'background.paper'
                             }}
                         >
                             <Box sx={{
                                 width: 48, height: 48,
                                 borderRadius: '50%',
-                                bgcolor: 'grey.200',
+                                bgcolor: 'action.selected',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 mr: 2,
                                 flexShrink: 0
@@ -168,11 +168,11 @@ export default function PaymentPreviewDialog({
                             sx={{
                                 p: 2,
                                 border: '2px solid',
-                                borderColor: 'grey.300',
+                                borderColor: 'divider',
                                 borderRadius: 3,
                                 display: 'flex',
                                 alignItems: 'center',
-                                bgcolor: 'white'
+                                bgcolor: 'background.paper'
                             }}
                         >
                             <Box sx={{

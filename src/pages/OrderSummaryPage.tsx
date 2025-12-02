@@ -166,7 +166,7 @@ export default function OrderSummaryPage() {
         お支払い方法の選択
       </Typography>
 
-      <Paper sx={{ p: 4, mb: 3, borderRadius: 3, textAlign: 'center', bgcolor: '#f8f9fa' }}>
+      <Paper sx={{ p: 4, mb: 3, borderRadius: 3, textAlign: 'center', bgcolor: 'action.hover' }}>
         <Typography variant="subtitle1" color="text.secondary" gutterBottom>
           お支払い金額
         </Typography>
@@ -193,7 +193,7 @@ export default function OrderSummaryPage() {
               transition: 'all 0.2s',
               '&:hover': {
                 borderColor: 'primary.main',
-                bgcolor: 'grey.50',
+                bgcolor: 'action.hover',
                 transform: 'translateY(-2px)',
                 boxShadow: 2
               },
@@ -204,7 +204,7 @@ export default function OrderSummaryPage() {
             <Box sx={{
               width: 56, height: 56,
               borderRadius: '50%',
-              bgcolor: 'grey.200',
+              bgcolor: 'action.selected',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               mr: 2,
               flexShrink: 0
@@ -237,7 +237,7 @@ export default function OrderSummaryPage() {
                   transition: 'all 0.2s',
                   '&:hover': {
                     borderColor: 'black',
-                    bgcolor: 'grey.50',
+                    bgcolor: 'action.hover',
                     transform: 'translateY(-2px)',
                     boxShadow: 2
                   },
@@ -247,7 +247,7 @@ export default function OrderSummaryPage() {
                 <Box sx={{
                   width: 56, height: 56,
                   borderRadius: '50%',
-                  bgcolor: 'grey.200',
+                  bgcolor: 'action.selected',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   mr: 2,
                   flexShrink: 0
@@ -274,7 +274,7 @@ export default function OrderSummaryPage() {
                   transition: 'all 0.2s',
                   '&:hover': {
                     borderColor: 'black',
-                    bgcolor: 'grey.50',
+                    bgcolor: 'action.hover',
                     transform: 'translateY(-2px)',
                     boxShadow: 2
                   },
@@ -284,7 +284,7 @@ export default function OrderSummaryPage() {
                 <Box sx={{
                   width: 56, height: 56,
                   borderRadius: '50%',
-                  bgcolor: 'grey.200',
+                  bgcolor: 'action.selected',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   mr: 2,
                   flexShrink: 0

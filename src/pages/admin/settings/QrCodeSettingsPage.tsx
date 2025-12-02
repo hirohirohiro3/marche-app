@@ -55,25 +55,20 @@ export default function QrCodeSettingsPage() {
   useEffect(() => {
     if (settings) {
       reset({
-        color: settings.color || '#000000',
-        logoFile: null,
+        color: settings.color,
+        logoFile: null, // Reset file input
       });
     }
   }, [settings, reset]);
 
   const onSubmit: SubmitHandler<QrSettingsFormValues> = async (data) => {
-    console.log('[QrCodeSettingsPage] onSubmit started.', data);
     setPageError(null);
     setPageSuccess(null);
     try {
-      console.log('[QrCodeSettingsPage] Calling saveQrCodeSettings...');
       await saveQrCodeSettings(data);
-      console.log('[QrCodeSettingsPage] saveQrCodeSettings finished.');
-      setPageSuccess('設定を保存しました。');
-      // Reset logo file after successful save
-      setValue('logoFile', null, { shouldValidate: true });
-    } catch (err) {
-      console.error('[QrCodeSettingsPage] Failed to save settings:', err);
+      setPageSuccess('QRコード設定を保存しました。');
+    } catch (err: any) {
+      console.error(err);
       setPageError('設定の保存に失敗しました。');
     }
   };

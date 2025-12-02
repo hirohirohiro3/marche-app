@@ -60,8 +60,8 @@ describe('ManualOrderModal', () => {
     fireEvent.click(addButton);
 
     // Verify item is added to the cart
-    const cartItem = await screen.findByTestId(/cart-item-/);
-    expect(cartItem).toHaveTextContent(/Coffee.*x.*1/);
+    const cartItemText = await screen.findByText(/Coffee x 1/);
+    expect(cartItemText).toBeInTheDocument();
     expect(screen.getByTestId('total-price')).toHaveTextContent('合計: ¥500');
 
     // Add another one
@@ -69,7 +69,7 @@ describe('ManualOrderModal', () => {
     const addButton2 = await screen.findByTestId('mock-add-button');
     fireEvent.click(addButton2);
 
-    expect(cartItem).toHaveTextContent(/Coffee.*x.*2/);
+    expect(await screen.findByText(/Coffee x 2/)).toBeInTheDocument();
     expect(screen.getByTestId('total-price')).toHaveTextContent('合計: ¥1000');
   });
 
@@ -88,18 +88,18 @@ describe('ManualOrderModal', () => {
     addButton = await screen.findByTestId('mock-add-button');
     fireEvent.click(addButton);
 
-    const cartItem = await screen.findByTestId(/cart-item-/);
-    expect(cartItem).toHaveTextContent(/Coffee.*x.*2/);
+    const cartItemText = await screen.findByText(/Coffee x 2/);
+    expect(cartItemText).toBeInTheDocument();
 
     // Find remove button
     const removeButtons = screen.getAllByText('削除');
     fireEvent.click(removeButtons[0]); // quantity: 1
 
-    expect(cartItem).toHaveTextContent(/Coffee.*x.*1/);
+    expect(await screen.findByText(/Coffee x 1/)).toBeInTheDocument();
     expect(screen.getByTestId('total-price')).toHaveTextContent('合計: ¥500');
 
     fireEvent.click(removeButtons[0]); // remove completely
-    expect(screen.queryByTestId(/cart-item-/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Coffee/)).not.toBeInTheDocument();
     expect(screen.getByText('商品が追加されていません。')).toBeInTheDocument();
   });
 

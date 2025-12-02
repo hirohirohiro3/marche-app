@@ -5,7 +5,7 @@ import * as nodemailer from "nodemailer";
 const db = admin.firestore();
 
 export const sendReceipt = functions.region('asia-northeast1').https.onCall(async (data, context) => {
-    console.log("sendReceipt: Function started");
+
 
     // 1. Check Configuration
     const gmailEmail = functions.config().gmail?.email || process.env.GMAIL_EMAIL;
@@ -28,14 +28,14 @@ export const sendReceipt = functions.region('asia-northeast1').https.onCall(asyn
     try {
         // 3. Verify Connection
         await transporter.verify();
-        console.log("sendReceipt: SMTP connection verified");
+
     } catch (verifyError) {
         console.error("sendReceipt: SMTP Connection Failed", verifyError);
         throw new functions.https.HttpsError("internal", "Failed to connect to email server", verifyError);
     }
 
     const { orderId, email } = data;
-    console.log("sendReceipt: Request data", { orderId, targetEmail: email });
+
 
     if (!orderId || !email) {
         throw new functions.https.HttpsError(
@@ -46,7 +46,7 @@ export const sendReceipt = functions.region('asia-northeast1').https.onCall(asyn
 
     try {
         // 4. Fetch Order
-        console.log(`sendReceipt: Fetching order ${orderId}`);
+
         const orderRef = db.collection("orders").doc(orderId);
         const orderDoc = await orderRef.get();
 
@@ -87,7 +87,7 @@ export const sendReceipt = functions.region('asia-northeast1').https.onCall(asyn
         // Tax = Total - (Total / 1.1)
         const taxAmount = Math.floor(totalPrice - (totalPrice / 1.1));
 
-        console.log("sendReceipt: Order data fetched", { orderNumber, itemCount: items.length, storeName });
+
 
         // 6. Construct Email
         const itemsHtml = items
@@ -148,9 +148,9 @@ export const sendReceipt = functions.region('asia-northeast1').https.onCall(asyn
         };
 
         // 7. Send Email
-        console.log("sendReceipt: Sending email...");
+
         const info = await transporter.sendMail(mailOptions);
-        console.log("sendReceipt: Email sent successfully", info);
+
 
         return { success: true, message: "Receipt sent successfully." };
     } catch (error) {

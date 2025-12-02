@@ -45,7 +45,7 @@ export const handleStripeWebhook = functions.https.onRequest(
     switch (event.type) {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+
 
         try {
           const orderId = paymentIntent.metadata.orderId;
@@ -53,7 +53,7 @@ export const handleStripeWebhook = functions.https.onRequest(
             const orderRef = db.collection("orders").doc(orderId);
             // 3. Update the order status to 'paid'
             await orderRef.update({ status: "paid" });
-            console.log(`Order ${orderId} has been marked as paid.`);
+
           } else {
             console.warn(
               "Webhook received for PaymentIntent without an orderId in metadata."
@@ -67,7 +67,7 @@ export const handleStripeWebhook = functions.https.onRequest(
         break;
 
       default:
-        console.log(`Unhandled event type ${event.type}`);
+
     }
 
     // 4. Return a 200 response to acknowledge receipt of the event

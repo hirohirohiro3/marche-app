@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -20,9 +21,11 @@ vi.mock('react-image-crop', () => ({
     onComplete: (crop: any) => void;
   }) => {
     // Simulate the crop completing immediately for the test
-    if (onComplete) {
-      onComplete({ x: 0, y: 0, width: 100, height: 100, unit: 'px' });
-    }
+    React.useEffect(() => {
+      if (onComplete) {
+        onComplete({ x: 0, y: 0, width: 100, height: 100, unit: 'px' });
+      }
+    }, [onComplete]);
     return <div>{children}</div>;
   },
   centerCrop: vi.fn((crop) => crop),
@@ -71,7 +74,7 @@ describe('ImageCropCompressor Component', () => {
     const { container } = render(<ImageCropCompressor aspect={16 / 9} onCropped={onCroppedMock} />);
 
     // 1. User selects a file
-    const input = container.querySelector('input[type="file"]')!;
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, mockFile);
 
     // 2. Cropper UI appears, user clicks "決定"

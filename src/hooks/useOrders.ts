@@ -9,7 +9,6 @@ import {
   getDocs,
   runTransaction,
   where,
-  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Order } from '../types';
@@ -33,34 +32,36 @@ export const useOrders = (storeId: string | undefined) => {
       return;
     }
 
+    // Calculate 24 hours ago
+    const yesterday = new Date();
+    yesterday.setHours(yesterday.getHours() - 24);
+
     const q = query(
       collection(db, 'orders'),
       where('storeId', '==', storeId),
+      where('createdAt', '>=', yesterday), // Only recent orders
       orderBy('createdAt', 'asc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const ordersData = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() } as Order))
+        // Filter for active statuses only (exclude cancelled/archived)
         .filter((order) => order.status !== 'cancelled' && order.status !== 'archived');
+
       setOrders(ordersData);
 
-      const newOrderCount = ordersData.filter((o) => o.status === 'new').length;
-      if (newOrderCount > prevNewOrderCount.current) {
+      // Check for new orders (status 'new')
+      const newOrders = ordersData.filter(o => o.status === 'new');
+      if (newOrders.length > prevNewOrderCount.current) {
         setIsNewOrder(true);
-        // Try to play sound, but don't fail if browser blocks autoplay
-        audioRef.current?.play().catch((error) => {
-          console.log('[useOrders] Audio playback blocked by browser:', error.message);
-        });
-        setTimeout(() => setIsNewOrder(false), 2000); // Animation duration
+        audioRef.current?.play().catch(e => console.error("Audio play failed", e));
       }
-      prevNewOrderCount.current = newOrderCount;
-    },
-      (error) => {
-        console.error("[useOrders] Error listening to orders collection:", error);
-        console.error("[useOrders] Full Error Details:", JSON.stringify(error, null, 2));
-        console.error("[useOrders] Current storeId:", storeId);
-      });
+      prevNewOrderCount.current = newOrders.length;
+
+    }, (error) => {
+      console.error("[useOrders] Error listening to orders collection:", error);
+    });
 
     return unsubscribe;
   }, [storeId]);
@@ -85,18 +86,15 @@ export const useOrders = (storeId: string | undefined) => {
     orderId: string,
     newStatus: Order['status']
   ) => {
-    const orderRef = doc(db, 'orders', orderId);
+    if (!storeId) return;
     try {
-      const updateData: { status: Order['status']; paidAt?: ReturnType<typeof serverTimestamp> } = { status: newStatus };
-      if (newStatus === 'paid') {
-        updateData.paidAt = serverTimestamp();
-      }
-      await updateDoc(orderRef, updateData);
-      console.log(`Order ${orderId} status updated to ${newStatus}`);
+      const orderRef = doc(db, 'orders', orderId);
+      await updateDoc(orderRef, { status: newStatus });
     } catch (error) {
-      console.error('Failed to update order status:', error);
+      console.error("Error updating order status:", error);
+      throw error;
     }
-  }, []);
+  }, [storeId]);
 
   const handleEndOfDay = useCallback(async () => {
     if (!storeId) return;
@@ -110,20 +108,24 @@ export const useOrders = (storeId: string | undefined) => {
       const settingsRef = doc(db, 'system_settings', 'orderNumbers');
 
       await runTransaction(db, async (transaction) => {
-        // Mark all active orders as archived (so they disappear from dashboard)
+        // Mark all active orders as archived
         activeOrdersSnapshot.forEach((orderDoc) => {
           transaction.update(orderDoc.ref, { status: 'archived' });
         });
 
-        // Reset order numbers. Overwrite to ensure clean state.
+        // Reset order numbers
         transaction.set(settingsRef, {
           nextQrOrderNumber: 101,
-          nextManualOrderNumber: 1,
-        });
+          nextManualOrderNumber: 1
+        }, { merge: true });
       });
-      console.log('End of day process completed successfully.');
+
+      // Clear local state
+      setOrders([]);
+      prevNewOrderCount.current = 0;
+
     } catch (error) {
-      console.error('Failed to process end of day:', error);
+      console.error("Error handling end of day:", error);
       throw error;
     }
   }, [storeId]);
@@ -131,6 +133,7 @@ export const useOrders = (storeId: string | undefined) => {
   return {
     orders,
     isNewOrder,
+    setIsNewOrder,
     filterOrdersByStatus,
     updateOrderStatus,
     handleEndOfDay,

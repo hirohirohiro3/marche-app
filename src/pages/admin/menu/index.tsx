@@ -47,21 +47,15 @@ export default function MenuAdminPage() {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingMenuItem(null);
-    setFormError(null); // Also clear errors on close
   };
 
-  const handleFormSubmit = async (values: MenuFormValues) => {
-    console.log('[MenuAdminPage] handleFormSubmit started.', values);
-    setFormError(null);
+  const handleFormSubmit = async (data: MenuFormValues) => {
     try {
-      console.log('[MenuAdminPage] Calling saveMenuItem...');
-      await saveMenuItem(values, editingMenuItem);
-      console.log('[MenuAdminPage] saveMenuItem finished. Closing form.');
+      await saveMenuItem(data, editingMenuItem);
       handleCloseForm();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '不明なエラーが発生しました。';
-      console.error("[MenuAdminPage] Failed to save menu item:", errorMessage);
-      setFormError(errorMessage);
+      console.error("Failed to save menu item:", error);
+      setFormError("保存に失敗しました。");
     }
   };
 

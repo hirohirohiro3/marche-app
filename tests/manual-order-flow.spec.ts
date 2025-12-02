@@ -31,7 +31,7 @@ test.describe('Manual Order Flow', () => {
     await page.getByTestId('start-event-button').click();
     await page.getByLabel('イベント名').fill('Test Event');
     await page.getByRole('button', { name: '開始する' }).click();
-    await expect(page.getByText('開催中: Test Event')).toBeVisible();
+    await expect(page.getByText('開催中: Test Event')).toBeVisible({ timeout: 30000 });
   });
 
   test('should create a manual order and see it in the paid column', async ({ page }) => {

@@ -70,6 +70,16 @@ if (import.meta.env.DEV) {
   setLogLevel('debug');
 }
 
+import { enableIndexedDbPersistence } from "firebase/firestore";
+
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code == 'failed-precondition') {
+    console.warn('Persistence failed: Multiple tabs open');
+  } else if (err.code == 'unimplemented') {
+    console.warn('Persistence not supported by browser');
+  }
+});
+
 // NOTE: SDKの内部的な挙動によりstorageBucketが無視されるケースに対応するため、
 // バケットのURLを第2引数で明示的に指定して強制する。
 const storageBucketUrl = `gs://${firebaseConfig.projectId}.firebasestorage.app`;

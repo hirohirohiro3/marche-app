@@ -18,7 +18,7 @@ test.describe('画像アップロード機能 (クロッピングと圧縮)', ()
     // After signup, user should be redirected to the admin dashboard
     await expect(page).toHaveURL('/admin/dashboard', { timeout: 10000 });
     // Ensure the dashboard is loaded before proceeding
-    await expect(page.getByRole('heading', { name: 'ダッシュボード' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'ダッシュボード', level: 1 })).toBeVisible();
   });
 
 

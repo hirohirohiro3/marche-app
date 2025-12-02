@@ -7,14 +7,20 @@ service firebase.storage {
       allow read;
       allow write: if request.auth != null && request.auth.uid == userId
                     && request.resource.size < 1 * 1024 * 1024 // 1MB未満
-                    && request.resource.contentType.matches('image/jpeg|image/png');
+                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
     }
     // QRコードのロゴ画像も同様のルールを適用
     match /qr-code-logos/{userId}/{allPaths=**} {
       allow read;
       allow write: if request.auth != null && request.auth.uid == userId
                     && request.resource.size < 1 * 1024 * 1024 // 1MB未満
-                    && request.resource.contentType.matches('image/jpeg|image/png');
+                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
+    // Storesディレクトリ（QRコードロゴなど）へのアクセス許可
+    match /stores/{storeId}/{allPaths=**} {
+      allow read;
+      allow write: if request.auth != null && request.auth.uid == storeId;
     }
   }
 }

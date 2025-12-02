@@ -1,6 +1,6 @@
 import { useState, useCallback, memo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions, Button, Box, CircularProgress, Alert } from "@mui/material";
+import { Typography, Container, Grid, Card, CardMedia, CardContent, CardActions, Button, Box, Alert, Skeleton } from "@mui/material";
 import { MenuItem } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import { useOptionGroups } from '../hooks/useOptionGroups';
@@ -41,6 +41,24 @@ const MenuCard = memo(({ menu, onOpenModal }: { menu: MenuItem; onOpenModal: (it
   </Grid>
 ));
 
+// Skeleton Component for loading state
+const MenuSkeleton = () => (
+  <Grid item xs={12} sm={6} md={4}>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Skeleton variant="rectangular" height={140} animation="wave" />
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Skeleton variant="text" height={32} width="80%" animation="wave" />
+        <Skeleton variant="text" height={20} width="100%" animation="wave" />
+        <Skeleton variant="text" height={20} width="60%" animation="wave" />
+        <Skeleton variant="text" height={32} width="40%" sx={{ mt: 1 }} animation="wave" />
+      </CardContent>
+      <CardActions>
+        <Skeleton variant="rectangular" height={36} width="100%" animation="wave" />
+      </CardActions>
+    </Card>
+  </Grid>
+);
+
 export default function MenuListPage() {
   const { storeId } = useParams<{ storeId: string }>();
   const { menus, loading: menuLoading, error: menuError } = useMenu(storeId);
@@ -75,7 +93,21 @@ export default function MenuListPage() {
 
 
   if (loading) {
-    return <Container sx={{ py: 4, textAlign: 'center' }}><CircularProgress /></Container>;
+    return (
+      <Container sx={{ py: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          <Skeleton width={200} />
+        </Typography>
+        <Typography variant="h5" component="h2" sx={{ mt: 4, mb: 2 }}>
+          <Skeleton width={150} />
+        </Typography>
+        <Grid container spacing={4}>
+          {[...Array(6)].map((_, index) => (
+            <MenuSkeleton key={index} />
+          ))}
+        </Grid>
+      </Container>
+    );
   }
 
   if (error) {

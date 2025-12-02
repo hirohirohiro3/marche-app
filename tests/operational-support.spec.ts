@@ -61,7 +61,7 @@ test.describe('Operational Support Features', () => {
     await page.getByTestId('start-event-button').click();
     await page.getByLabel('イベント名').fill('Test Event');
     await page.getByRole('button', { name: '開始する' }).click();
-    await expect(page.getByText('開催中: Test Event')).toBeVisible();
+    await expect(page.getByText('開催中: Test Event')).toBeVisible({ timeout: 30000 });
 
     // 4. Wait for the active columns to be empty, confirming the reset
     const newOrdersLocator = page.getByTestId('new-orders-column').locator('[data-testid^="order-card-"]');

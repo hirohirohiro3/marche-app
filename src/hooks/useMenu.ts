@@ -104,8 +104,6 @@ export const useMenu = (storeId?: string) => {
     }
 
     try {
-      console.log(`[useMenu:uploadImage] Starting upload for file: ${imageFile.name}`);
-
       // Generate a unique file name
       const fileExtension = imageFile.name.split('.').pop() || 'jpg';
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExtension}`;
@@ -116,11 +114,9 @@ export const useMenu = (storeId?: string) => {
 
       // Upload the file directly
       const snapshot = await uploadBytes(storageRef, imageFile);
-      console.log('[useMenu:uploadImage] Upload successful:', snapshot);
 
       // Get the public URL
       const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log(`[useMenu:uploadImage] Got download URL: ${downloadURL}`);
 
       return downloadURL;
     } catch (error) {
@@ -133,16 +129,13 @@ export const useMenu = (storeId?: string) => {
     values: MenuFormValues,
     editingMenuItem: MenuItem | null
   ) => {
-    console.log('[useMenu] saveMenuItem started.', { values, editingMenuItem });
     try {
       // Use the imageUrl from the form state, which could be the initial URL or null
       let imageUrl = values.imageUrl || '';
       // If a new image file is uploaded, upload it and update the URL
       if (values.imageFile) {
         try {
-          console.log('[useMenu] New image file found, starting upload...');
           imageUrl = await uploadImage(values.imageFile);
-          console.log('[useMenu] Image upload finished, URL:', imageUrl);
         } catch (uploadError) {
           console.error('[useMenu] Image upload failed within saveMenuItem:', uploadError);
           // Throw a more specific error for the UI to catch.
@@ -157,13 +150,10 @@ export const useMenu = (storeId?: string) => {
         stock: values.stock ?? 0,
         imageUrl,
       };
-      console.log('[useMenu] Data prepared for Firestore:', dataToSave);
 
       if (editingMenuItem) {
-        console.log(`[useMenu] Updating existing menu item with id: ${editingMenuItem.id}`);
         try {
           await updateDoc(doc(db, 'menus', editingMenuItem.id), dataToSave);
-          console.log('[useMenu] Firestore updateDoc successful.');
         } catch (dbError) {
           console.error('[useMenu] Firestore updateDoc ERROR:', dbError);
           throw dbError;
@@ -172,14 +162,12 @@ export const useMenu = (storeId?: string) => {
         if (!effectiveStoreId) {
           throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
         }
-        console.log('[useMenu] Creating new menu item.');
         try {
           await addDoc(collection(db, 'menus'), {
             ...dataToSave,
             storeId: effectiveStoreId,
             isSoldOut: false,
           });
-          console.log('[useMenu] Firestore addDoc successful.');
         } catch (dbError) {
           console.error('[useMenu] Firestore addDoc ERROR:', dbError);
           throw dbError;

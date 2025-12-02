@@ -27,6 +27,7 @@ import {
   doc,
   setDoc,
   onSnapshot,
+  limit,
 } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { MenuItem } from '../../types';
@@ -60,6 +61,7 @@ export default function DashboardPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isStartEventDialogOpen, setIsStartEventDialogOpen] = useState(false);
   const [newEventName, setNewEventName] = useState('');
+  const [isReuseConfirmOpen, setIsReuseConfirmOpen] = useState(false);
 
   // Fetch menu items
   useEffect(() => {
@@ -98,6 +100,31 @@ export default function DashboardPage() {
 
   const handleStartEvent = async () => {
     if (!user || !newEventName.trim()) return;
+
+    // Check if event name has been used before
+    try {
+      const ordersRef = collection(db, 'orders');
+      const q = query(
+        ordersRef,
+        where('storeId', '==', user.uid),
+        where('eventName', '==', newEventName.trim()),
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        setIsReuseConfirmOpen(true);
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking event name:", error);
+    }
+
+    executeStartEvent();
+  };
+
+  const executeStartEvent = async () => {
+    if (!user) return;
     setIsSavingEventName(true);
     try {
       await processEndOfDay();
@@ -105,6 +132,7 @@ export default function DashboardPage() {
       await setDoc(storeRef, { currentEventName: newEventName }, { merge: true });
       setEventName(newEventName);
       setIsStartEventDialogOpen(false);
+      setIsReuseConfirmOpen(false);
       setNewEventName('');
       setSaveSuccess(true);
     } catch (error) {
@@ -163,6 +191,33 @@ export default function DashboardPage() {
           <Button onClick={() => setIsStartEventDialogOpen(false)}>キャンセル</Button>
           <Button onClick={handleStartEvent} variant="contained" disabled={!newEventName.trim() || isSavingEventName}>
             開始する
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reuse Event Name Confirmation Dialog */}
+      <Dialog
+        open={isReuseConfirmOpen}
+        onClose={() => setIsReuseConfirmOpen(false)}
+      >
+        <DialogTitle>イベント名の確認</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            イベント名「{newEventName}」は過去に使用されています。
+            <br />
+            <br />
+            このまま開始すると、<strong>売上分析で過去の同名イベントのデータと合算されます</strong>。
+            <br />
+            （ダッシュボード上の注文はリセットされるため、日々の運用には影響ありません）
+            <br />
+            <br />
+            よろしいですか？
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsReuseConfirmOpen(false)}>キャンセル</Button>
+          <Button onClick={executeStartEvent} variant="contained" color="warning" autoFocus>
+            合算して開始
           </Button>
         </DialogActions>
       </Dialog>

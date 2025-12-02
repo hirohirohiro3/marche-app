@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { Order } from '../../types';
@@ -19,11 +19,10 @@ import {
   TableBody,
   ButtonGroup,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  useTheme,
 } from '@mui/material';
+import EventIcon from '@mui/icons-material/Event';
+import EventSelectionDialog from '../../components/EventSelectionDialog';
 import {
   BarChart,
   Bar,
@@ -40,8 +39,152 @@ type TimeRange = 'today' | 'this_month' | 'all_time';
 import HelpSection from '../../components/HelpSection';
 
 export default function AnalyticsPage() {
+  const theme = useTheme();
   const { user, loading: authLoading } = useAuth();
-  // ... (lines 42-148)
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<TimeRange>('today');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string>('all');
+  const [isEventSelectionOpen, setIsEventSelectionOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        let q = query(
+          collection(db, 'orders'),
+          where('status', 'in', ['completed', 'archived']),
+          where('storeId', '==', user!.uid)
+        );
+
+        if (timeRange === 'today') {
+          q = query(q, where('createdAt', '>=', todayStart));
+        } else if (timeRange === 'this_month') {
+          q = query(q, where('createdAt', '>=', thisMonthStart));
+        }
+
+        q = query(q, orderBy('createdAt', 'desc'));
+
+        const querySnapshot = await getDocs(q);
+        const fetchedOrders = querySnapshot.docs.map(doc => doc.data() as Order);
+        setOrders(fetchedOrders);
+      } catch (err) {
+        console.error("Error fetching sales data: ", err);
+        setError('売上データの取得に失敗しました。');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSalesData();
+  }, [timeRange, user]);
+
+  // Filter orders based on selected event
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      if (selectedEvent === 'all') return true;
+      if (selectedEvent === 'none') return !order.eventName;
+      return order.eventName === selectedEvent;
+    });
+  }, [orders, selectedEvent]);
+
+  // Process events for Dialog
+  const eventOptions = useMemo(() => {
+    const eventMap = new Map<string, { lastDate: Date, firstDate: Date, totalRevenue: number, orderCount: number }>();
+
+    orders.forEach(order => {
+      if (!order.eventName) return;
+      const date = new Timestamp(order.createdAt.seconds, order.createdAt.nanoseconds).toDate();
+      const current = eventMap.get(order.eventName);
+      if (!current) {
+        eventMap.set(order.eventName, {
+          lastDate: date,
+          firstDate: date,
+          totalRevenue: order.totalPrice,
+          orderCount: 1
+        });
+      } else {
+        if (date > current.lastDate) current.lastDate = date;
+        if (date < current.firstDate) current.firstDate = date;
+        current.totalRevenue += order.totalPrice;
+        current.orderCount += 1;
+      }
+    });
+
+    const events = Array.from(eventMap.entries()).map(([name, data]) => {
+      const startStr = `${data.firstDate.getMonth() + 1}/${data.firstDate.getDate()}`;
+      const endStr = `${data.lastDate.getMonth() + 1}/${data.lastDate.getDate()}`;
+      const dateRange = startStr === endStr ? `(${startStr})` : `(${startStr} ~ ${endStr})`;
+
+      return {
+        name,
+        dateRange,
+        totalRevenue: data.totalRevenue,
+        orderCount: data.orderCount,
+        lastDate: data.lastDate,
+      };
+    });
+
+    // Sort by last active date (newest first)
+    events.sort((a, b) => b.lastDate.getTime() - a.lastDate.getTime());
+
+    return events;
+  }, [orders]);
+
+  // Calculate summary and top products using useMemo
+  const { summary, topProducts } = useMemo(() => {
+    if (filteredOrders.length === 0) {
+      return {
+        summary: { totalRevenue: 0, totalOrders: 0, averageOrderValue: 0, qrOrdersCount: 0, manualOrdersCount: 0 },
+        topProducts: []
+      };
+    }
+
+    const totalRevenue = filteredOrders.reduce((acc, order) => acc + order.totalPrice, 0);
+    const totalOrders = filteredOrders.length;
+    const averageOrderValue = totalRevenue / totalOrders;
+    const qrOrdersCount = filteredOrders.filter(o => o.orderType === 'qr').length;
+    const manualOrdersCount = filteredOrders.filter(o => o.orderType === 'manual').length;
+
+    const productCounts: { [key: string]: number } = {};
+    filteredOrders.forEach(order => {
+      order.items.forEach(item => {
+        productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity;
+      });
+    });
+
+    const sortedProducts = Object.entries(productCounts)
+      .map(([name, quantity]) => ({ name, quantity }))
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
+
+    return {
+      summary: { totalRevenue, totalOrders, averageOrderValue, qrOrdersCount, manualOrdersCount },
+      topProducts: sortedProducts
+    };
+  }, [filteredOrders]);
+
+  if (loading || authLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return <Alert severity="error">{error}</Alert>;
+  }
   return (
     <Container maxWidth="lg">
       <HelpSection title="売上分析について">
@@ -56,28 +199,39 @@ export default function AnalyticsPage() {
         <Typography variant="h4" component="h1" gutterBottom>
           売上分析
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel id="event-select-label">イベント</InputLabel>
-            <Select
-              labelId="event-select-label"
-              value={selectedEvent}
-              label="イベント"
-              onChange={(e) => setSelectedEvent(e.target.value)}
-            >
-              <MenuItem value="all">全てのイベント</MenuItem>
-              <MenuItem value="none">イベントなし</MenuItem>
-              {eventNames.map(name => (
-                <MenuItem key={name} value={name}>{name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <ButtonGroup variant="outlined" aria-label="time range button group">
-            <Button onClick={() => setTimeRange('today')} variant={timeRange === 'today' ? 'contained' : 'outlined'}>今日</Button>
-            <Button onClick={() => setTimeRange('this_month')} variant={timeRange === 'this_month' ? 'contained' : 'outlined'}>今月</Button>
-            <Button onClick={() => setTimeRange('all_time')} variant={timeRange === 'all_time' ? 'contained' : 'outlined'}>全期間</Button>
-          </ButtonGroup>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {selectedEvent !== 'all' && selectedEvent !== 'none' && (
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mr: 1 }}>
+              表示中: {selectedEvent}
+            </Typography>
+          )}
+          <Button
+            variant="outlined"
+            startIcon={<EventIcon />}
+            onClick={() => setIsEventSelectionOpen(true)}
+          >
+            イベントを選択
+          </Button>
+          {selectedEvent !== 'all' && (
+            <Button onClick={() => setSelectedEvent('all')}>
+              全解除
+            </Button>
+          )}
         </Box>
+        <EventSelectionDialog
+          open={isEventSelectionOpen}
+          onClose={() => setIsEventSelectionOpen(false)}
+          onSelect={setSelectedEvent}
+          events={eventOptions}
+        />
+      </Box>
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <ButtonGroup variant="outlined" aria-label="time range button group">
+          <Button onClick={() => setTimeRange('today')} variant={timeRange === 'today' ? 'contained' : 'outlined'}>今日</Button>
+          <Button onClick={() => setTimeRange('this_month')} variant={timeRange === 'this_month' ? 'contained' : 'outlined'}>今月</Button>
+          <Button onClick={() => setTimeRange('all_time')} variant={timeRange === 'all_time' ? 'contained' : 'outlined'}>全期間</Button>
+        </ButtonGroup>
       </Box>
 
       {summary && (
@@ -115,12 +269,26 @@ export default function AnalyticsPage() {
             <Typography variant="h6" gutterBottom>売れ筋商品ランキング (Top 10)</Typography>
             <ResponsiveContainer width="100%" height="90%">
               <BarChart data={topProducts} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="quantity" fill="#8884d8" name="販売数" />
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                  stroke={theme.palette.divider}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                  stroke={theme.palette.divider}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: theme.palette.background.paper,
+                    color: theme.palette.text.primary,
+                    border: `1px solid ${theme.palette.divider}`
+                  }}
+                />
+                <Legend wrapperStyle={{ color: theme.palette.text.primary }} />
+                <Bar dataKey="quantity" fill={theme.palette.primary.main} name="販売数" />
               </BarChart>
             </ResponsiveContainer>
           </Paper>

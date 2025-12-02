@@ -1,6 +1,6 @@
 import { collection, serverTimestamp, doc, runTransaction } from "firebase/firestore";
-import { db } from '../firebase';
-import { uid } from 'uid'; // A library to generate unique IDs
+import { db, auth } from '../firebase';
+import { uid } from 'uid';
 import {
   Container, Typography, Button, Box, Paper, List, ListItem, ListItemText,
   IconButton, Divider, Stack, Alert, Dialog, DialogActions, DialogContent,
@@ -12,6 +12,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useCartStore } from '../store/cartStore';
+import { COLLECTIONS } from '../constants';
 
 export default function CheckoutPage() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -41,28 +42,31 @@ export default function CheckoutPage() {
   };
 
   const handleConfirmOrder = async () => {
+    if (!storeId) {
+      setError("店舗情報が見つかりません。");
+      return;
+    }
+    if (items.length === 0) {
+      setError("カートが空です。");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
-    try {
-      console.log('[CheckoutPage] Starting handleConfirmOrder...');
-      console.log('[CheckoutPage] storeId:', storeId);
-      console.log('[CheckoutPage] items:', items);
-      if (!storeId) {
-        throw new Error('storeId is missing from URL parameters.');
-      }
-      const settingsRef = doc(db, "system_settings", "orderNumbers");
 
+    try {
       const newOrderId = await runTransaction(db, async (transaction) => {
-        // Fetch current event name (Read first)
-        const storeRef = doc(db, 'stores', storeId);
+        const storeRef = doc(db, COLLECTIONS.STORES, storeId);
+        const settingsRef = doc(db, COLLECTIONS.SYSTEM_SETTINGS, 'orderNumbers');
+
         const storeDoc = await transaction.get(storeRef);
         const eventName = storeDoc.exists() ? (storeDoc.data().currentEventName || null) : null;
 
         const settingsDoc = await transaction.get(settingsRef);
         let newOrderNumber: number;
+
         if (settingsDoc.exists()) {
           const data = settingsDoc.data();
-          // Defensive check for nextQrOrderNumber
           newOrderNumber = data.nextQrOrderNumber !== undefined ? data.nextQrOrderNumber : 101;
           transaction.update(settingsRef, { nextQrOrderNumber: newOrderNumber + 1 });
         } else {
@@ -73,9 +77,8 @@ export default function CheckoutPage() {
           });
         }
 
-        // Prepare items with defensive checks
+        // Prepare items
         const orderItems = items.map(i => {
-          // Defensive coding: Ensure no field is undefined
           const name = i.item.name || '不明な商品';
           const quantity = i.quantity || 1;
           const price = (i.itemPriceWithOptions ?? i.item.price) || 0;
@@ -99,10 +102,11 @@ export default function CheckoutPage() {
           return orderItem;
         });
 
+        const newOrderRef = doc(collection(db, COLLECTIONS.ORDERS));
         const orderData = {
           orderNumber: newOrderNumber,
           storeId: storeId,
-          uid: localStorage.getItem('customerUid') || uid(16),
+          uid: auth.currentUser?.uid || localStorage.getItem('customerUid') || uid(16),
           items: orderItems,
           totalPrice: totalPrice() || 0,
           status: "new",
@@ -111,27 +115,15 @@ export default function CheckoutPage() {
           eventName: eventName,
         };
 
-        const newOrderRef = doc(collection(db, "orders"));
         transaction.set(newOrderRef, orderData);
         return newOrderRef.id;
       });
 
-      console.log('[CheckoutPage] Order created successfully. New Order ID:', newOrderId);
-
-      // Persist a customer UID for future orders
-      if (!localStorage.getItem('customerUid')) {
-        localStorage.setItem('customerUid', uid(16));
-      }
       clearCart();
-      console.log('[CheckoutPage] Navigating to:', `/order/${newOrderId}`);
       navigate(`/order/${newOrderId}`);
-    } catch (e: any) {
-      console.error('Order confirmation failed:', e);
-      // Detailed error logging for undefined values
-      if (e.message && e.message.includes('undefined')) {
-        console.error('Undefined value detected in transaction payload. See previous logs for payload details.');
-      }
-      setError(`注文の作成に失敗しました: ${e.message}`);
+    } catch (err) {
+      console.error("Order creation failed:", err);
+      setError("注文の作成に失敗しました。もう一度お試しください。");
     } finally {
       setIsSubmitting(false);
     }

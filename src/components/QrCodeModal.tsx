@@ -26,54 +26,63 @@ export default function QrCodeModal({ open, onClose }: QrCodeModalProps) {
 
   const customerMenuUrl = `${window.location.origin}/menu/${user?.uid}`;
 
-  // Update local state when settings are fetched
   useEffect(() => {
     if (settings) {
       setColor(settings.color || '#000000');
     }
   }, [settings]);
 
-
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const svgElement = document.getElementById('qr-code-svg');
     if (!svgElement) {
-      console.error('Could not find SVG element for QR code.');
+      console.error('QR code SVG element not found');
       return;
     }
 
-    const svgXml = new XMLSerializer().serializeToString(svgElement);
-    const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-      svgXml,
-    )}`;
+    // Clone the SVG to avoid modifying the original DOM
+    const clonedSvg = svgElement.cloneNode(true) as SVGElement;
 
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const size = 256; // Based on the QRCode size prop
-      const scale = 2; // Render at 2x resolution for better quality
-      canvas.width = size * scale;
-      canvas.height = size * scale;
-      const ctx = canvas.getContext('2d');
+    // Handle logo image if it exists
+    if (settings?.logoUrl) {
+      const imageElement = clonedSvg.querySelector('image');
+      if (imageElement) {
+        try {
+          // Fetch the image and convert to base64
+          const response = await fetch(settings.logoUrl);
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
 
-      if (ctx) {
-        // Fill background with white, as transparent PNGs can be problematic for QR codes
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        const pngUrl = canvas.toDataURL('image/png');
-        const downloadLink = document.createElement('a');
-        downloadLink.href = pngUrl;
-        downloadLink.download = 'qr-code.png';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
+          // Replace the href with the base64 data
+          imageElement.setAttribute('href', base64);
+        } catch (error) {
+          console.warn('Failed to embed logo:', error);
+        }
       }
+    }
+
+    const svgData = new XMLSerializer().serializeToString(clonedSvg);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+
+      const pngFile = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.download = 'qr-code.png';
+      downloadLink.href = pngFile;
+      downloadLink.click();
     };
-    img.src = dataUrl;
+
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
-
-
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>

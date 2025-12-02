@@ -15,12 +15,15 @@ import {
   serverTimestamp,
   runTransaction,
   doc,
+  DocumentReference,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../hooks/useAuth';
 import { MenuItem, SelectedOptionInfo } from '../types';
 import AddToCartModal from './AddToCartModal';
 import { useOptionGroups } from '../hooks/useOptionGroups';
+import { COLLECTIONS } from '../constants';
+import { SelectedOptions } from '../store/cartStore';
 
 type CartItem = {
   id: string;
@@ -83,17 +86,30 @@ export default function ManualOrderModal({
     menuItem: MenuItem,
     quantity: number,
     totalPrice: number,
-    selectedOptions?: any
+    selectedOptions?: SelectedOptions
   ) => {
     // Convert SelectedOptions to SelectedOptionInfo[]
     const optionInfoArray: SelectedOptionInfo[] = [];
     if (selectedOptions) {
-      Object.values(selectedOptions).flat().forEach((choice: any) => {
-        optionInfoArray.push({
-          groupName: '', // TODO: Add group name
-          choiceName: choice.name,
-          priceModifier: choice.priceModifier,
-        });
+      Object.entries(selectedOptions).forEach(([groupId, selection]) => {
+        const group = optionGroups.find(g => g.id === groupId);
+        if (!group) return;
+
+        if (Array.isArray(selection)) {
+          selection.forEach((choice) => {
+            optionInfoArray.push({
+              groupName: group.name,
+              choiceName: choice.name,
+              priceModifier: choice.priceModifier,
+            });
+          });
+        } else {
+          optionInfoArray.push({
+            groupName: group.name,
+            choiceName: selection.name,
+            priceModifier: selection.priceModifier,
+          });
+        }
       });
     }
 
@@ -101,7 +117,7 @@ export default function ManualOrderModal({
     setCart((prevCart) => [
       ...prevCart,
       {
-        id: `${menuItem.id}-${Date.now()}`,
+        id: `${menuItem.id}-${Date.now()}-${Math.random()}`,
         name: menuItem.name,
         price: totalPrice / quantity, // Price per item including options
         quantity,
@@ -140,21 +156,24 @@ export default function ManualOrderModal({
     try {
       await runTransaction(db, async (transaction) => {
         // 1. Perform ALL reads first
-        const settingsRef = doc(db, 'system_settings', 'orderNumbers');
-        const storeRef = doc(db, 'stores', user.uid);
+        const settingsRef = doc(db, COLLECTIONS.SYSTEM_SETTINGS, 'orderNumbers');
+        const storeRef = doc(db, COLLECTIONS.STORES, user.uid);
 
         // Get settings and store info
         const settingsDoc = await transaction.get(settingsRef);
         const storeDoc = await transaction.get(storeRef);
 
         // Get all relevant menu items for stock checking
-        const menuReads = [];
-        const menuItemsToUpdate: { ref: any, newStock: number, isSoldOut?: boolean }[] = [];
+        const menuReads: { cartItem: CartItem; menuItem: MenuItem; menuRef: DocumentReference }[] = [];
+        const menuItemsToUpdate: { ref: DocumentReference; newStock: number; isSoldOut?: boolean }[] = [];
 
         for (const cartItem of cart) {
-          const menuItem = menuItems.find((mi) => mi.id === cartItem.id);
+          // Extract original menu ID from cart item ID (format: menuId-timestamp)
+          const originalMenuId = cartItem.id.split('-')[0];
+          const menuItem = menuItems.find((mi) => mi.id === originalMenuId);
+
           if (menuItem && menuItem.manageStock) {
-            const menuRef = doc(db, 'menus', menuItem.id);
+            const menuRef = doc(db, COLLECTIONS.MENUS, menuItem.id);
             menuReads.push({ cartItem, menuItem, menuRef });
           }
         }
@@ -189,7 +208,7 @@ export default function ManualOrderModal({
           }
           const newStock = currentStock - cartItem.quantity;
 
-          const updateData: { ref: any, newStock: number, isSoldOut?: boolean } = { ref: menuRef, newStock };
+          const updateData: { ref: DocumentReference; newStock: number; isSoldOut?: boolean } = { ref: menuRef, newStock };
           if (newStock <= 0) {
             updateData.isSoldOut = true;
           }
@@ -214,7 +233,7 @@ export default function ManualOrderModal({
         }
 
         // Create new order
-        const newOrderRef = doc(collection(db, 'orders'));
+        const newOrderRef = doc(collection(db, COLLECTIONS.ORDERS));
         const orderItems = cart.map(({ id, selectedOptions, ...rest }) => ({
           ...rest,
           selectedOptions: selectedOptions || [],

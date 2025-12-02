@@ -1,12 +1,9 @@
-console.log("JULES_BUILD_V6_ROBUST_ORDERING_LOGS");
-import { useEffect, lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, useNavigate, Navigate } from 'react-router-dom';
-import { CircularProgress, Box } from '@mui/material';
-import './index.css';
-
+import { createBrowserRouter, RouterProvider, Navigate, useNavigate } from 'react-router-dom';
+import { CssBaseline, Box, CircularProgress } from '@mui/material';
 import RootLayout from './pages/RootLayout';
-// Lazy load pages
+
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const MenuAdminPage = lazy(() => import('./pages/admin/menu'));
@@ -81,9 +78,16 @@ const router = createBrowserRouter([
   },
 ]);
 
+import { ThemeContextProvider } from './contexts/ThemeContext';
+// import ReloadPrompt from './components/ReloadPrompt';
+
 createRoot(document.getElementById('root')!).render(
   // Temporarily disabled StrictMode for Stripe compatibility testing
   // <StrictMode>
-  <RouterProvider router={router} />
+  <ThemeContextProvider>
+    <CssBaseline />
+    {/* <ReloadPrompt /> PWA prompt disabled due to build issues */}
+    <RouterProvider router={router} />
+  </ThemeContextProvider>
   // </StrictMode>
 );

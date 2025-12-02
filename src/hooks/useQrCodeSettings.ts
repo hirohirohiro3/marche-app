@@ -6,8 +6,8 @@ import { useAuth } from './useAuth';
 import { z } from 'zod';
 
 export const qrSettingsSchema = z.object({
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, '有効なカラーコードを入力してください。'),
-  logoFile: z.any().optional().nullable(),
+  color: z.string().min(1, '色は必須です'),
+  logoFile: z.any().optional(),
 });
 
 export type QrSettingsFormValues = z.infer<typeof qrSettingsSchema>;
@@ -22,103 +22,55 @@ export const useQrCodeSettings = () => {
   const [settings, setSettings] = useState<QrCodeSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const storeId = user?.uid;
+  const fetchSettings = useCallback(async () => {
+    if (!user?.uid) return;
+    try {
+      const docRef = doc(db, 'stores', user.uid, 'settings', 'qrcode');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setSettings(docSnap.data() as QrCodeSettings);
+      } else {
+        setSettings({ color: '#000000' });
+      }
+    } catch (error) {
+      console.error("Error fetching QR settings:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
-    const fetchQrCodeSettings = async () => {
-      if (storeId) {
-        setLoading(true);
-        try {
-          const storeRef = doc(db, 'stores', storeId);
-          const storeDoc = await getDoc(storeRef);
-          if (storeDoc.exists() && storeDoc.data().qrCodeSettings) {
-            setSettings(storeDoc.data().qrCodeSettings);
-          } else {
-            setSettings({ color: '#000000' }); // Default settings
-          }
-        } catch (error) {
-          console.error("Failed to fetch QR code settings:", error);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          console.error("Full Error Details:", JSON.stringify(error as any, null, 2));
-          console.error("Current storeId:", storeId);
-          setSettings({ color: '#000000' }); // Fallback on error
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
+    fetchSettings();
+  }, [fetchSettings]);
 
-    fetchQrCodeSettings();
-  }, [storeId]);
-
-  const uploadLogoImage = useCallback(async (imageFile: File): Promise<string> => {
-    if (!storeId) {
-      throw new Error("ストアIDが取得できません。");
-    }
-
+  const saveQrCodeSettings = async (data: QrSettingsFormValues) => {
+    if (!user?.uid) return;
+    setLoading(true);
     try {
-      console.log(`[useQrCodeSettings:uploadLogoImage] Starting upload for file: ${imageFile.name}`);
+      let logoUrl = settings?.logoUrl;
 
-      const fileName = `${Date.now()}_${imageFile.name}`;
-      const filePath = `qr-code-logos/${storeId}/${fileName}`;
-      const storageRef = ref(storage, filePath);
-
-      // Upload the file directly
-      const snapshot = await uploadBytes(storageRef, imageFile);
-      console.log('[useQrCodeSettings:uploadLogoImage] Upload successful:', snapshot);
-
-      // Get the public URL
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log(`[useQrCodeSettings:uploadLogoImage] Got download URL: ${downloadURL}`);
-
-      return downloadURL;
-    } catch (error) {
-      console.error('[useQrCodeSettings:uploadLogoImage] Image upload failed:', error);
-      throw new Error('ロゴ画像のアップロードに失敗しました。');
-    }
-  }, [storeId]);
-
-  const saveQrCodeSettings = useCallback(async (values: QrSettingsFormValues) => {
-    console.log('[useQrCodeSettings] saveQrCodeSettings started.', values);
-    if (!storeId) {
-      throw new Error("ストアIDが取得できません。ログイン状態を確認してください。");
-    }
-    try {
-      let logoUrl = settings?.logoUrl || '';
-      if (values.logoFile) {
-        console.log('[useQrCodeSettings] New logo file found, starting upload...');
-        logoUrl = await uploadLogoImage(values.logoFile);
-        console.log('[useQrCodeSettings] Logo upload finished, URL:', logoUrl);
+      if (data.logoFile) {
+        const file = data.logoFile as File;
+        const storageRef = ref(storage, `stores/${user.uid}/qrcode_logo_${Date.now()}`);
+        await uploadBytes(storageRef, file);
+        logoUrl = await getDownloadURL(storageRef);
       }
 
-      const { logoFile, ...valuesForDb } = values;
-
-      const settingsToSave: QrCodeSettings = {
-        ...valuesForDb,
+      const newSettings: QrCodeSettings = {
+        color: data.color,
         logoUrl,
       };
-      console.log('[useQrCodeSettings] Data prepared for Firestore:', settingsToSave);
 
-
-      const storeRef = doc(db, 'stores', storeId);
-      console.log(`[useQrCodeSettings] Updating/creating settings for storeId: ${storeId}`);
-      try {
-        // Use setDoc with merge: true to create or update the document
-        await setDoc(storeRef, { qrCodeSettings: settingsToSave }, { merge: true });
-        console.log('[useQrCodeSettings] Firestore setDoc successful.');
-        setSettings(settingsToSave);
-      } catch (dbError) {
-        console.error('[useQrCodeSettings] Firestore setDoc ERROR:', dbError);
-        throw dbError;
-      }
-
+      const docRef = doc(db, 'stores', user.uid, 'settings', 'qrcode');
+      await setDoc(docRef, newSettings, { merge: true });
+      setSettings(newSettings);
     } catch (error) {
-      console.error('Failed to save QR code settings with detailed error:', error);
+      console.error("Error saving QR settings:", error);
       throw error;
+    } finally {
+      setLoading(false);
     }
-  }, [storeId]);
+  };
 
   return { settings, loading, saveQrCodeSettings };
 };

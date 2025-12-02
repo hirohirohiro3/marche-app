@@ -52,10 +52,11 @@ async function getCroppedImg(
           resolve(null);
           return;
         }
-        resolve(new File([blob], fileName, { type: 'image/jpeg' }));
+        // Force WebP format
+        resolve(new File([blob], fileName.replace(/\.[^/.]+$/, ".webp"), { type: 'image/webp' }));
       },
-      'image/jpeg',
-      0.95
+      'image/webp',
+      0.8 // Good balance of quality and size for WebP
     );
   });
 }
@@ -102,10 +103,13 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
     setIsLoading(true);
 
     try {
+      // Ensure the filename ends with .webp
+      const webpFileName = originalFileName.replace(/\.[^/.]+$/, ".webp");
+
       const croppedImageFile = await getCroppedImg(
         imgRef.current,
         completedCrop,
-        originalFileName
+        webpFileName
       );
       if (!croppedImageFile) {
         setIsLoading(false);
@@ -116,6 +120,7 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
         maxSizeMB: 0.5,
         maxWidthOrHeight: 1200,
         useWebWorker: true,
+        fileType: 'image/webp', // Explicitly request WebP from compression lib
       });
 
       // Re-create a clean File object from ArrayBuffer to ensure compatibility
@@ -160,16 +165,16 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
       </Button>
 
       {imgSrc && (
-        <Box mt={2}>
+        <Box mt={2} sx={{ bgcolor: 'white', p: 2, borderRadius: 1 }}>
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(c) => setCompletedCrop(c)}
             aspect={aspect}
           >
-            <img ref={imgRef} alt="Crop me" src={imgSrc} onLoad={onImageLoad} style={{ maxHeight: '400px' }} />
+            <img ref={imgRef} alt="Crop me" src={imgSrc} onLoad={onImageLoad} style={{ maxHeight: '400px', display: 'block' }} />
           </ReactCrop>
-          <Button variant="contained" onClick={handleCropAndCompress} sx={{ mt: 1 }}>
+          <Button variant="contained" onClick={handleCropAndCompress} sx={{ mt: 2 }}>
             切り抜きを決定
           </Button>
         </Box>
@@ -180,7 +185,9 @@ export default function ImageCropCompressor({ aspect, onCropped, initialImageUrl
       {finalPreview && (
         <Box mt={2}>
           <Typography variant="subtitle1">最終プレビュー:</Typography>
-          <img alt="Final preview" src={finalPreview} style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '8px' }} />
+          <Box sx={{ bgcolor: 'white', p: 1, borderRadius: 1, display: 'inline-block' }}>
+            <img alt="Final preview" src={finalPreview} style={{ maxWidth: '100%', maxHeight: '200px', display: 'block' }} />
+          </Box>
         </Box>
       )}
     </Box>

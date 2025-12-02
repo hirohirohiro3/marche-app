@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { getApp } from 'firebase/app';
+import { functions } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import {
@@ -24,8 +24,6 @@ export default function PaymentPage() {
 
   useEffect(() => {
     const fetchPaymentIntent = async () => {
-      console.log('PaymentPage v2.2 loaded - Region: asia-northeast1'); // Version check v2.2
-
       if (!orderId) {
         setError('注文IDが見つかりません。');
         setLoading(false);
@@ -33,34 +31,30 @@ export default function PaymentPage() {
       }
 
       try {
-        // Explicitly use asia-northeast1 region with app instance
-        const functions = getFunctions(getApp(), 'asia-northeast1');
+        console.log('Calling createPaymentIntent with orderId:', orderId);
+        // Use the initialized functions instance from firebase.ts
         const createPaymentIntent = httpsCallable(functions, 'createPaymentIntent');
-
-        console.log(`Calling createPaymentIntent for orderId: ${orderId}`);
         const result = await createPaymentIntent({ orderId });
         console.log('createPaymentIntent result:', result);
 
         const data = result.data as any;
-
-        // Check for custom error response
         if (data.error) {
           console.error('Server returned error:', data);
-          throw new Error(`Server Error: ${data.error} (Step: ${data.step})`);
+          throw new Error(data.error);
         }
 
-        const { clientSecret } = data;
-
+        const clientSecret = data.clientSecret;
         if (!clientSecret) {
-          throw new Error('Client secret not returned from function.');
+          console.error('Missing clientSecret in response:', data);
+          throw new Error('clientSecretが取得できませんでした');
         }
 
         setClientSecret(clientSecret);
       } catch (e: any) {
         console.error('Error calling createPaymentIntent:', e);
-        if (e.details) {
-          console.error('Error details:', e.details);
-        }
+        console.error('Error code:', e.code);
+        console.error('Error message:', e.message);
+        console.error('Error details:', e.details);
         setError(`決済の準備に失敗しました: ${e.message}`);
       } finally {
         setLoading(false);

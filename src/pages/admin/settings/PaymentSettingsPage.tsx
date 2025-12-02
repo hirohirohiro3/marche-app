@@ -211,7 +211,7 @@ export default function PaymentSettingsPage() {
         </FormControl>
 
         {(paymentMethod !== 'cash_only') && (
-          <Box sx={{ mt: 2, bgcolor: '#f8f9fa', p: 2, borderRadius: 1 }}>
+          <Box sx={{ mt: 2, bgcolor: 'action.hover', p: 2, borderRadius: 1 }}>
             <Typography variant="subtitle2" gutterBottom>📱 アプリ内決済で対応する支払い方法：</Typography>
             <List dense>
               <ListItem>
