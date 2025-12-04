@@ -63,6 +63,16 @@ export const createPaymentIntent = functions.region('asia-northeast1').https.onC
           'Order data is missing.'
         );
       }
+
+      // Prevent double payment
+      if (orderData.status === 'paid' || orderData.status === 'completed') {
+        functions.logger.warn("Order already paid", { orderId });
+        throw new functions.https.HttpsError(
+          'failed-precondition',
+          'This order has already been paid.'
+        );
+      }
+
       const totalPrice = orderData.totalPrice;
 
       // Get the store's Stripe Account ID
@@ -105,6 +115,8 @@ export const createPaymentIntent = functions.region('asia-northeast1').https.onC
           metadata: {
             orderId: orderId,
           },
+        }, {
+          idempotencyKey: `payment_${orderId}`,
         });
 
         functions.logger.info("Payment Intent created successfully", { paymentIntentId: paymentIntent.id });

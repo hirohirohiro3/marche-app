@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Paper, Typography, Button, Box, List, ListItem, ListItemText, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { motion } from 'framer-motion';
 import { ShoppingCart, Delete as DeleteIcon } from '@mui/icons-material';
 import { useCartStore } from '../store/cartStore';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useHaptic } from '../hooks/useHaptic';
 
 export default function CartSummary() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -10,6 +12,7 @@ export default function CartSummary() {
   const navigate = useNavigate();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const { triggerHaptic } = useHaptic();
 
   const itemsCount = totalItems();
   const price = totalPrice();
@@ -19,11 +22,13 @@ export default function CartSummary() {
   }
 
   const handleDeleteClick = (cartItemId: string) => {
+    triggerHaptic('warning');
     setItemToDelete(cartItemId);
     setDeleteConfirmOpen(true);
   };
 
   const handleConfirmDelete = () => {
+    triggerHaptic('medium');
     if (itemToDelete) {
       removeItem(itemToDelete);
     }
@@ -91,8 +96,20 @@ export default function CartSummary() {
           <Button
             variant="contained"
             size="large"
-            startIcon={<ShoppingCart />}
-            onClick={() => navigate(`/checkout/${storeId}`)}
+            startIcon={
+              <motion.div
+                key={itemsCount}
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.3, 1], rotate: [0, -15, 15, 0] }}
+                transition={{ duration: 0.4 }}
+              >
+                <ShoppingCart />
+              </motion.div>
+            }
+            onClick={() => {
+              triggerHaptic('light');
+              navigate(`/checkout/${storeId}`);
+            }}
             data-testid="checkout-button"
           >
             注文へ進む

@@ -16,6 +16,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import AppleIcon from '@mui/icons-material/Apple';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
+import { PaymentSuccessView } from '../components/PaymentSuccessView';
 
 // Define the Order type
 interface Order {
@@ -146,16 +147,12 @@ export default function OrderSummaryPage() {
   // 支払い完了・キャンセル等のステータス表示
   if (order?.status === 'paid' || order?.status === 'completed') {
     return (
-      <Container maxWidth="sm" sx={{ py: 4, textAlign: 'center' }}>
-        <Alert severity="success" sx={{ mb: 2 }}>
-          お支払いは完了しています
-        </Alert>
-        <Typography variant="h4" gutterBottom>
-          注文番号: #{order?.orderNumber}
-        </Typography>
-        <Typography variant="body1">
-          商品が出来上がりましたら、注文番号でお呼びします。
-        </Typography>
+      <Container maxWidth="sm" sx={{ mt: 4 }}>
+        <PaymentSuccessView
+          message="お支払いは完了しています"
+          orderNumber={order?.orderNumber || null}
+          orderId={orderId || null}
+        />
       </Container>
     );
   }

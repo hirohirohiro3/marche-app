@@ -8,6 +8,9 @@ import {
   Paper,
   IconButton,
   CircularProgress,
+  FormControlLabel,
+  Switch,
+  Divider,
 } from '@mui/material';
 import Close from '@mui/icons-material/Close';
 import {
@@ -37,6 +40,7 @@ interface ManualOrderModalProps {
   open: boolean;
   onClose: () => void;
   menuItems: MenuItem[];
+  lowStockThreshold?: number;
 }
 
 const style = {
@@ -59,6 +63,7 @@ export default function ManualOrderModal({
   open,
   onClose,
   menuItems,
+  lowStockThreshold = 5,
 }: ManualOrderModalProps) {
   const { user } = useAuth();
   const { optionGroups } = useOptionGroups(user?.uid);
@@ -66,10 +71,31 @@ export default function ManualOrderModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
+  const [groupSoldOut, setGroupSoldOut] = useState(false);
 
   const totalPrice = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cart]);
+
+  // Group menu items by sold-out status
+  const groupedMenuItems = useMemo(() => {
+    const available = menuItems.filter(item => !item.isSoldOut);
+    const soldOut = menuItems.filter(item => item.isSoldOut);
+    return { available, soldOut };
+  }, [menuItems]);
+
+  // Group available items by category
+  const categorizedItems = useMemo(() => {
+    const categories = new Map<string, MenuItem[]>();
+    groupedMenuItems.available.forEach(item => {
+      const category = item.category || 'その他';
+      if (!categories.has(category)) {
+        categories.set(category, []);
+      }
+      categories.get(category)!.push(item);
+    });
+    return Array.from(categories.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [groupedMenuItems.available]);
 
 
   const handleOpenAddToCartModal = (item: MenuItem) => {
@@ -291,21 +317,190 @@ export default function ManualOrderModal({
               md={7}
               sx={{ overflowY: 'auto', maxHeight: 'calc(90vh - 200px)' }}
             >
-              <Typography variant="h6" gutterBottom>メニュー</Typography>
-              <Grid container spacing={1}>
-                {menuItems.map((item) => (
-                  <Grid item xs={6} sm={4} md={3} key={item.id}>
-                    <Button
-                      variant="contained"
-                      onClick={() => handleOpenAddToCartModal(item)}
-                      sx={{ width: '100%', height: '100px', textTransform: 'none' }}
-                      data-testid={`menu-item-${item.id}`}
-                    >
-                      {item.name}
-                    </Button>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">メニュー</Typography>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={groupSoldOut}
+                      onChange={(e) => setGroupSoldOut(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label="売り切れを表示"
+                  sx={{ m: 0 }}
+                />
+              </Box>
+
+              {/* Available Items - Grouped by Category */}
+              {categorizedItems.map(([category, items], categoryIndex) => (
+                <Box key={category}>
+                  {categoryIndex > 0 && <Divider sx={{ my: 2 }} />}
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    {category}
+                  </Typography>
+                  <Grid container spacing={1}>
+                    {items.map((item) => (
+                      <Grid item xs={6} sm={4} md={3} key={item.id}>
+                        <Box sx={{ position: 'relative', width: '100%' }}>
+                          <Button
+                            variant="contained"
+                            onClick={() => handleOpenAddToCartModal(item)}
+                            disabled={item.isSoldOut}
+                            sx={{
+                              width: '100%',
+                              height: '100px',
+                              textTransform: 'none',
+                              position: 'relative',
+                              color: item.isSoldOut ? '#000000 !important' : 'inherit',
+                              '&.Mui-disabled': {
+                                color: '#000000 !important',
+                              },
+                            }}
+                            data-testid={`menu-item-${item.id}`}
+                          >
+                            {item.name}
+                          </Button>
+                          {item.isSoldOut && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: -8,
+                                right: -8,
+                                zIndex: 1,
+                                backgroundColor: 'error.main',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 24,
+                                height: 24,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                boxShadow: 2,
+                              }}
+                            >
+                              0
+                            </Box>
+                          )}
+                          {item.manageStock && item.stock !== null && !item.isSoldOut && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: -8,
+                                right: -8,
+                                zIndex: 1,
+                                backgroundColor:
+                                  (item.stock || 0) <= lowStockThreshold
+                                    ? 'error.main'
+                                    : 'success.main',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 24,
+                                height: 24,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                boxShadow: 2,
+                              }}
+                            >
+                              {item.stock}
+                            </Box>
+                          )}
+                        </Box>
+                      </Grid>
+                    ))}
                   </Grid>
-                ))}
-              </Grid>
+                </Box>
+              ))}
+
+              {/* Sold Out Items */}
+              {groupSoldOut && groupedMenuItems.soldOut.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, fontWeight: 'bold' }}>
+                    売り切れ ({groupedMenuItems.soldOut.length}件)
+                  </Typography>
+                  <Grid container spacing={1}>
+                    {groupedMenuItems.soldOut.map((item) => (
+                      <Grid item xs={6} sm={4} md={3} key={item.id}>
+                        <Box sx={{ position: 'relative', width: '100%' }}>
+                          <Button
+                            variant="contained"
+                            onClick={() => handleOpenAddToCartModal(item)}
+                            disabled={item.isSoldOut}
+                            sx={{
+                              width: '100%',
+                              height: '100px',
+                              textTransform: 'none',
+                              position: 'relative',
+                              color: item.isSoldOut ? '#000000 !important' : 'inherit',
+                              '&.Mui-disabled': {
+                                color: '#000000 !important',
+                              },
+                            }}
+                            data-testid={`menu-item-${item.id}`}
+                          >
+                            {item.name}
+                          </Button>
+                          {item.isSoldOut && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: -8,
+                                right: -8,
+                                zIndex: 1,
+                                backgroundColor: 'error.main',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 24,
+                                height: 24,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                boxShadow: 2,
+                              }}
+                            >
+                              0
+                            </Box>
+                          )}
+                          {item.manageStock && item.stock !== null && !item.isSoldOut && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: -8,
+                                right: -8,
+                                zIndex: 1,
+                                backgroundColor:
+                                  (item.stock || 0) <= lowStockThreshold
+                                    ? 'error.main'
+                                    : 'success.main',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: 24,
+                                height: 24,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                boxShadow: 2,
+                              }}
+                            >
+                              {item.stock}
+                            </Box>
+                          )}
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </>
+              )}
             </Grid>
 
             {/* Cart */}

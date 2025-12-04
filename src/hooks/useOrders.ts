@@ -20,9 +20,9 @@ export const useOrders = (storeId: string | undefined) => {
   const prevNewOrderCount = useRef(0);
 
   useEffect(() => {
-    // Note: A specific sound file is not required. A generic browser sound is sufficient.
+    // Simple beep sound
     audioRef.current = new Audio(
-      'data:audio/wav;base64,UklGRigAAABXQVZFZm1tIBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
+      'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU'
     );
   }, []);
 
@@ -55,7 +55,12 @@ export const useOrders = (storeId: string | undefined) => {
       const newOrders = ordersData.filter(o => o.status === 'new');
       if (newOrders.length > prevNewOrderCount.current) {
         setIsNewOrder(true);
-        audioRef.current?.play().catch(e => console.error("Audio play failed", e));
+        audioRef.current?.play().catch(e => {
+          // Ignore autoplay policy errors and supported source errors
+          if (e.name !== 'NotAllowedError' && e.name !== 'NotSupportedError') {
+            console.error("Audio play failed", e);
+          }
+        });
       }
       prevNewOrderCount.current = newOrders.length;
 

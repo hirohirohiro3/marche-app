@@ -1,0 +1,426 @@
+Firebase Admin SDK initialized for tests.
+--- Starting global setup for tests ---
+Global setup: Found existing user 'test.test@test.test' with UID: qTSMnKNbfPWeJddnwWeDvQS2Cyi2
+Global setup: Created or updated store for user ID: qTSMnKNbfPWeJddnwWeDvQS2Cyi2
+Global setup: Created initial menu item.
+--- Global setup complete ---
+
+Running 1 test using 1 worker
+
+[1A[2KFirebase Admin SDK initialized for tests.
+
+[1A[2K[1/1] [chromium] › tests\customer-flow.spec.ts:4:1 › Customer Order Flow
+[1A[2K[chromium] › tests\customer-flow.spec.ts:4:1 › Customer Order Flow
+BROWSER LOG: [vite] connecting...
+
+[1A[2KPAGE LOG: [vite] connecting...
+
+[1A[2KBROWSER LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+[1A[2KPAGE LOG: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER LOG: ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+
+[1A[2KPAGE LOG: ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+
+[1A[2KBROWSER LOG: [vite] connected.
+
+[1A[2KPAGE LOG: [vite] connected.
+
+[1A[2KBROWSER LOG: App Check debug token: 5042ec9c-3471-4cf4-a573-c0b3b17f9990. You will need to add it to your app's App Check settings in the Firebase console for it to work.
+
+[1A[2KPAGE LOG: App Check debug token: 5042ec9c-3471-4cf4-a573-c0b3b17f9990. You will need to add it to your app's App Check settings in the Firebase console for it to work.
+
+[1A[2KBROWSER LOG: motion() is deprecated. Use motion.create() instead.
+
+[1A[2KPAGE LOG: motion() is deprecated. Use motion.create() instead.
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.953Z]  @firebase/firestore: Firestore (12.4.0): FirebaseAuthCredentialsProvider Auth detected
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.953Z]  @firebase/firestore: Firestore (12.4.0): FirebaseAuthCredentialsProvider Auth detected
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.954Z]  @firebase/firestore: Firestore (12.4.0): FirebaseAppCheckTokenProvider AppCheck detected
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.954Z]  @firebase/firestore: Firestore (12.4.0): FirebaseAppCheckTokenProvider AppCheck detected
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.955Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Received user= null
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.955Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Received user= null
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.955Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Using default OnlineComponentProvider
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.955Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Using default OnlineComponentProvider
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.956Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Using default OfflineComponentProvider
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.956Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Using default OfflineComponentProvider
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.956Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Initializing OfflineComponentProvider
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.956Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Initializing OfflineComponentProvider
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.956Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Initializing OnlineComponentProvider
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.956Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Initializing OnlineComponentProvider
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.957Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Allocate target
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.957Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Allocate target
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.958Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Execute query
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.958Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Execute query
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.958Z]  @firebase/firestore: Firestore (12.4.0): QueryEngine Using full collection scan to execute query: Query(target=Target(menus, filters: [storeId == qTSMnKNbfPWeJddnwWeDvQS2Cyi2], orderBy: [sortOrder (asc), __name__ (asc)]); limitType=F)
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.958Z]  @firebase/firestore: Firestore (12.4.0): QueryEngine Using full collection scan to execute query: Query(target=Target(menus, filters: [storeId == qTSMnKNbfPWeJddnwWeDvQS2Cyi2], orderBy: [sortOrder (asc), __name__ (asc)]); limitType=F)
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Allocate target
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Allocate target
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Execute query
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Execute query
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): QueryEngine Using full collection scan to execute query: Query(target=Target(optionGroups, filters: [storeId == qTSMnKNbfPWeJddnwWeDvQS2Cyi2], orderBy: [name (asc), __name__ (asc)]); limitType=F)
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): QueryEngine Using full collection scan to execute query: Query(target=Target(optionGroups, filters: [storeId == qTSMnKNbfPWeJddnwWeDvQS2Cyi2], orderBy: [name (asc), __name__ (asc)]); limitType=F)
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Allocate target
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Allocate target
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Execute query
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Execute query
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): QueryEngine Using full collection scan to execute query: Query(target=Target(stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2, orderBy: [__name__ (asc)]); limitType=F)
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:00.960Z]  @firebase/firestore: Firestore (12.4.0): QueryEngine Using full collection scan to execute query: Query(target=Target(stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2, orderBy: [__name__ (asc)]); limitType=F)
+
+[1A[2KBROWSER LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KPAGE LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.168Z]  @firebase/auth: Auth (12.4.0): Error while retrieving App Check token: FirebaseError: AppCheck: Fetch server returned an HTTP error status. HTTP status: 403. (appCheck/fetch-status-error).
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.168Z]  @firebase/auth: Auth (12.4.0): Error while retrieving App Check token: FirebaseError: AppCheck: Fetch server returned an HTTP error status. HTTP status: 403. (appCheck/fetch-status-error).
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.169Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection Creating RPC 'Listen' stream 0x32206bfc: https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel {"httpSessionIdParam":"gsessionid","initMessageHeaders":{"X-Goog-Api-Client":"gl-js/ fire/12.4.0","Content-Type":"text/plain","X-Firebase-GMPID":"1:787536235591:web:f76b302496a2584b7cb562","x-firebase-appcheck":"eyJlcnJvciI6IlVOS05PV05fRVJST1IifQ=="},"messageUrlParams":{"database":"projects/marche-order-app/databases/(default)"},"sendRawJson":true,"supportsCrossDomainXhr":true,"internalChannelParams":{"forwardChannelRequestTimeoutMs":600000},"forceLongPolling":true,"detectBufferingProxy":false,"useFetchStreams":true,"encodeInitMessageHeaders":true}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.169Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection Creating RPC 'Listen' stream 0x32206bfc: https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel {"httpSessionIdParam":"gsessionid","initMessageHeaders":{"X-Goog-Api-Client":"gl-js/ fire/12.4.0","Content-Type":"text/plain","X-Firebase-GMPID":"1:787536235591:web:f76b302496a2584b7cb562","x-firebase-appcheck":"eyJlcnJvciI6IlVOS05PV05fRVJST1IifQ=="},"messageUrlParams":{"database":"projects/marche-order-app/databases/(default)"},"sendRawJson":true,"supportsCrossDomainXhr":true,"internalChannelParams":{"forwardChannelRequestTimeoutMs":600000},"forceLongPolling":true,"detectBufferingProxy":false,"useFetchStreams":true,"encodeInitMessageHeaders":true}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.170Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection Opening RPC 'Listen' stream 0x32206bfc transport.
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.170Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection Opening RPC 'Listen' stream 0x32206bfc transport.
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.171Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","addTarget":{"query":{"structuredQuery":{"from":[{"collectionId":"menus"}],"where":{"fieldFilter":{"field":{"fieldPath":"storeId"},"op":"EQUAL","value":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"}}},"orderBy":[{"field":{"fieldPath":"sortOrder"},"direction":"ASCENDING"},{"field":{"fieldPath":"__name__"},"direction":"ASCENDING"}]},"parent":"projects/marche-order-app/databases/(default)/documents"},"targetId":2}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.171Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","addTarget":{"query":{"structuredQuery":{"from":[{"collectionId":"menus"}],"where":{"fieldFilter":{"field":{"fieldPath":"storeId"},"op":"EQUAL","value":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"}}},"orderBy":[{"field":{"fieldPath":"sortOrder"},"direction":"ASCENDING"},{"field":{"fieldPath":"__name__"},"direction":"ASCENDING"}]},"parent":"projects/marche-order-app/databases/(default)/documents"},"targetId":2}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.171Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","addTarget":{"query":{"structuredQuery":{"from":[{"collectionId":"optionGroups"}],"where":{"fieldFilter":{"field":{"fieldPath":"storeId"},"op":"EQUAL","value":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"}}},"orderBy":[{"field":{"fieldPath":"name"},"direction":"ASCENDING"},{"field":{"fieldPath":"__name__"},"direction":"ASCENDING"}]},"parent":"projects/marche-order-app/databases/(default)/documents"},"targetId":4}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.171Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","addTarget":{"query":{"structuredQuery":{"from":[{"collectionId":"optionGroups"}],"where":{"fieldFilter":{"field":{"fieldPath":"storeId"},"op":"EQUAL","value":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"}}},"orderBy":[{"field":{"fieldPath":"name"},"direction":"ASCENDING"},{"field":{"fieldPath":"__name__"},"direction":"ASCENDING"}]},"parent":"projects/marche-order-app/databases/(default)/documents"},"targetId":4}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.171Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","addTarget":{"documents":{"documents":["projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"]},"targetId":6}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.171Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","addTarget":{"documents":{"documents":["projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"]},"targetId":6}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.285Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc transport opened.
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.285Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc transport opened.
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.309Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"ADD","targetIds":[2]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.309Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"ADD","targetIds":[2]}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.310Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"ADD","targetIds":[4]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.310Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"ADD","targetIds":[4]}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.310Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"ADD","targetIds":[6]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.310Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"ADD","targetIds":[6]}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.331Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"documentChange":{"document":{"name":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","fields":{"ownerId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"name":{"stringValue":"Test Store"},"qrCodeSettings":{"mapValue":{"fields":{"logoUrl":{"nullValue":null},"color":{"stringValue":"#000000"}}}}},"createTime":"2025-12-02T13:00:49.486629Z","updateTime":"2025-12-02T14:16:12.462608Z"},"targetIds":[6]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.331Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"documentChange":{"document":{"name":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","fields":{"ownerId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"name":{"stringValue":"Test Store"},"qrCodeSettings":{"mapValue":{"fields":{"logoUrl":{"nullValue":null},"color":{"stringValue":"#000000"}}}}},"createTime":"2025-12-02T13:00:49.486629Z","updateTime":"2025-12-02T14:16:12.462608Z"},"targetIds":[6]}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.375Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"CURRENT","targetIds":[6],"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.375Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"CURRENT","targetIds":[6],"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.375Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"CURRENT","targetIds":[4],"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.375Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"CURRENT","targetIds":[4],"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.376Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"documentChange":{"document":{"name":"projects/marche-order-app/databases/(default)/documents/menus/initial-item","fields":{"name":{"stringValue":"Initial Espresso"},"isSoldOut":{"booleanValue":false},"category":{"stringValue":"Drinks"},"price":{"integerValue":"500"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"sortOrder":{"integerValue":"1"}},"createTime":"2025-12-02T14:11:29.300842Z","updateTime":"2025-12-02T14:11:29.300842Z"},"targetIds":[2]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.376Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"documentChange":{"document":{"name":"projects/marche-order-app/databases/(default)/documents/menus/initial-item","fields":{"name":{"stringValue":"Initial Espresso"},"isSoldOut":{"booleanValue":false},"category":{"stringValue":"Drinks"},"price":{"integerValue":"500"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"sortOrder":{"integerValue":"1"}},"createTime":"2025-12-02T14:11:29.300842Z","updateTime":"2025-12-02T14:11:29.300842Z"},"targetIds":[2]}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.376Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"CURRENT","targetIds":[2],"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.376Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"CURRENT","targetIds":[2],"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.376Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.376Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"resumeToken":"CgkIktLwy+ajkQM=","readTime":"2025-12-04T11:13:01.344018Z"}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.377Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Get last remote snapshot version
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.377Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Get last remote snapshot version
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.377Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Apply remote event
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.377Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Apply remote event
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.379Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: notifyLocalViewChanges
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.379Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: notifyLocalViewChanges
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.387Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Release target
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.387Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Release target
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.387Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","removeTarget":6}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.387Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","removeTarget":6}
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+
+[1A[2KPAGE LOG: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetIds":[6],"resumeToken":"CgkIlIv0y+ajkQM=","readTime":"2025-12-04T11:13:01.400468Z"}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetIds":[6],"resumeToken":"CgkIlIv0y+ajkQM=","readTime":"2025-12-04T11:13:01.400468Z"}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"filter":{"targetId":2,"count":1,"unchangedNames":{"bits":{"bitmap":"VkoB","padding":7},"hashCount":12}}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"filter":{"targetId":2,"count":1,"unchangedNames":{"bits":{"bitmap":"VkoB","padding":7},"hashCount":12}}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetIds":[2],"resumeToken":"CgkIlIv0y+ajkQM=","readTime":"2025-12-04T11:13:01.400468Z"}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetIds":[2],"resumeToken":"CgkIlIv0y+ajkQM=","readTime":"2025-12-04T11:13:01.400468Z"}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"filter":{"targetId":4,"unchangedNames":{"bits":{}}}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"filter":{"targetId":4,"unchangedNames":{"bits":{}}}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"resumeToken":"CgkIlIv0y+ajkQM=","readTime":"2025-12-04T11:13:01.400468Z"}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"resumeToken":"CgkIlIv0y+ajkQM=","readTime":"2025-12-04T11:13:01.400468Z"}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WatchChangeAggregator Detected inactive target 6
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.447Z]  @firebase/firestore: Firestore (12.4.0): WatchChangeAggregator Detected inactive target 6
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.448Z]  @firebase/firestore: Firestore (12.4.0): WatchChangeAggregator Detected inactive target 6
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.448Z]  @firebase/firestore: Firestore (12.4.0): WatchChangeAggregator Detected inactive target 6
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.448Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Get last remote snapshot version
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.448Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Get last remote snapshot version
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.449Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Apply remote event
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.449Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Apply remote event
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.449Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: notifyLocalViewChanges
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.449Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: notifyLocalViewChanges
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:01.466Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"REMOVE","targetIds":[6]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:01.466Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"REMOVE","targetIds":[6]}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Release target
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Release target
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","removeTarget":2}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","removeTarget":2}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Release target
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Release target
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","removeTarget":4}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.106Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc sending: {"database":"projects/marche-order-app/databases/(default)","removeTarget":4}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.124Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"REMOVE","targetIds":[2]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.124Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"REMOVE","targetIds":[2]}}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.142Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"REMOVE","targetIds":[4]}}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.142Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc received: {"targetChange":{"targetChangeType":"REMOVE","targetIds":[4]}}
+
+[1A[2KBROWSER LOG: Starting order transaction...
+
+[1A[2KPAGE LOG: Starting order transaction...
+
+[1A[2KBROWSER LOG: Inside transaction...
+
+[1A[2KPAGE LOG: Inside transaction...
+
+[1A[2KBROWSER LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KPAGE LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.347Z]  @firebase/auth: Auth (12.4.0): Error while retrieving App Check token: FirebaseError: AppCheck: Fetch server returned an HTTP error status. HTTP status: 403. (appCheck/fetch-status-error).
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.347Z]  @firebase/auth: Auth (12.4.0): Error while retrieving App Check token: FirebaseError: AppCheck: Fetch server returned an HTTP error status. HTTP status: 403. (appCheck/fetch-status-error).
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.347Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Sending RPC 'BatchGetDocuments' 0x32206bfd: https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:batchGet {"documents":["projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"]}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.347Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Sending RPC 'BatchGetDocuments' 0x32206bfd: https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:batchGet {"documents":["projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"]}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.347Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206bfe sending request: {"documents":["projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"]}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.347Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206bfe sending request: {"documents":["projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"]}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.503Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection XHR for RPC 'BatchGetDocuments' 0x32206bfe received: [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","fields":{"name":{"stringValue":"Test Store"},"ownerId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"qrCodeSettings":{"mapValue":{"fields":{"color":{"stringValue":"#000000"},"logoUrl":{"nullValue":null}}}}},"createTime":"2025-12-02T13:00:49.486629Z","updateTime":"2025-12-02T14:16:12.462608Z"},"readTime":"2025-12-04T11:13:02.531010Z"}]
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.503Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection XHR for RPC 'BatchGetDocuments' 0x32206bfe received: [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","fields":{"name":{"stringValue":"Test Store"},"ownerId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"qrCodeSettings":{"mapValue":{"fields":{"color":{"stringValue":"#000000"},"logoUrl":{"nullValue":null}}}}},"createTime":"2025-12-02T13:00:49.486629Z","updateTime":"2025-12-02T14:16:12.462608Z"},"readTime":"2025-12-04T11:13:02.531010Z"}]
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.503Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206bfe completed.
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.503Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206bfe completed.
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.503Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Received RPC 'BatchGetDocuments' 0x32206bfd:  [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","fields":{"name":{"stringValue":"Test Store"},"ownerId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"qrCodeSettings":{"mapValue":{"fields":{"color":{"stringValue":"#000000"},"logoUrl":{"nullValue":null}}}}},"createTime":"2025-12-02T13:00:49.486629Z","updateTime":"2025-12-02T14:16:12.462608Z"},"readTime":"2025-12-04T11:13:02.531010Z"}]
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.503Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Received RPC 'BatchGetDocuments' 0x32206bfd:  [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","fields":{"name":{"stringValue":"Test Store"},"ownerId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"qrCodeSettings":{"mapValue":{"fields":{"color":{"stringValue":"#000000"},"logoUrl":{"nullValue":null}}}}},"createTime":"2025-12-02T13:00:49.486629Z","updateTime":"2025-12-02T14:16:12.462608Z"},"readTime":"2025-12-04T11:13:02.531010Z"}]
+
+[1A[2KBROWSER LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KPAGE LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.826Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Sending RPC 'BatchGetDocuments' 0x32206bff: https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:batchGet {"documents":["projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers"]}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.826Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Sending RPC 'BatchGetDocuments' 0x32206bff: https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:batchGet {"documents":["projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers"]}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.826Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206c00 sending request: {"documents":["projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers"]}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.826Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206c00 sending request: {"documents":["projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers"]}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.923Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection XHR for RPC 'BatchGetDocuments' 0x32206c00 received: [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"101"},"nextManualOrderNumber":{"integerValue":"1"}},"createTime":"2025-11-14T11:33:40.507413Z","updateTime":"2025-12-04T10:39:40.663540Z"},"readTime":"2025-12-04T11:13:02.955738Z"}]
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.923Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection XHR for RPC 'BatchGetDocuments' 0x32206c00 received: [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"101"},"nextManualOrderNumber":{"integerValue":"1"}},"createTime":"2025-11-14T11:33:40.507413Z","updateTime":"2025-12-04T10:39:40.663540Z"},"readTime":"2025-12-04T11:13:02.955738Z"}]
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.923Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206c00 completed.
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.923Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'BatchGetDocuments' 0x32206c00 completed.
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:02.923Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Received RPC 'BatchGetDocuments' 0x32206bff:  [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"101"},"nextManualOrderNumber":{"integerValue":"1"}},"createTime":"2025-11-14T11:33:40.507413Z","updateTime":"2025-12-04T10:39:40.663540Z"},"readTime":"2025-12-04T11:13:02.955738Z"}]
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:02.923Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Received RPC 'BatchGetDocuments' 0x32206bff:  [{"found":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"101"},"nextManualOrderNumber":{"integerValue":"1"}},"createTime":"2025-11-14T11:33:40.507413Z","updateTime":"2025-12-04T10:39:40.663540Z"},"readTime":"2025-12-04T11:13:02.955738Z"}]
+
+[1A[2KBROWSER LOG: Signed in anonymously
+
+[1A[2KPAGE LOG: Signed in anonymously
+
+[1A[2KBROWSER LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KPAGE LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.247Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Sending RPC 'Commit' 0x32206c01: https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:commit {"writes":[{"update":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"102"}}},"updateMask":{"fieldPaths":["nextQrOrderNumber"]},"currentDocument":{"updateTime":"2025-12-04T10:39:40.663540000Z"}},{"update":{"name":"projects/marche-order-app/databases/(default)/documents/orders/NMo4B7WFNsrPNb6VxiwF","fields":{"orderNumber":{"integerValue":"101"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"uid":{"stringValue":"b1951d8a5a31f5a9"},"items":{"arrayValue":{"values":[{"mapValue":{"fields":{"name":{"stringValue":"Initial Espresso"},"quantity":{"integerValue":"1"},"price":{"integerValue":"500"}}}}]}},"totalPrice":{"integerValue":"500"},"status":{"stringValue":"new"},"orderType":{"stringValue":"qr"},"eventName":{"nullValue":"NULL_VALUE"}}},"updateTransforms":[{"fieldPath":"createdAt","setToServerValue":"REQUEST_TIME"}]},{"verify":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","currentDocument":{"updateTime":"2025-12-02T14:16:12.462608000Z"}}]}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.247Z]  @firebase/firestore: Firestore (12.4.0): RestConnection Sending RPC 'Commit' 0x32206c01: https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:commit {"writes":[{"update":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"102"}}},"updateMask":{"fieldPaths":["nextQrOrderNumber"]},"currentDocument":{"updateTime":"2025-12-04T10:39:40.663540000Z"}},{"update":{"name":"projects/marche-order-app/databases/(default)/documents/orders/NMo4B7WFNsrPNb6VxiwF","fields":{"orderNumber":{"integerValue":"101"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"uid":{"stringValue":"b1951d8a5a31f5a9"},"items":{"arrayValue":{"values":[{"mapValue":{"fields":{"name":{"stringValue":"Initial Espresso"},"quantity":{"integerValue":"1"},"price":{"integerValue":"500"}}}}]}},"totalPrice":{"integerValue":"500"},"status":{"stringValue":"new"},"orderType":{"stringValue":"qr"},"eventName":{"nullValue":"NULL_VALUE"}}},"updateTransforms":[{"fieldPath":"createdAt","setToServerValue":"REQUEST_TIME"}]},{"verify":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","currentDocument":{"updateTime":"2025-12-02T14:16:12.462608000Z"}}]}
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.248Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Commit' 0x32206c02 sending request: {"writes":[{"update":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"102"}}},"updateMask":{"fieldPaths":["nextQrOrderNumber"]},"currentDocument":{"updateTime":"2025-12-04T10:39:40.663540000Z"}},{"update":{"name":"projects/marche-order-app/databases/(default)/documents/orders/NMo4B7WFNsrPNb6VxiwF","fields":{"orderNumber":{"integerValue":"101"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"uid":{"stringValue":"b1951d8a5a31f5a9"},"items":{"arrayValue":{"values":[{"mapValue":{"fields":{"name":{"stringValue":"Initial Espresso"},"quantity":{"integerValue":"1"},"price":{"integerValue":"500"}}}}]}},"totalPrice":{"integerValue":"500"},"status":{"stringValue":"new"},"orderType":{"stringValue":"qr"},"eventName":{"nullValue":"NULL_VALUE"}}},"updateTransforms":[{"fieldPath":"createdAt","setToServerValue":"REQUEST_TIME"}]},{"verify":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","currentDocument":{"updateTime":"2025-12-02T14:16:12.462608000Z"}}]}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.248Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Commit' 0x32206c02 sending request: {"writes":[{"update":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"102"}}},"updateMask":{"fieldPaths":["nextQrOrderNumber"]},"currentDocument":{"updateTime":"2025-12-04T10:39:40.663540000Z"}},{"update":{"name":"projects/marche-order-app/databases/(default)/documents/orders/NMo4B7WFNsrPNb6VxiwF","fields":{"orderNumber":{"integerValue":"101"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"uid":{"stringValue":"b1951d8a5a31f5a9"},"items":{"arrayValue":{"values":[{"mapValue":{"fields":{"name":{"stringValue":"Initial Espresso"},"quantity":{"integerValue":"1"},"price":{"integerValue":"500"}}}}]}},"totalPrice":{"integerValue":"500"},"status":{"stringValue":"new"},"orderType":{"stringValue":"qr"},"eventName":{"nullValue":"NULL_VALUE"}}},"updateTransforms":[{"fieldPath":"createdAt","setToServerValue":"REQUEST_TIME"}]},{"verify":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","currentDocument":{"updateTime":"2025-12-02T14:16:12.462608000Z"}}]}
+
+[1A[2KBROWSER LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KPAGE LOG: Failed to load resource: the server responded with a status of 403 ()
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Commit' 0x32206c02 failed with status: 403 response text: {
+  "error": {
+    "code": 403,
+    "message": "Missing or insufficient permissions.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Commit' 0x32206c02 failed with status: 403 response text: {
+  "error": {
+    "code": 403,
+    "message": "Missing or insufficient permissions.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Commit' 0x32206c02 completed.
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Commit' 0x32206c02 completed.
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): RestConnection RPC 'Commit' 0x32206c01 failed with error:  {"code":"permission-denied","name":"FirebaseError"} url:  https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:commit request: {"writes":[{"update":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"102"}}},"updateMask":{"fieldPaths":["nextQrOrderNumber"]},"currentDocument":{"updateTime":"2025-12-04T10:39:40.663540000Z"}},{"update":{"name":"projects/marche-order-app/databases/(default)/documents/orders/NMo4B7WFNsrPNb6VxiwF","fields":{"orderNumber":{"integerValue":"101"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"uid":{"stringValue":"b1951d8a5a31f5a9"},"items":{"arrayValue":{"values":[{"mapValue":{"fields":{"name":{"stringValue":"Initial Espresso"},"quantity":{"integerValue":"1"},"price":{"integerValue":"500"}}}}]}},"totalPrice":{"integerValue":"500"},"status":{"stringValue":"new"},"orderType":{"stringValue":"qr"},"eventName":{"nullValue":"NULL_VALUE"}}},"updateTransforms":[{"fieldPath":"createdAt","setToServerValue":"REQUEST_TIME"}]},{"verify":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","currentDocument":{"updateTime":"2025-12-02T14:16:12.462608000Z"}}]}
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): RestConnection RPC 'Commit' 0x32206c01 failed with error:  {"code":"permission-denied","name":"FirebaseError"} url:  https://firestore.googleapis.com/v1/projects/marche-order-app/databases/(default)/documents:commit request: {"writes":[{"update":{"name":"projects/marche-order-app/databases/(default)/documents/system_settings/orderNumbers","fields":{"nextQrOrderNumber":{"integerValue":"102"}}},"updateMask":{"fieldPaths":["nextQrOrderNumber"]},"currentDocument":{"updateTime":"2025-12-04T10:39:40.663540000Z"}},{"update":{"name":"projects/marche-order-app/databases/(default)/documents/orders/NMo4B7WFNsrPNb6VxiwF","fields":{"orderNumber":{"integerValue":"101"},"storeId":{"stringValue":"qTSMnKNbfPWeJddnwWeDvQS2Cyi2"},"uid":{"stringValue":"b1951d8a5a31f5a9"},"items":{"arrayValue":{"values":[{"mapValue":{"fields":{"name":{"stringValue":"Initial Espresso"},"quantity":{"integerValue":"1"},"price":{"integerValue":"500"}}}}]}},"totalPrice":{"integerValue":"500"},"status":{"stringValue":"new"},"orderType":{"stringValue":"qr"},"eventName":{"nullValue":"NULL_VALUE"}}},"updateTransforms":[{"fieldPath":"createdAt","setToServerValue":"REQUEST_TIME"}]},{"verify":"projects/marche-order-app/databases/(default)/documents/stores/qTSMnKNbfPWeJddnwWeDvQS2Cyi2","currentDocument":{"updateTime":"2025-12-02T14:16:12.462608000Z"}}]}
+
+[1A[2KBROWSER LOG: Order creation failed: FirebaseError: Missing or insufficient permissions.
+
+[1A[2KPAGE LOG: Order creation failed: FirebaseError: Missing or insufficient permissions.
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Received user= XfxFjI3qnQWGs85swBXPLtWXCCd2
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): FirestoreClient Received user= XfxFjI3qnQWGs85swBXPLtWXCCd2
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): RemoteStore RemoteStore received new credentials
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.326Z]  @firebase/firestore: Firestore (12.4.0): RemoteStore RemoteStore received new credentials
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.327Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc transport closed
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.327Z]  @firebase/firestore: Firestore (12.4.0): WebChannelConnection RPC 'Listen' stream 0x32206bfc transport closed
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.328Z]  @firebase/firestore: Firestore (12.4.0): SyncEngine User change. New user: uid:XfxFjI3qnQWGs85swBXPLtWXCCd2
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.328Z]  @firebase/firestore: Firestore (12.4.0): SyncEngine User change. New user: uid:XfxFjI3qnQWGs85swBXPLtWXCCd2
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.328Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Handle user change
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.328Z]  @firebase/firestore: Firestore (12.4.0): MemoryPersistence Starting transaction: Handle user change
+
+[1A[2KBROWSER LOG: [2025-12-04T11:13:03.328Z]  @firebase/firestore: Firestore (12.4.0): PersistentStream stream callback skipped by getCloseGuardedDispatcher.
+
+[1A[2KPAGE LOG: [2025-12-04T11:13:03.328Z]  @firebase/firestore: Firestore (12.4.0): PersistentStream stream callback skipped by getCloseGuardedDispatcher.
+
+[1A[2KOrder creation failed with error: 注文の作成に失敗しました。もう一度お試しください。
+
+[1A[2K  1) [chromium] › tests\customer-flow.spec.ts:4:1 › Customer Order Flow ────────────────────────────
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/\/order\/.+/[39m
+    Received string:  [31m"http://localhost:3001/checkout/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"[39m
+    Timeout: 20000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 20000ms[22m
+    [2m    23 × unexpected value "http://localhost:3001/checkout/qTSMnKNbfPWeJddnwWeDvQS2Cyi2"[22m
+
+
+       98 |   // Firestore transaction can be slow in CI, so we give it a generous timeout.
+       99 |   try {
+    > 100 |     await expect(page).toHaveURL(/\/order\/.+/, { timeout: 20000 });
+          |                        ^
+      101 |   } catch (e) {
+      102 |     // If timeout, check if there's an error message on the page
+      103 |     const errorAlert = page.getByRole('alert');
+        at D:\デスクトップ\marche-app\tests\customer-flow.spec.ts:100:24
+
+    Error Context: test-results\customer-flow-Customer-Order-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › tests\customer-flow.spec.ts:4:1 › Customer Order Flow ─────────────────────────────
+
+[36m  Serving HTML report at http://localhost:49680. Press Ctrl+C to quit.[39m

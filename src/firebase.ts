@@ -2,7 +2,7 @@ import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-import { getFirestore, setLogLevel } from "firebase/firestore";
+import { setLogLevel } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
 
@@ -65,20 +65,16 @@ try {
 
 export { app };
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+
+// Initialize Firestore with multi-tab support
+import { initializeFirestore } from "firebase/firestore";
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true, // Enable multi-tab support
+});
+
 if (import.meta.env.DEV) {
   setLogLevel('debug');
 }
-
-import { enableIndexedDbPersistence } from "firebase/firestore";
-
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code == 'failed-precondition') {
-    console.warn('Persistence failed: Multiple tabs open');
-  } else if (err.code == 'unimplemented') {
-    console.warn('Persistence not supported by browser');
-  }
-});
 
 // NOTE: SDKの内部的な挙動によりstorageBucketが無視されるケースに対応するため、
 // バケットのURLを第2引数で明示的に指定して強制する。

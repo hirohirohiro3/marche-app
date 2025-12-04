@@ -40,14 +40,18 @@ Marche Appは、お客様自身のスマートフォンを使って「注文」�
     - **PWA (オフライン対応)**: 電波の悪い場所でもアプリが動作し、キャッシュ機能で通信を節約します。
     - **スマートな読み込み**: 画面遷移を予測して裏読み込みを行い、待ち時間をゼロにします。
 
-## 利用シーン
-- **マルシェ・イベント出店**: 電源やレジスターがなくても、スマホ1つで本格的なレジシステムが導入できます。
-- **キッチンカー**: 限られたスペースでも、お客様自身のスマホがレジ代わりになります。
-- **カフェ・飲食店**: テーブルオーダーとして導入し、ホールスタッフの負担を軽減します。
+### 7. リッチな操作体験（インタラクション）
+- **スワイプ削除**: カート内の商品は、スマホアプリのようにスワイプして削除できます。
+- **触覚フィードバック**: ボタンタップや注文確定時に、心地よいバイブレーションで応答します。
+- **波紋エフェクト**: タップした瞬間に波紋が広がり、操作に対する視覚的なフィードバックを提供します。
+
+### 8. セキュリティ強化
+- **App Check**: Google reCAPTCHA v3を使用したApp Checkを導入し、不正なアクセスやボットからAPIを保護しています。
 
 ## 技術スタック
 - **Frontend**: React, TypeScript, Vite, Material UI
-- **Backend / Infrastructure**: Firebase (Hosting, Functions, Firestore, Storage)
+- **Libraries**: react-swipeable-list, framer-motion (planned)
+- **Backend / Infrastructure**: Firebase (Hosting, Functions, Firestore, Storage, App Check)
 - **Payment**: Stripe Connect (Express Accounts)
 
 ## Getting Started (開発者向け)
@@ -67,13 +71,13 @@ npm install
 ルートディレクトリに `.env` ファイルを作成し、以下の変数を設定してください。
 ```env
 # Firebase Configuration
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+VITE_API_KEY=your_api_key
+VITE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_PROJECT_ID=your_project_id
+VITE_MESSAGING_SENDER_ID=your_sender_id
+VITE_APP_ID=your_app_id
+VITE_MEASUREMENT_ID=your_measurement_id
+VITE_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
 
 # Stripe Configuration
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_... (または pk_live_...)

@@ -13,6 +13,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { COLLECTIONS } from '../constants';
+import {
+  SwipeableList,
+  SwipeableListItem,
+  SwipeAction,
+  TrailingActions,
+} from 'react-swipeable-list';
+import 'react-swipeable-list/dist/styles.css';
+import { useHaptic } from '../hooks/useHaptic';
+import { AnimatedButton } from '../components/ui/AnimatedButton';
 
 export default function CheckoutPage() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -22,13 +31,16 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const { triggerHaptic } = useHaptic();
 
   const handleDeleteClick = (cartItemId: string) => {
+    triggerHaptic('warning');
     setItemToDelete(cartItemId);
     setDeleteConfirmOpen(true);
   };
 
   const handleConfirmDelete = () => {
+    triggerHaptic('medium');
     if (itemToDelete) {
       removeItem(itemToDelete);
     }
@@ -42,6 +54,7 @@ export default function CheckoutPage() {
   };
 
   const handleConfirmOrder = async () => {
+    // triggerHaptic('heavy');
     if (!storeId) {
       setError("店舗情報が見つかりません。");
       return;
@@ -120,6 +133,7 @@ export default function CheckoutPage() {
       });
 
       clearCart();
+      triggerHaptic('success');
       navigate(`/order/${newOrderId}`);
     } catch (err) {
       console.error("Order creation failed:", err);
@@ -135,50 +149,84 @@ export default function CheckoutPage() {
         ご注文内容の確認
       </Typography>
       <Paper elevation={3}>
-        <List data-testid="order-items-list">
+        <SwipeableList>
           {items.map(cartItem => (
-            <ListItem
+            <SwipeableListItem
               key={cartItem.cartItemId}
-              secondaryAction={
-                <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteClick(cartItem.cartItemId)}>
-                  <DeleteIcon />
-                </IconButton>
+              trailingActions={
+                <TrailingActions>
+                  <SwipeAction
+                    destructive={true}
+                    onClick={() => handleDeleteClick(cartItem.cartItemId)}
+                  >
+                    <Box
+                      sx={{
+                        bgcolor: 'error.main',
+                        color: 'white',
+                        width: 80,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%'
+                      }}
+                    >
+                      <DeleteIcon />
+                    </Box>
+                  </SwipeAction>
+                </TrailingActions>
               }
             >
-              <ListItemText
-                primary={cartItem.item.name}
-                secondary={
-                  <>
-                    <Typography component="span" variant="body2" color="text.primary">
-                      ¥{(cartItem.itemPriceWithOptions).toLocaleString()}
-                    </Typography>
-                    {cartItem.selectedOptions && Object.values(cartItem.selectedOptions).flat().map((opt, idx) => (
-                      <Typography key={idx} variant="caption" display="block" color="text.secondary">
-                        + {opt.name} (¥{opt.priceModifier})
-                      </Typography>
-                    ))}
-                  </>
+              <ListItem
+                secondaryAction={
+                  <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteClick(cartItem.cartItemId)}>
+                    <DeleteIcon />
+                  </IconButton>
                 }
-              />
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mr: 2 }}>
-                <IconButton
-                  size="small"
-                  onClick={() => updateQuantity(cartItem.cartItemId, cartItem.quantity - 1)}
-                  disabled={cartItem.quantity <= 1}
-                >
-                  <RemoveIcon fontSize="small" />
-                </IconButton>
-                <Typography>{cartItem.quantity}</Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => updateQuantity(cartItem.cartItemId, cartItem.quantity + 1)}
-                >
-                  <AddIcon fontSize="small" />
-                </IconButton>
-              </Stack>
-            </ListItem>
+                sx={{ bgcolor: 'background.paper', borderBottom: '1px solid rgba(0, 0, 0, 0.12)' }}
+              >
+                <ListItemText
+                  primary={cartItem.item.name}
+                  secondary={
+                    <>
+                      <Typography component="span" variant="body2" color="text.primary">
+                        ¥{(cartItem.itemPriceWithOptions).toLocaleString()}
+                      </Typography>
+                      {cartItem.selectedOptions && Object.values(cartItem.selectedOptions).flat().map((opt, idx) => (
+                        <Typography key={idx} variant="caption" display="block" color="text.secondary">
+                          + {opt.name} (¥{opt.priceModifier})
+                        </Typography>
+                      ))}
+                    </>
+                  }
+                />
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mr: 2 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      triggerHaptic('light');
+                      updateQuantity(cartItem.cartItemId, cartItem.quantity - 1);
+                    }}
+                    disabled={cartItem.quantity <= 1}
+                  >
+                    <RemoveIcon fontSize="small" />
+                  </IconButton>
+                  <Typography>{cartItem.quantity}</Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      triggerHaptic('light');
+                      updateQuantity(cartItem.cartItemId, cartItem.quantity + 1);
+                    }}
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                </Stack>
+              </ListItem>
+            </SwipeableListItem>
           ))}
-          <Divider />
+        </SwipeableList>
+        <Divider />
+        <List>
           <ListItem>
             <ListItemText>
               <Typography variant="h6" data-testid="total-price">

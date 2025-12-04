@@ -22,6 +22,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import html2canvas from 'html2canvas';
 import { db } from '../firebase';
 import { ReceiptTemplate } from './ReceiptTemplate';
+import { triggerConfetti } from '../utils/confetti';
 
 interface PaymentSuccessViewProps {
     message: string;
@@ -42,6 +43,10 @@ export function PaymentSuccessView({ message, orderNumber, orderId }: PaymentSuc
     const [sending, setSending] = useState(false);
     const [receiptSent, setReceiptSent] = useState(false);
     const [receiptError, setReceiptError] = useState<string | null>(null);
+
+    useEffect(() => {
+        triggerConfetti();
+    }, []);
 
     useEffect(() => {
         if (!orderId) return;

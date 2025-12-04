@@ -37,6 +37,7 @@ import QrCodeModal from '../../components/QrCodeModal';
 import { useOrders } from '../../hooks/useOrders';
 import { useAuth } from '../../hooks/useAuth';
 import OrderColumn from '../../components/OrderColumn';
+import StockStatusWidget from '../../components/StockStatusWidget';
 
 const flash = keyframes`
   0% { background-color: inherit; }
@@ -67,35 +68,47 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
 
-    const fetchMenuItems = async () => {
+    const fetchMenuItems = () => {
       const menuCollection = collection(db, 'menus');
       const q = query(
         menuCollection,
         where('storeId', '==', user.uid),
         orderBy('sortOrder')
       );
-      const menuSnapshot = await getDocs(q);
-      const menuList = menuSnapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() } as MenuItem)
-      );
-      setMenuItems(menuList);
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const menuList = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() } as MenuItem)
+        );
+        setMenuItems(menuList);
+      });
+
+      return unsubscribe;
     };
-    fetchMenuItems();
+
+    const unsubscribe = fetchMenuItems();
+    return () => unsubscribe();
   }, [user]);
 
-  // Fetch current event name
+  const [lowStockThreshold, setLowStockThreshold] = useState<number>(5);
+
+  // Fetch current event name and settings
   useEffect(() => {
     if (!user) return;
-    const fetchEventName = async () => {
+    const fetchStoreData = async () => {
       const storeRef = doc(db, 'stores', user.uid);
       const unsubscribe = onSnapshot(storeRef, (doc) => {
         if (doc.exists()) {
-          setEventName(doc.data().currentEventName || '');
+          const data = doc.data();
+          setEventName(data.currentEventName || '');
+          if (data.lowStockThreshold !== undefined) {
+            setLowStockThreshold(data.lowStockThreshold);
+          }
         }
       });
       return () => unsubscribe();
     };
-    fetchEventName();
+    fetchStoreData();
   }, [user]);
 
   const handleStartEvent = async () => {
@@ -162,6 +175,7 @@ export default function DashboardPage() {
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         menuItems={menuItems}
+        lowStockThreshold={lowStockThreshold}
       />
       <QrCodeModal
         open={isQrModalOpen}
@@ -348,6 +362,7 @@ export default function DashboardPage() {
             />
           </Grid>
         </Grid>
+        <StockStatusWidget menuItems={menuItems} lowStockThreshold={lowStockThreshold} />
       </Container>
     </>
   );

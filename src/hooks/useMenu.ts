@@ -86,6 +86,10 @@ export const useMenu = (storeId?: string) => {
           id: doc.id,
           ...doc.data(),
         })) as MenuItem[];
+
+        // Client-side sort to ensure items without sortOrder are still displayed
+        menusData.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
         setMenus(menusData);
         setLoading(false);
       },

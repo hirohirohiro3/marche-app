@@ -1,4 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
+import { AnimatePresence } from 'framer-motion';
+import PageTransition from '../components/PageTransition';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Container, Typography, Box } from "@mui/material";
 import theme from '../theme';
@@ -7,6 +9,7 @@ import Footer from '../components/Footer';
 import { useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
 import { auth } from "../firebase";
+import { ToastProvider } from '../contexts/ToastContext';
 
 export default function RootLayout() {
   const location = useLocation();
@@ -15,7 +18,8 @@ export default function RootLayout() {
   const isFirebaseConfigMissing = !import.meta.env.VITE_API_KEY;
 
   useEffect(() => {
-    const signIn = async () => {
+    const initAuth = async () => {
+      await auth.authStateReady();
       // Only sign in anonymously if not already signed in
       if (!auth.currentUser) {
         try {
@@ -26,7 +30,7 @@ export default function RootLayout() {
         }
       }
     };
-    signIn();
+    initAuth();
   }, []);
 
   if (isFirebaseConfigMissing) {
@@ -46,15 +50,21 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Box component="main" sx={{ flexGrow: 1 }}>
-          <Outlet />
+    <ToastProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Box component="main" sx={{ flexGrow: 1 }}>
+            <AnimatePresence mode="wait">
+              <PageTransition key={location.pathname}>
+                <Outlet />
+              </PageTransition>
+            </AnimatePresence>
+          </Box>
+          <Footer />
         </Box>
-        <Footer />
-      </Box>
-      {location.pathname.startsWith('/menu/') && <CartSummary />}
-    </ThemeProvider>
+        {location.pathname.startsWith('/menu/') && <CartSummary />}
+      </ThemeProvider>
+    </ToastProvider>
   );
 }
