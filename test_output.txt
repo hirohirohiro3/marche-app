@@ -388,3 +388,4 @@ BROWSER LOG: [vite] connecting...
     [chromium] â€º tests\customer-flow.spec.ts:4:1 â€º Customer Order Flow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 [36m  Serving HTML report at http://localhost:63733. Press Ctrl+C to quit.[39m
+ƒoƒbƒ` ƒWƒ‡ƒu‚ğI—¹‚µ‚Ü‚·‚© (Y/N)? 

@@ -99,6 +99,9 @@ export default function AdminLayout() {
               <Button color="inherit" component={PrefetchLink} to="/admin/settings/qrcode">
                 QRコード設定
               </Button>
+              <Button color="inherit" component={PrefetchLink} to="/admin/settings/social">
+                SNS設定
+              </Button>
               <Button
                 color="inherit"
                 component={Link}

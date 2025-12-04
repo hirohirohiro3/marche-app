@@ -13,11 +13,12 @@ import {
   TextField,
   Paper,
   Snackbar,
+  Alert
 } from '@mui/material';
 import HelpSection from '../../components/HelpSection';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
-import QrCodeIcon from '@mui/icons-material/QrCode';
+
 import {
   collection,
   query,
@@ -33,7 +34,7 @@ import { db } from '../../firebase';
 import { MenuItem } from '../../types';
 import { keyframes } from '@emotion/react';
 import ManualOrderModal from '../../components/ManualOrderModal';
-import QrCodeModal from '../../components/QrCodeModal';
+
 import { useOrders } from '../../hooks/useOrders';
 import { useAuth } from '../../hooks/useAuth';
 import OrderColumn from '../../components/OrderColumn';
@@ -55,7 +56,7 @@ export default function DashboardPage() {
   } = useOrders(user?.uid);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [eventName, setEventName] = useState('');
   const [isSavingEventName, setIsSavingEventName] = useState(false);
@@ -177,10 +178,7 @@ export default function DashboardPage() {
         menuItems={menuItems}
         lowStockThreshold={lowStockThreshold}
       />
-      <QrCodeModal
-        open={isQrModalOpen}
-        onClose={() => setIsQrModalOpen(false)}
-      />
+
 
       {/* Start Event Dialog */}
       <Dialog open={isStartEventDialogOpen} onClose={() => setIsStartEventDialogOpen(false)}>
@@ -259,11 +257,38 @@ export default function DashboardPage() {
 
       <Container data-testid="dashboard-container" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <HelpSection title="ダッシュボードの機能">
-          <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-            <li><strong>イベントを開始</strong>: 新しいイベントを開始し、注文番号を1番にリセットします。</li>
-            <li><strong>手動注文</strong>: 店頭で受けた注文をスタッフが直接入力するための画面を開きます（注文番号は1〜100番を使用）。</li>
-            <li><strong>QRコード</strong>: お客さまに読み取ってもらうための注文用QRコードを表示・印刷できます（注文番号は101番〜を使用）。</li>
-          </ul>
+          <Box sx={{ '& h3': { fontSize: '1rem', fontWeight: 'bold', mt: 2, mb: 1 }, '& p': { mb: 1 }, '& ul': { pl: 3 } }}>
+            <h3>イベント当日の流れ</h3>
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mt: 2 }}>朝一番にやること</Typography>
+            <Typography variant="body2">
+              「イベントを開始」ボタンを押してください。<br />
+              → 注文番号が1番にリセットされ、新しいイベントが始まります。
+            </Typography>
+            <Alert severity="info" sx={{ mt: 1, py: 0 }}>
+              <Typography variant="caption">
+                <strong>なぜリセットするの？</strong><br />
+                毎回1番から始めることで、お客様が「今日は何番目の注文かな？」と分かりやすくなります。また、イベントごとに売上を分けて管理できます。
+              </Typography>
+            </Alert>
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mt: 2 }}>注文の受け方は2種類</Typography>
+            <ul>
+              <li>
+                <strong>手動注文（注文番号1〜100）</strong><br />
+                店頭でお客様から直接注文を受けた時に使います。「手動注文」ボタンを押して、商品と数量を入力してください。
+              </li>
+              <li>
+                <strong>QRコード注文（注文番号101〜）</strong><br />
+                お客様がスマホで自分で注文します。「QRコード」ボタンでQRコードを表示・印刷してください。
+              </li>
+            </ul>
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mt: 2 }}>イベント終了時</Typography>
+            <Typography variant="body2">
+              「イベント終了」ボタンを押すと、売上データが保存されます。次回のイベントに備えて、注文リストがリセットされます。
+            </Typography>
+          </Box>
         </HelpSection>
 
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2, flexWrap: 'wrap' }}>
@@ -327,15 +352,7 @@ export default function DashboardPage() {
             >
               手動注文
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<QrCodeIcon />}
-              onClick={() => setIsQrModalOpen(true)}
-              color="secondary"
-              data-testid="qr-code-button"
-            >
-              QRコード
-            </Button>
+
           </Box>
         </Box>
         <Grid container spacing={3}>

@@ -39,6 +39,7 @@ import PaymentIcon from '@mui/icons-material/Payment';
 
 import PaymentPreviewDialog from './components/PaymentPreviewDialog';
 import ReceiptPreviewDialog from './components/ReceiptPreviewDialog';
+import HelpSection from '../../../components/HelpSection';
 
 // Define the type for payment settings
 type PaymentMethod = 'cash_only' | 'cash_and_online' | 'online_only';
@@ -171,6 +172,34 @@ export default function PaymentSettingsPage() {
 
   return (
     <Container maxWidth="md" sx={{ pb: 8 }}>
+      <HelpSection title="決済・レシート設定について">
+        <Box sx={{ '& h3': { fontSize: '1rem', fontWeight: 'bold', mt: 2, mb: 1 }, '& p': { mb: 1 }, '& ul': { pl: 3 } }}>
+          <h3>決済方法の種類</h3>
+          <ul>
+            <li><strong>対面支払いのみ</strong>: 現金やPayPayなど、店頭で直接やり取りする場合に使います。</li>
+            <li><strong>アプリ内決済のみ</strong>: クレジットカードやApple Payなど、スマホで完結させたい場合に使います。</li>
+            <li><strong>両方対応（推奨）</strong>: お客様が好きな方を選べるので、一番おすすめです。</li>
+          </ul>
+
+          <h3>Stripe連携とは？</h3>
+          <Typography variant="body2" paragraph>
+            アプリ内でクレジットカード決済を受け付けるための機能です。<br />
+            「システム設定」からStripeアカウントを連携すると、自動的にApple PayやGoogle Payも使えるようになります。
+          </Typography>
+          <Alert severity="warning" sx={{ mt: 1, py: 0 }}>
+            <Typography variant="caption">
+              <strong>⚠️ 注意点</strong><br />
+              Stripe決済には手数料（3.6%）がかかります。売上はStripeからあなたの銀行口座に振り込まれます。
+            </Typography>
+          </Alert>
+
+          <h3>レシート機能</h3>
+          <Typography variant="body2">
+            お客様が支払い完了後に、デジタルのレシートを発行できます。<br />
+            インボイス登録番号を入力すれば、適格簡易請求書として利用可能です。
+          </Typography>
+        </Box>
+      </HelpSection>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           決済・レシート設定

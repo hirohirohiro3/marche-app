@@ -12,6 +12,7 @@ const AnalyticsPage = lazy(() => import('./pages/admin/AnalyticsPage'));
 const OptionsAdminPage = lazy(() => import('./pages/admin/options'));
 const PaymentSettingsPage = lazy(() => import('./pages/admin/settings/PaymentSettingsPage'));
 const QrCodeSettingsPage = lazy(() => import('./pages/admin/settings/QrCodeSettingsPage'));
+const SocialLinksSettingsPage = lazy(() => import('./pages/admin/settings/SocialLinksSettingsPage'));
 const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
 const MenuListPage = lazy(() => import('./pages/MenuListPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
@@ -74,6 +75,7 @@ const router = createBrowserRouter([
       { path: 'analytics', element: <Suspense fallback={<Loading />}><AnalyticsPage /></Suspense> },
       { path: 'settings/payment', element: <Suspense fallback={<Loading />}><PaymentSettingsPage /></Suspense> },
       { path: 'settings/qrcode', element: <Suspense fallback={<Loading />}><QrCodeSettingsPage /></Suspense> },
+      { path: 'settings/social', element: <Suspense fallback={<Loading />}><SocialLinksSettingsPage /></Suspense> },
     ],
   },
 ]);

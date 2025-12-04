@@ -52,3 +52,20 @@ export type Order = {
   uid: string;
   eventName?: string;
 };
+
+export type SocialLink = {
+  url: string;
+  enabled: boolean;
+  displayName?: string; // For custom links
+  type: 'instagram' | 'twitter' | 'website' | 'line' | 'tiktok' | 'youtube' | 'custom';
+};
+
+export type SocialLinks = {
+  instagram?: SocialLink;
+  twitter?: SocialLink;
+  website?: SocialLink;
+  line?: SocialLink;
+  tiktok?: SocialLink;
+  youtube?: SocialLink;
+  custom?: SocialLink[];
+};

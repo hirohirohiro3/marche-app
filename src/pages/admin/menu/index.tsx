@@ -145,12 +145,40 @@ export default function MenuAdminPage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <HelpSection title="メニュー管理について">
-        <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-          <li>右上の「商品を追加」ボタンから商品を登録できます。</li>
-          <li>商品をクリックすると編集・削除が可能です。</li>
-          <li><strong>オプション設定</strong>: 商品編集画面で、作成したオプショングループ（サイズやトッピングなど）を紐付けることができます。</li>
-          <li>「在庫管理」を有効にすると、在庫が0になった際に自動で「売り切れ」になります。</li>
-        </ul>
+        <Box sx={{ '& h3': { fontSize: '1rem', fontWeight: 'bold', mt: 2, mb: 1 }, '& p': { mb: 1 }, '& ul': { pl: 3 } }}>
+          <h3>初めて商品を登録する</h3>
+          <ol style={{ paddingLeft: '1.5rem' }}>
+            <li>
+              <strong>商品情報を入力</strong><br />
+              右上の「新規追加」ボタンをクリックして、商品名、価格、カテゴリなどを入力します。<br />
+              <Typography variant="caption" color="text.secondary">💡 カテゴリ名は「ドリンク」「フード」など自由に決められます。</Typography>
+            </li>
+            <li>
+              <strong>商品画像をアップロード（推奨）</strong><br />
+              横長の写真がおすすめです（推奨サイズ：1200×675px）。
+            </li>
+            <li>
+              <strong>オプションを設定（任意）</strong><br />
+              サイズやトッピングを追加したい場合は、先に「オプション管理」でグループを作成してから、ここでチェックを入れます。
+            </li>
+            <li><strong>保存して完了！</strong></li>
+          </ol>
+
+          <h3>よくある操作</h3>
+          <ul>
+            <li><strong>編集</strong>: テーブルの鉛筆アイコン <span style={{ fontSize: '1.2em' }}>✏️</span> をクリック</li>
+            <li><strong>削除</strong>: ゴミ箱アイコン <span style={{ fontSize: '1.2em' }}>🗑️</span> をクリック（取り消せないので注意！）</li>
+            <li><strong>売り切れ</strong>: 「売り切れ」列のスイッチをONにすると、お客様の画面で注文できなくなります。</li>
+          </ul>
+
+          <h3>カテゴリに絵文字アイコンを表示</h3>
+          <Typography variant="body2">
+            お客様の画面のカテゴリタブに絵文字を表示できます。<br />
+            1. 「メニュー設定」ボタンをクリック<br />
+            2. 「カテゴリーアイコン設定」で絵文字を入力（例：ドリンク → ☕）<br />
+            3. 保存して完了！
+          </Typography>
+        </Box>
       </HelpSection>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>

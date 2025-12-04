@@ -17,6 +17,8 @@ import AppleIcon from '@mui/icons-material/Apple';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { PaymentSuccessView } from '../components/PaymentSuccessView';
+import SocialLinksCard from '../components/SocialLinksCard';
+import { SocialLinks } from '../types';
 
 // Define the Order type
 interface Order {
@@ -50,6 +52,7 @@ export default function OrderSummaryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks | null>(null);
 
   // Device detection state
   const [isAppleDevice, setIsAppleDevice] = useState(false);
@@ -84,6 +87,14 @@ export default function OrderSummaryPage() {
           getDoc(storeRef).then(storeSnap => {
             if (storeSnap.exists()) {
               setStoreSettings(storeSnap.data() as StoreSettings);
+            }
+          });
+
+          // Fetch Social Links
+          const socialRef = doc(db, 'stores', storeId, 'settings', 'social');
+          getDoc(socialRef).then(socialSnap => {
+            if (socialSnap.exists()) {
+              setSocialLinks(socialSnap.data() as SocialLinks);
             }
           });
         }
@@ -153,6 +164,7 @@ export default function OrderSummaryPage() {
           orderNumber={order?.orderNumber || null}
           orderId={orderId || null}
         />
+        {socialLinks && <SocialLinksCard socialLinks={socialLinks} />}
       </Container>
     );
   }
@@ -353,6 +365,7 @@ export default function OrderSummaryPage() {
           </Box>
         )}
       </Stack>
+      {socialLinks && <SocialLinksCard socialLinks={socialLinks} />}
     </Container>
   );
 }

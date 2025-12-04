@@ -188,11 +188,33 @@ export default function AnalyticsPage() {
   return (
     <Container maxWidth="lg">
       <HelpSection title="売上分析について">
-        <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-          <li>日別、月別の売上合計と注文数を確認できます。</li>
-          <li><strong>イベント別売上</strong>: 開催したイベントごとの売上実績も確認可能です。</li>
-          <li>期間を指定してデータを絞り込むことができます。</li>
-        </ul>
+        <Box sx={{ '& h3': { fontSize: '1rem', fontWeight: 'bold', mt: 2, mb: 1 }, '& p': { mb: 1 }, '& ul': { pl: 3 } }}>
+          <h3>売上分析の見方</h3>
+          <Typography variant="body2" paragraph>
+            このページでは、イベントごとの売上データを確認できます。<br />
+            上部のドロップダウンで、見たいイベントを選択してください。
+          </Typography>
+
+          <h3>各項目の説明</h3>
+          <ul>
+            <li><strong>売上サマリー</strong>: 総売上、注文数、平均客単価を一目で確認できます。</li>
+            <li><strong>商品別売上グラフ</strong>: どの商品がよく売れたか（人気商品）を把握できます。</li>
+            <li><strong>時間帯別売上グラフ</strong>: 何時頃に注文が多かったかを確認でき、人員配置の参考に役立ちます。</li>
+          </ul>
+
+          <Alert severity="info" sx={{ mt: 1, py: 0 }}>
+            <Typography variant="caption">
+              <strong>💡 データの活用方法</strong><br />
+              ・売れ筋商品を増産する<br />
+              ・売れない商品を見直す<br />
+              ・忙しい時間帯のスタッフを増やす
+            </Typography>
+          </Alert>
+
+          <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
+            ※「CSVダウンロード」ボタンで、Excelで開けるデータをダウンロードできます。
+          </Typography>
+        </Box>
       </HelpSection>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>

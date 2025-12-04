@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Button,
@@ -15,6 +14,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Alert
 } from '@mui/material';
 import HelpSection from '../../../components/HelpSection';
 import { Edit, Delete } from '@mui/icons-material';
@@ -68,16 +68,41 @@ export default function OptionsAdminPage() {
   return (
     <Container maxWidth="lg">
       <HelpSection title="オプション管理について">
-        <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-          <li>商品のカスタマイズ項目を作成できます。</li>
-          <li><strong>利用例</strong>:
-            <ul style={{ marginTop: '0.25rem' }}>
-              <li><strong>サイズ変更</strong>: Sサイズ (+0円), Mサイズ (+50円), Lサイズ (+100円)</li>
-              <li><strong>トッピング</strong>: ホイップ追加 (+50円), チョコソース (+30円)</li>
-            </ul>
-          </li>
-          <li>作成したオプションは、<strong>メニュー管理画面で各商品に紐付ける</strong>ことで有効になります。</li>
-        </ul>
+        <Box sx={{ '& h3': { fontSize: '1rem', fontWeight: 'bold', mt: 2, mb: 1 }, '& p': { mb: 1 }, '& ul': { pl: 3 } }}>
+          <Typography variant="body2" paragraph>
+            お客様が商品を注文する時に、サイズやトッピングを選べるようにする機能です。
+          </Typography>
+
+          <h3>設定例</h3>
+          <ul>
+            <li>
+              <strong>サイズ変更（1つだけ選択）</strong><br />
+              選択タイプ: 「ラジオボタン」<br />
+              選択肢: S (+0円), M (+100円), L (+200円)
+            </li>
+            <li>
+              <strong>トッピング（複数選択可）</strong><br />
+              選択タイプ: 「チェックボックス」<br />
+              選択肢: チーズ (+100円), ベーコン (+150円)
+            </li>
+          </ul>
+
+          <h3>作成の流れ</h3>
+          <ol style={{ paddingLeft: '1.5rem' }}>
+            <li>右上の「新規追加」ボタンをクリック</li>
+            <li>グループ名（例：「サイズ」）と選択タイプを入力</li>
+            <li>「選択肢を追加」ボタンで、S, M, Lなどの項目を追加</li>
+            <li>保存後、<strong>メニュー管理画面で商品に紐付ける</strong>と有効になります。</li>
+          </ol>
+
+          <Alert severity="info" sx={{ mt: 1, py: 0 }}>
+            <Typography variant="caption">
+              <strong>💡 よくある質問</strong><br />
+              Q: 1つの商品に複数のオプションを設定できる？<br />
+              A: はい！例えば「サイズ」と「トッピング」の両方を設定できます。
+            </Typography>
+          </Alert>
+        </Box>
       </HelpSection>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
