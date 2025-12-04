@@ -31,7 +31,6 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     return (
         <ToastContext.Provider value={{ showToast }}>
             {children}
-            {children}
             <AnimatePresence>
                 {open && (
                     <motion.div
