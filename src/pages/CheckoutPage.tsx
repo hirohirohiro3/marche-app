@@ -21,7 +21,6 @@ import {
 } from 'react-swipeable-list';
 import 'react-swipeable-list/dist/styles.css';
 import { useHaptic } from '../hooks/useHaptic';
-import { AnimatedButton } from '../components/ui/AnimatedButton';
 
 export default function CheckoutPage() {
   const { storeId } = useParams<{ storeId: string }>();
