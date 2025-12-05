@@ -47,23 +47,39 @@ export const useQrCodeSettings = () => {
     if (!user?.uid) return;
     setLoading(true);
     try {
+      console.log('saveQrCodeSettings called with:', data);
       let logoUrl = settings?.logoUrl;
+      let shouldDeleteLogo = false;
 
       if (data.logoFile) {
         const file = data.logoFile as File;
         const storageRef = ref(storage, `stores/${user.uid}/qrcode_logo_${Date.now()}`);
         await uploadBytes(storageRef, file);
         logoUrl = await getDownloadURL(storageRef);
+      } else if (data.logoFile === null) {
+        // Explicitly removed
+        console.log('Logo explicitly removed (data.logoFile is null)');
+        shouldDeleteLogo = true;
+        logoUrl = undefined;
       }
-
-      const newSettings: QrCodeSettings = {
+      const updateData: any = {
         color: data.color,
-        logoUrl,
       };
 
+      if (shouldDeleteLogo) {
+        updateData.logoUrl = null;
+      } else if (logoUrl) {
+        updateData.logoUrl = logoUrl;
+      }
+
       const docRef = doc(db, 'stores', user.uid, 'settings', 'qrcode');
-      await setDoc(docRef, newSettings, { merge: true });
-      setSettings(newSettings);
+      await setDoc(docRef, updateData, { merge: true });
+
+      // Update local state
+      setSettings({
+        color: data.color,
+        logoUrl: shouldDeleteLogo ? undefined : logoUrl,
+      });
     } catch (error) {
       console.error("Error saving QR settings:", error);
       throw error;

@@ -17,13 +17,17 @@ import HelpSection from '../../../components/HelpSection';
 
 const colorPalette = ['#000000', '#4a4a4a', '#003366', '#b30000', '#006400', '#4b0082'];
 
+import { useAuth } from '../../../hooks/useAuth';
+
 export default function QrCodeSettingsPage() {
+  const { user } = useAuth();
   const { settings, loading: hookLoading, saveQrCodeSettings } = useQrCodeSettings();
   const [pageError, setPageError] = useState<string | null>(null);
   const [pageSuccess, setPageSuccess] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [resetKey, setResetKey] = useState(0);
+  const [isLogoDeleted, setIsLogoDeleted] = useState(false);
 
   const {
     control,
@@ -49,6 +53,7 @@ export default function QrCodeSettingsPage() {
     if (watchLogoFile) {
       const url = URL.createObjectURL(watchLogoFile);
       setPreviewUrl(url);
+      setIsLogoDeleted(false); // Reset deleted flag when new file selected
       return () => URL.revokeObjectURL(url);
     } else {
       setPreviewUrl(null);
@@ -61,6 +66,7 @@ export default function QrCodeSettingsPage() {
         color: settings.color,
         logoFile: null, // Reset file input
       });
+      setIsLogoDeleted(false); // Reset deleted flag on load/save
     }
   }, [settings, reset]);
 
@@ -68,7 +74,41 @@ export default function QrCodeSettingsPage() {
     setPageError(null);
     setPageSuccess(null);
     try {
-      await saveQrCodeSettings(data);
+      // If explicitly deleted, ensure we pass null to the hook if needed, 
+      // but the hook checks data.logoFile === null.
+      // However, if isLogoDeleted is true, we want to ensure data.logoFile is treated as "remove".
+      // react-hook-form's logoFile is null in both "no change" and "remove" cases.
+      // We need to pass a signal to saveQrCodeSettings.
+
+      // Actually, useQrCodeSettings checks `data.logoFile === null`.
+      // But `defaultValues.logoFile` is `null`.
+      // So `data.logoFile` is ALWAYS `null` if we don't select a file.
+      // The hook logic `else if (data.logoFile === null)` will ALWAYS trigger if we don't select a file?
+      // No, if we don't touch it, it might be undefined? 
+      // Zod schema: `logoFile: z.any().optional()`.
+
+      // Let's check what react-hook-form sends.
+      // If we use `setValue('logoFile', null)`, it sends `null`.
+      // If we leave it as default `null`, it sends `null`.
+
+      // So the hook logic `data.logoFile === null` might be deleting the logo even if we just change the color!
+      // This is a potential bug in the hook logic I just added.
+      // But for now, let's fix the UI preview issue.
+
+      // To fix the hook logic: We should probably use a separate field or check dirtyFields.
+      // But let's stick to fixing the UI first.
+
+      await saveQrCodeSettings({
+        ...data,
+        // If isLogoDeleted is true, force logoFile to be null (it should already be).
+        // If isLogoDeleted is false and logoFile is null, it means "no change", so we should probably NOT send null to the hook if we want to preserve the old logo?
+        // Wait, if I change color, I don't want to delete the logo.
+        // But `data.logoFile` will be `null`.
+
+        // I need to pass `undefined` if I don't want to change the logo.
+        logoFile: isLogoDeleted ? null : (data.logoFile || undefined)
+      });
+
       setPageSuccess('QRコード設定を保存しました。');
     } catch (err: any) {
       console.error(err);
@@ -109,13 +149,53 @@ export default function QrCodeSettingsPage() {
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const pngFile = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = 'qrcode.png';
-        link.href = pngFile;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+
+        // Draw logo manually if it exists (to ensure it appears)
+        const logoUrl = previewUrl || (isLogoDeleted ? null : settings?.logoUrl);
+        if (logoUrl) {
+          const logoImg = new Image();
+          logoImg.crossOrigin = 'anonymous';
+          logoImg.onload = () => {
+            // Calculate logo position (center)
+            // QR code size is 1024, logo is typically 20-25%
+            const logoSize = canvas.width * 0.2;
+            const logoX = (canvas.width - logoSize) / 2;
+            const logoY = (canvas.height - logoSize) / 2;
+
+            // Draw white background for logo
+            ctx.fillStyle = 'white';
+            // ctx.fillRect(logoX, logoY, logoSize, logoSize); // Optional: if excavation is needed
+
+            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+
+            const pngFile = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = pngFile;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          };
+          // If logo fails to load (e.g. CORS), still download the QR without it or with what's in SVG
+          logoImg.onerror = () => {
+            const pngFile = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = pngFile;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          };
+          logoImg.src = logoUrl;
+        } else {
+          const pngFile = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = 'qrcode.png';
+          link.href = pngFile;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
       }
     };
 
@@ -183,16 +263,33 @@ export default function QrCodeSettingsPage() {
                     setValue('logoFile', file, { shouldDirty: true });
                     await trigger('logoFile');
                   }}
-                  initialImageUrl={settings?.logoUrl}
+                  initialImageUrl={isLogoDeleted ? null : settings?.logoUrl}
                 />
-                {(watchLogoFile || settings?.logoUrl) && (
+                {(watchLogoFile || (settings?.logoUrl && !isLogoDeleted)) && (
                   <Button
                     variant="outlined"
                     color="error"
-                    onClick={() => {
-                      setValue('logoFile', null, { shouldDirty: true });
-                      setPreviewUrl(null);
-                      setResetKey(prev => prev + 1);
+                    onClick={async () => {
+                      if (!window.confirm('ロゴ画像を削除しますか？この操作はすぐに反映されます。')) return;
+
+                      try {
+                        // Immediate save with null logoFile
+                        await saveQrCodeSettings({
+                          color: watchColor,
+                          logoFile: null
+                        });
+
+                        // UI updates will be handled by the useEffect listening to 'settings' change
+                        // but we can also force local state update for immediate feedback if needed
+                        setValue('logoFile', null, { shouldDirty: false });
+                        setPreviewUrl(null);
+                        setResetKey(prev => prev + 1);
+                        setIsLogoDeleted(true);
+                        setPageSuccess('画像を削除しました。');
+                      } catch (err) {
+                        console.error(err);
+                        setPageError('画像の削除に失敗しました。');
+                      }
                     }}
                     sx={{ mt: 2 }}
                   >
@@ -216,16 +313,16 @@ export default function QrCodeSettingsPage() {
                 }}>
                   <QRCode
                     id="qr-code-svg"
-                    value={`https://yourapp.com/menu/${settings ? 'your-store-id' : 'preview'}`}
-                    size={280}
-                    fgColor={watchColor}
+                    value={`https://marche-order-app.web.app/menu/${user?.uid}`}
+                    size={256}
                     level="H"
-                    imageSettings={(previewUrl || settings?.logoUrl) ? {
+                    includeMargin={true}
+                    bgColor="#ffffff"
+                    fgColor={watchColor}
+                    imageSettings={(previewUrl || (settings?.logoUrl && !isLogoDeleted)) ? {
                       src: previewUrl || settings?.logoUrl || '',
-                      x: undefined,
-                      y: undefined,
-                      height: 80,
-                      width: 80,
+                      height: 50,
+                      width: 50,
                       excavate: true,
                     } : undefined}
                   />
@@ -325,7 +422,7 @@ export default function QrCodeSettingsPage() {
 
         {pageError && <Alert severity="error" sx={{ mt: 2 }}>{pageError}</Alert>}
         {pageSuccess && <Alert severity="success" sx={{ mt: 2 }}>{pageSuccess}</Alert>}
-      </Paper>
-    </Container>
+      </Paper >
+    </Container >
   );
 }
