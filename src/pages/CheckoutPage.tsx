@@ -67,7 +67,7 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      const newOrderId = await runTransaction(db, async (transaction) => {
+      const result = await runTransaction(db, async (transaction) => {
         const storeRef = doc(db, COLLECTIONS.STORES, storeId);
         const settingsRef = doc(db, COLLECTIONS.SYSTEM_SETTINGS, 'orderNumbers');
 
@@ -128,12 +128,20 @@ export default function CheckoutPage() {
         };
 
         transaction.set(newOrderRef, orderData);
-        return newOrderRef.id;
+        return { id: newOrderRef.id, data: orderData };
       });
 
       clearCart();
       triggerHaptic('success');
-      navigate(`/order/${newOrderId}`);
+
+      // Sanitize order data for navigation state (remove non-serializable fields like serverTimestamp)
+      const safeOrderData = {
+        ...result.data,
+        id: result.id,
+        createdAt: null // serverTimestamp() cannot be serialized
+      };
+
+      navigate(`/order/${result.id}`, { state: { orderData: safeOrderData } });
     } catch (err) {
       console.error("Order creation failed:", err);
       setError("注文の作成に失敗しました。もう一度お試しください。");

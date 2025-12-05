@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import {
@@ -43,13 +43,13 @@ interface StoreSettings {
 }
 
 export default function OrderSummaryPage() {
-  // const [searchParams] = useSearchParams(); // Removed as we use useParams now
   const navigate = useNavigate();
+  const location = useLocation();
   const { orderId } = useParams<{ orderId: string }>();
-  // const orderId = searchParams.get('orderId'); // Removed
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Initialize order with state if available
+  const [order, setOrder] = useState<Order | null>(location.state?.orderData || null);
+  const [loading, setLoading] = useState(!location.state?.orderData);
   const [error, setError] = useState<string | null>(null);
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLinks | null>(null);
@@ -79,6 +79,7 @@ export default function OrderSummaryPage() {
       if (docSnap.exists()) {
         const orderData = { id: docSnap.id, ...docSnap.data() } as Order;
         setOrder(orderData);
+        setLoading(false);
 
         // Fetch Store Settings using the storeId from the order
         const storeId = (docSnap.data() as any).storeId;
@@ -99,17 +100,22 @@ export default function OrderSummaryPage() {
           });
         }
       } else {
-        setError('注文が見つかりません。');
+        // Only set error if we don't have initial data from state
+        if (!location.state?.orderData) {
+          setError('注文が見つかりません。');
+          setLoading(false);
+        }
       }
-      setLoading(false);
     }, (err) => {
       console.error("Error fetching order:", err);
-      setError('注文情報の取得に失敗しました。');
-      setLoading(false);
+      if (!location.state?.orderData) {
+        setError('注文情報の取得に失敗しました。');
+        setLoading(false);
+      }
     });
 
     return () => unsubscribeOrder();
-  }, [orderId]);
+  }, [orderId, location.state]);
 
   const handleOnlinePayment = () => {
     if (orderId) {

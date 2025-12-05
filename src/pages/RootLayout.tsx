@@ -1,6 +1,4 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence } from 'framer-motion';
-import PageTransition from '../components/PageTransition';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Container, Typography, Box } from "@mui/material";
 import theme from '../theme';
@@ -55,11 +53,7 @@ export default function RootLayout() {
         <CssBaseline />
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
           <Box component="main" sx={{ flexGrow: 1 }}>
-            <AnimatePresence mode="wait">
-              <PageTransition key={location.pathname}>
-                <Outlet />
-              </PageTransition>
-            </AnimatePresence>
+            <Outlet />
           </Box>
           <Footer />
         </Box>
